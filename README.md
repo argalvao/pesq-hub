@@ -41,7 +41,7 @@ O **PesqHub** é um sistema web inovador desenvolvido na **UEFS - Universidade E
 ### **Backend**
 - **Laravel 11** - Framework PHP moderno e robusto
 - **PHP 8.3** - Linguagem de programação
-- **Google Sheets API** - Banco de dados em nuvem
+- **Google Sheets** - Banco de dados em nuvem
 - **Apache 2.4** - Servidor web
 
 ### **Frontend**
@@ -55,14 +55,12 @@ O **PesqHub** é um sistema web inovador desenvolvido na **UEFS - Universidade E
 - **Git** - Controle de versão
 
 ### **Integrações**
-- **Google Sheets API** - Armazenamento e sincronização de dados
-- **Google Cloud Platform** - Autenticação e APIs
+- **Google Sheets** - Armazenamento e sincronização de dados
 
 ## 📋 Pré-requisitos
 
 - **Docker** 20.10+ e **Docker Compose** 2.0+
 - **Git** para clonagem do repositório
-- **Conta Google** com acesso ao Google Sheets API
 
 ## 🔧 Instalação e Configuração
 
@@ -70,26 +68,6 @@ O **PesqHub** é um sistema web inovador desenvolvido na **UEFS - Universidade E
 ```bash
 git clone git@github.com:argalvao/pesq-hub.git
 cd pesq-hub
-```
-
-### 2. **Configuração do Google Sheets API**
-
-#### 2.1. Criar Projeto no Google Cloud Console
-1. Acesse [Google Cloud Console](https://console.cloud.google.com/)
-2. Crie um novo projeto ou selecione um existente
-3. Ative a **Google Sheets API**
-
-#### 2.2. Criar Credenciais de Serviço
-1. Vá para **APIs & Services > Credentials**
-2. Clique em **Create Credentials > Service Account**
-3. Preencha as informações e crie a conta
-4. Gere uma **chave JSON** para a conta de serviço
-5. Baixe o arquivo JSON
-
-#### 2.3. Configurar Credenciais
-```bash
-# Copie o arquivo JSON baixado para o diretório storage/app/
-cp caminho/para/seu/arquivo.json storage/app/credenciais.json
 ```
 
 ```bash
@@ -103,7 +81,7 @@ docker-compose ps
 docker-compose logs -f
 ```
 
-### 4. **Inicialização Automática**
+### 3. **Inicialização Automática**
 
 Na primeira execução, o sistema irá:
 - Criar automaticamente as abas necessárias na planilha
@@ -267,10 +245,10 @@ docker exec pesq-hub-app chown -R www-data:www-data /var/www/html/storage
 docker exec pesq-hub-app chmod -R 775 /var/www/html/storage
 ```
 
-### **Erro na API do Google Sheets**
+### **Erro no Google Sheets**
 1. Verifique se o arquivo `credenciais.json` está presente
-2. Confirme se a planilha foi compartilhada com a conta de serviço
-3. Verifique se a Google Sheets API está ativada
+2. Confirme se a planilha está acessível
+3. Verifique a conectividade com o Google Sheets
 
 ### **Problemas de Login**
 1. Verifique se os usuários foram criados na planilha
@@ -298,7 +276,7 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 ## 🙏 Agradecimentos
 
 - Laravel Framework
-- Google Sheets API
+- Google Sheets
 - Docker Community
 - Comunidade Open Source
 
