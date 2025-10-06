@@ -1,0 +1,27 @@
+# Ignorar arquivos desnecessários no contexto Docker
+node_modules
+npm-debug.log
+.env.local
+.env.*.local
+.git
+.gitignore
+README.md
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Logs
+*.log
+
+# Cache e arquivos temporários
+.cache
+*.tmp
+*.temp
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db

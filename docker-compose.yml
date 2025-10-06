@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pesq-hub-app
+    ports:
+      - "8001:80"
+    volumes:
+      - ./storage:/var/www/html/storage
+      - ./storage/app/credenciais.json:/var/www/html/storage/app/credenciais.json
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_KEY=base64:lxGdhXlEGhx7mpT+rRY84VuXQUP5iFd/M1hH9AflMQU=
+      - APP_URL=http://localhost:8001
+      - SESSION_DRIVER=file
+      - CACHE_STORE=file
+      - GOOGLE_CLIENT_ID=955527164761-1hg260j8v3bm9cge133hpd8q0vmtbiv0.apps.googleusercontent.com
+      - GOOGLE_CLIENT_SECRET=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
+      - GOOGLE_REDIRECT_URI=http://localhost:8001/google/callback
+      - GOOGLE_APPLICATION_CREDENTIALS=credenciais.json
+      - GOOGLE_SHEET_ID=15jSuekgRohhMeDE6uzyne_2jDb-V0lZkg5yiEkWsv80
+    restart: unless-stopped
+    networks:
+      - pesq-hub-network
+
+networks:
+  pesq-hub-network:
+    driver: bridge
