@@ -271,7 +271,7 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 
 **Abel Galvão**
 - GitHub: [@argalvao](https://github.com/argalvao)
-- Email: [seu-email@exemplo.com]
+- Email: abel.ramalho18@gmail.com
 
 ## 🙏 Agradecimentos
 
