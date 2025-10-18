@@ -9,8 +9,8 @@ services:
     ports:
       - "8001:80"
     volumes:
-      - ./storage:/var/www/html/storage
-      - ./storage/app/credenciais.json:/var/www/html/storage/app/credenciais.json
+      #- ./storage:/var/www/html/storage
+      - ./storage/app/credenciais.json:/var/www/html/storage/app/credenciais.json:ro
     environment:
       - APP_ENV=local
       - APP_DEBUG=true
@@ -26,6 +26,20 @@ services:
     restart: unless-stopped
     networks:
       - pesq-hub-network
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: root
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+
+volumes:
+  db:
+    driver: local
 
 networks:
   pesq-hub-network:

@@ -32,10 +32,17 @@ COPY . .
 # Instalar dependências do PHP
 RUN composer install --no-dev --optimize-autoloader
 
+# Criar estrutura completa de diretórios
+RUN mkdir -p /var/www/html/storage/framework/cache/data \
+    && mkdir -p /var/www/html/storage/framework/sessions \
+    && mkdir -p /var/www/html/storage/framework/views \
+    && mkdir -p /var/www/html/storage/logs \
+    && mkdir -p /var/www/html/bootstrap/cache
+
 # Configurar permissões para o Apache
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
 
 # Copiar script de inicialização
 COPY docker/start.sh /usr/local/bin/start.sh

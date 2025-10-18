@@ -41,4 +41,10 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'database' => [
+        'url' => env('DB_URL'),
+        'user' => env('DB_USER'),
+        'password' => env('DB_PASSWORD'),
+    ],
+
 ];
