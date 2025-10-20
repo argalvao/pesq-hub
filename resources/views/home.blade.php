@@ -297,17 +297,20 @@ document.addEventListener('DOMContentLoaded', function() {
         },
 
         showContactModal(professorName) {
+            // Encontrar dados completos do professor
+            const professor = this.data.professores.find(p => p.nome === professorName);
+            
             const content = `
                 <button onclick="App.hideGenericModal()" class="absolute top-2 right-2 text-2xl text-gray-500 hover:text-gray-800">&times;</button>
                 <div class="p-8">
                     <h2 class="text-2xl font-bold mb-4">Entrar em Contato com ${professorName}</h2>
-                    <form onsubmit="App.sendContact(event)">
+                    <form onsubmit="App.sendContact(event)" data-professor-email="${professor.email}" data-professor-name="${professorName}">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <input type="text" name="nome" placeholder="Seu Nome" class="w-full px-3 py-2 border rounded-md" required>
                             <input type="email" name="email" placeholder="Seu E-mail" class="w-full px-3 py-2 border rounded-md" required>
                         </div>
                         <input type="text" name="assunto" placeholder="Assunto" class="w-full mt-4 px-3 py-2 border rounded-md" required>
-                        <textarea name="mensagem" placeholder="Mensagem" rows="5" class="w-full mt-4 px-3 py-2 border rounded-md" required></textarea>
+                        <textarea name="mensagem" placeholder="Digite sua mensagem (mínimo 5 caracteres)" rows="5" class="w-full mt-4 px-3 py-2 border rounded-md" required></textarea>
                         <button type="submit" class="w-full mt-6 bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700 transition-colors">
                             Enviar Mensagem
                         </button>
@@ -349,11 +352,73 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('generic-modal').classList.remove('flex');
         },
 
-        sendContact(event) {
+        async sendContact(event) {
             event.preventDefault();
-            // Simulate sending contact form
-            alert('Mensagem enviada com sucesso! (Simulação)');
-            this.hideGenericModal();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            // Validação frontend para mensagem
+            const mensagem = formData.get('mensagem');
+            if (mensagem.length < 5) {
+                alert('A mensagem deve ter pelo menos 5 caracteres.');
+                return;
+            }
+            
+            // Verificar se é contato com professor específico
+            const professorEmail = form.dataset.professorEmail;
+            const professorName = form.dataset.professorName;
+            
+            try {
+                let response;
+                
+                if (professorEmail && professorName) {
+                    // Contato específico com professor
+                    response = await fetch('/contact-professor', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            email_professor: professorEmail,
+                            nome_professor: professorName,
+                            nome_estudante: formData.get('nome'),
+                            email_estudante: formData.get('email'),
+                            mensagem: formData.get('mensagem'),
+                            assunto: formData.get('assunto')
+                        })
+                    });
+                } else {
+                    // Contato geral
+                    response = await fetch('/send-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            to: 'admin@example.com',
+                            subject: formData.get('assunto'),
+                            message: `Nome: ${formData.get('nome')}\nEmail: ${formData.get('email')}\n\nMensagem:\n${formData.get('mensagem')}`,
+                            from_name: formData.get('nome'),
+                            from_email: formData.get('email')
+                        })
+                    });
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('E-mail enviado com sucesso!');
+                    this.hideGenericModal();
+                } else {
+                    alert('Erro ao enviar e-mail: ' + (result.message || 'Erro desconhecido'));
+                }
+            } catch (error) {
+                console.error('Erro ao enviar e-mail:', error);
+                alert('Erro de conexão. Tente novamente.');
+            }
         },
 
         getInitials(name) {
