@@ -2,6 +2,10 @@
 
 @section('title', 'Contato de Estudante - PesqHub UEFS')
 
+@section('greeting')
+<div class="greeting">Olá, Professor(a) {{ $nomeProfessor }}!</div>
+@endsection
+
 @section('content')
 <div style="padding: 40px 20px;">
     <h2 style="color: #2c5282; margin-bottom: 30px; text-align: center;">

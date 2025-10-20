@@ -208,7 +208,11 @@
         
         <!-- Conteúdo Principal -->
         <div class="content">
-            @yield('greeting', '<div class="greeting">Olá!</div>')
+            @hasSection('greeting')
+                @yield('greeting')
+            @else
+                <div class="greeting">Olá!</div>
+            @endif
             
             @yield('content')
             
