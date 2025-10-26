@@ -46,7 +46,7 @@ class CheckUserLevel
 
             case 'professor':
                 if (!$userService->canAccessProfessor($user)) {
-                    return redirect()->route('home')->with('error', 'Acesso negado. Você não tem permissão de professor.');
+                    return redirect()->route('home')->with('error', 'Acesso negado. Você não tem permissão de organizador.');
                 }
                 break;
 

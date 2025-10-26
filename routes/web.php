@@ -35,7 +35,7 @@ Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(fu
 });
 
 // Rotas de professor (protegidas por user.level:professor middleware)
-Route::middleware('user.level:professor')->prefix('professor')->name('professor.')->group(function () {
+Route::middleware('user.level:professor')->prefix('professor')->name('organizador.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\ProfessorController::class, 'dashboard'])->name('dashboard');
     Route::post('/profile', [App\Http\Controllers\ProfessorController::class, 'updateProfile'])->name('profile.update');
 });

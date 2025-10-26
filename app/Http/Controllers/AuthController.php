@@ -106,7 +106,7 @@ class AuthController extends Controller
             case UserService::NIVEL_ADMIN:
                 return redirect()->route('admin.dashboard');
             case UserService::NIVEL_PROFESSOR:
-                return redirect()->route('professor.dashboard');
+                return redirect()->route('organizador.dashboard');
             case UserService::NIVEL_ESTUDANTE:
                 return redirect()->route('estudante.dashboard');
             default:

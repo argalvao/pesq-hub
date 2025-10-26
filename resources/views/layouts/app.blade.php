@@ -41,7 +41,7 @@
                             @if($user['nivel_permissao'] == 1)
                                 <a href="{{ route('admin.dashboard') }}" class="font-semibold text-indigo-600 hover:underline">Dashboard</a>
                             @elseif($user['nivel_permissao'] == 2)
-                                <a href="{{ route('professor.dashboard') }}" class="font-semibold text-indigo-600 hover:underline">Painel Professor</a>
+                                <a href="{{ route('organizador.dashboard') }}" class="font-semibold text-indigo-600 hover:underline">Painel Professor</a>
                             @elseif($user['nivel_permissao'] == 3)
                                 <a href="{{ route('estudante.dashboard') }}" class="font-semibold text-indigo-600 hover:underline">Minha Área</a>
                             @endif
