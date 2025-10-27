@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.7'
 
 services:
   app:
@@ -18,15 +18,21 @@ services:
       - APP_URL=http://localhost:8001
       - SESSION_DRIVER=file
       - CACHE_STORE=file
+      - MAIL_MAILER=smtp
+      - MAIL_HOST=smtp-relay.brevo.com
+      - MAIL_PORT=587
+      - MAIL_USERNAME=99a0fd001@smtp-brevo.com
+      - MAIL_PASSWORD=m8spK3nOJ6arTdIP
+      - MAIL_ENCRYPTION=tls
+      - MAIL_FROM_ADDRESS=abel@ecomp.uefs.br
+      - MAIL_FROM_NAME="PesqHub - UEFS"
       - GOOGLE_CLIENT_ID=955527164761-1hg260j8v3bm9cge133hpd8q0vmtbiv0.apps.googleusercontent.com
       - GOOGLE_CLIENT_SECRET=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
       - GOOGLE_REDIRECT_URI=http://localhost:8001/google/callback
       - GOOGLE_APPLICATION_CREDENTIALS=credenciais.json
       - GOOGLE_SHEET_ID=15jSuekgRohhMeDE6uzyne_2jDb-V0lZkg5yiEkWsv80
     restart: unless-stopped
-    networks:
-      - pesq-hub-network
 
 networks:
-  pesq-hub-network:
+  default:
     driver: bridge
