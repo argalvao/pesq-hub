@@ -141,7 +141,7 @@ class InitializeGoogleSheet extends Command
 
         // Dados de exemplo para professores
         $professoresSample = [
-            [1, 'Dr. João Silva', 'joao.silva@univ.edu', '(75) 99999-0001', 'Ciência da Computação', 'Inteligência Artificial,Machine Learning', '1'],
+            [1, 'Dr. João Silva', 'abel.ramalho18@gmail.com', '(75) 99999-0001', 'Ciência da Computação', 'Inteligência Artificial,Machine Learning', '1'],
             [2, 'Dra. Maria Santos', 'maria.santos@univ.edu', '(75) 99999-0002', 'Engenharia de Software', 'Desenvolvimento de Software,Metodologias Ágeis', '2'],
             [3, 'Dr. Carlos Oliveira', 'carlos.oliveira@univ.edu', '(75) 99999-0003', 'Ciência da Computação', 'Computação Gráfica,Realidade Virtual', '3'],
             [4, 'Dra. Ana Costa', 'ana.costa@univ.edu', '(75) 99999-0004', 'Sistemas de Informação', 'Banco de Dados,Big Data', '4'],
@@ -175,7 +175,7 @@ class InitializeGoogleSheet extends Command
             $this->info('Dados de exemplo de usuários adicionados.');
             $this->info('Credenciais criadas:');
             $this->info('- Admin: admin@pesqhub.com / admin123');
-            $this->info('- Professor: joao.silva@univ.edu / professor123');
+            $this->info('- Professor: abel.ramalho18@gmail.com / professor123');
             $this->info('- Estudante: ana.estudante@gmail.com / estudante123');
         } catch (\Exception $e) {
             $this->warn('Erro ao adicionar dados de exemplo de usuários: ' . $e->getMessage());
