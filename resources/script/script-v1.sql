@@ -56,7 +56,7 @@ CREATE TABLE professor_has_area_interesse (
 	ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
-CREATE TYPE tipo_usuario AS ENUM ('SUPER', 'DA');
+CREATE TYPE tipo_usuario AS ENUM ('SUPER', 'DA', 'BASICO');
 
 CREATE TABLE usuario (
 	id uuid primary key,
