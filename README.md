@@ -195,10 +195,11 @@ pesq-hub/
 ├── routes/                     # Definição de rotas
 ├── storage/                    # Storage Laravel
 │   └── app/
-│       └── credenciais.json   # Credenciais Google API
+│       └── credenciais.json   # Credenciais Google API (Solicitar o arquivo)
 ├── docker-compose.yml         # Configuração Docker Compose
 ├── Dockerfile                 # Imagem Docker
 └── README.md                  # Este arquivo
+└── .env                       # Configurações de credenciais (Solicitar o arquivo)
 ```
 
 ## 🔧 Desenvolvimento

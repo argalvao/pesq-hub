@@ -4,11 +4,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EmailController;
 
 // Rotas públicas
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/api/data', [HomeController::class, 'getData'])->name('api.data');
-Route::post('/contact', [HomeController::class, 'sendContact'])->name('contact.send');
 
 // Rotas de autenticação
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -46,7 +46,8 @@ Route::middleware('user.level:estudante')->prefix('estudante')->name('estudante.
     Route::get('/favorites', [App\Http\Controllers\EstudanteController::class, 'favorites'])->name('favorites');
 });
 
-// Rota de teste
-Route::get('/test', function() { 
-    return 'Laravel OK - Docker funcionando!'; 
-});
+// Rotas de e-mail
+Route::post('/send-email', [EmailController::class, 'sendEmail'])->name('send.email');
+
+// Rota específica para contato com professor (protegida para estudantes)
+Route::middleware('user.level:estudante')->post('/contact-professor', [EmailController::class, 'sendContactProfessor'])->name('contact.professor');
