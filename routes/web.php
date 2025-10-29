@@ -49,5 +49,5 @@ Route::middleware('user.level:estudante')->prefix('estudante')->name('estudante.
 // Rotas de e-mail
 Route::post('/send-email', [EmailController::class, 'sendEmail'])->name('send.email');
 
-// Rota específica para contato com professor (protegida para estudantes)
-Route::middleware('user.level:estudante')->post('/contact-professor', [EmailController::class, 'sendContactProfessor'])->name('contact.professor');
+// Rota pública para contato com professor (sem necessidade de login)
+Route::post('/contact-professor', [EmailController::class, 'sendContactProfessor'])->name('contact.professor');
