@@ -51,3 +51,23 @@ Route::post('/send-email', [EmailController::class, 'sendEmail'])->name('send.em
 
 // Rota pública para contato com professor (sem necessidade de login)
 Route::post('/contact-professor', [EmailController::class, 'sendContactProfessor'])->name('contact.professor');
+
+// Rotas para confirmação de cadastro por token
+Route::post('/token/enviar', [App\Http\Controllers\TokenConfirmacaoController::class, 'enviarToken'])->name('token.enviar');
+Route::post('/token/verificar', [App\Http\Controllers\TokenConfirmacaoController::class, 'verificarToken'])->name('token.verificar');
+Route::get('/token/consultar', [App\Http\Controllers\TokenConfirmacaoController::class, 'consultarToken'])->name('token.consultar');
+Route::delete('/token/cancelar', [App\Http\Controllers\TokenConfirmacaoController::class, 'cancelarToken'])->name('token.cancelar');
+
+// Rota de teste para desenvolvimento
+Route::post('/token/teste', [App\Http\Controllers\TokenConfirmacaoController::class, 'testeEnvio'])->name('token.teste');
+
+// Página de demonstração do sistema de tokens
+Route::get('/test-tokens', function () {
+    return view('test-tokens');
+})->name('test.tokens');
+
+// Rotas para cadastro com confirmação por token
+Route::post('/cadastro/solicitar', [App\Http\Controllers\CadastroComConfirmacaoController::class, 'solicitarCadastro'])->name('cadastro.solicitar');
+Route::post('/cadastro/confirmar', [App\Http\Controllers\CadastroComConfirmacaoController::class, 'confirmarCadastro'])->name('cadastro.confirmar');
+Route::post('/cadastro/reenviar-token', [App\Http\Controllers\CadastroComConfirmacaoController::class, 'reenviarToken'])->name('cadastro.reenviar');
+Route::delete('/cadastro/cancelar', [App\Http\Controllers\CadastroComConfirmacaoController::class, 'cancelarCadastro'])->name('cadastro.cancelar');
