@@ -271,6 +271,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Encontrar dados completos do professor
             const professor = this.data.professores.find(p => p.nome === professorName);
             
+            if (!professor || !professor.email) {
+                alert('Erro: Dados do professor não encontrados ou e-mail não disponível.');
+                return;
+            }
+            
             const content = `
                 <button onclick="App.hideGenericModal()" class="absolute top-2 right-2 text-2xl text-gray-500 hover:text-gray-800">&times;</button>
                 <div class="p-8">
@@ -287,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </button>
                     </form>
                 </div>`;
-            this.showGenericModal(c);
+            this.showGenericModal(content);
         },
 
         showLoginModal() {
