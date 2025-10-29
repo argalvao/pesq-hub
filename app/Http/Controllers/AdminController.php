@@ -3,22 +3,22 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Services\GoogleSheetsService;
+use App\Services\DatabaseService;
 
 class AdminController extends Controller
 {
-    protected $googleSheetsService;
+    protected $databaseService;
 
-    public function __construct(GoogleSheetsService $googleSheetsService)
+    public function __construct(DatabaseService $databaseService)
     {
-        $this->googleSheetsService = $googleSheetsService;
+        $this->databaseService = $databaseService;
     }
 
     public function dashboard()
     {
         try {
-            $professores = $this->googleSheetsService->getProfessores();
-            $linhasPesquisa = $this->googleSheetsService->getLinhasPesquisa();
+            $professores = $this->databaseService->getProfessores();
+            $linhasPesquisa = $this->databaseService->getLinhasPesquisa();
 
             return view('admin.dashboard', compact('professores', 'linhasPesquisa'));
         } catch (\Exception $e) {
@@ -30,7 +30,7 @@ class AdminController extends Controller
     public function getProfessores()
     {
         try {
-            $professores = $this->googleSheetsService->getProfessores();
+            $professores = $this->databaseService->getProfessores();
             return response()->json(['data' => $professores, 'success' => true]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
@@ -49,7 +49,7 @@ class AdminController extends Controller
         ]);
 
         try {
-            $professor = $this->googleSheetsService->createProfessor($request->all());
+            $professor = $this->databaseService->createProfessor($request->all());
             return response()->json(['data' => $professor, 'success' => true]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
@@ -68,7 +68,7 @@ class AdminController extends Controller
         ]);
 
         try {
-            $professor = $this->googleSheetsService->updateProfessor($id, $request->all());
+            $professor = $this->databaseService->updateProfessor($id, $request->all());
             return response()->json(['data' => $professor, 'success' => true]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
@@ -78,7 +78,7 @@ class AdminController extends Controller
     public function destroyProfessor($id)
     {
         try {
-            $this->googleSheetsService->deleteProfessor($id);
+            $this->databaseService->deleteProfessor($id);
             return response()->json(['success' => true, 'message' => 'Professor excluído com sucesso']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
@@ -89,7 +89,7 @@ class AdminController extends Controller
     public function getLinhasPesquisa()
     {
         try {
-            $linhas = $this->googleSheetsService->getLinhasPesquisa();
+            $linhas = $this->databaseService->getLinhasPesquisa();
             return response()->json(['data' => $linhas, 'success' => true]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
@@ -104,7 +104,7 @@ class AdminController extends Controller
         ]);
 
         try {
-            $linha = $this->googleSheetsService->createLinhaPesquisa($request->all());
+            $linha = $this->databaseService->createLinhaPesquisa($request->all());
             return response()->json(['data' => $linha, 'success' => true]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
@@ -119,7 +119,7 @@ class AdminController extends Controller
         ]);
 
         try {
-            $linha = $this->googleSheetsService->updateLinhaPesquisa($id, $request->all());
+            $linha = $this->databaseService->updateLinhaPesquisa($id, $request->all());
             return response()->json(['data' => $linha, 'success' => true]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
@@ -129,7 +129,7 @@ class AdminController extends Controller
     public function destroyLinhaPesquisa($id)
     {
         try {
-            $this->googleSheetsService->deleteLinhaPesquisa($id);
+            $this->databaseService->deleteLinhaPesquisa($id);
             return response()->json(['success' => true, 'message' => 'Linha de pesquisa excluída com sucesso']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
