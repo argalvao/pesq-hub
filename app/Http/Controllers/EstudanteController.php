@@ -4,18 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
-use App\Services\GoogleSheetsService;
-use App\Services\UserService;
+use App\Services\DatabaseService;
 
 class EstudanteController extends Controller
 {
-    protected $googleSheetsService;
-    protected $userService;
+    protected $databaseService;
 
-    public function __construct(GoogleSheetsService $googleSheetsService, UserService $userService)
+    public function __construct(DatabaseService $databaseService)
     {
-        $this->googleSheetsService = $googleSheetsService;
-        $this->userService = $userService;
+        $this->databaseService = $databaseService;
     }
 
     public function dashboard()
@@ -23,8 +20,8 @@ class EstudanteController extends Controller
         $user = Session::get('user');
         
         try {
-            $professores = $this->googleSheetsService->getProfessores();
-            $linhasPesquisa = $this->googleSheetsService->getLinhasPesquisa();
+            $professores = $this->databaseService->getProfessores();
+            $linhasPesquisa = $this->databaseService->getLinhasPesquisa();
             
             return view('estudante.dashboard', compact('user', 'professores', 'linhasPesquisa'));
         } catch (\Exception $e) {

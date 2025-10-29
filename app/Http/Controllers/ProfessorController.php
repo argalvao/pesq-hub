@@ -4,18 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
-use App\Services\GoogleSheetsService;
-use App\Services\UserService;
+use App\Services\DatabaseService;
 
 class ProfessorController extends Controller
 {
-    protected $googleSheetsService;
-    protected $userService;
+    protected $databaseService;
 
-    public function __construct(GoogleSheetsService $googleSheetsService, UserService $userService)
+    public function __construct(DatabaseService $databaseService)
     {
-        $this->googleSheetsService = $googleSheetsService;
-        $this->userService = $userService;
+        $this->databaseService = $databaseService;
     }
 
     public function dashboard()
@@ -23,11 +20,11 @@ class ProfessorController extends Controller
         $user = Session::get('user');
         
         try {
-            // Buscar o professor na planilha baseado no email do usuário
-            $professores = $this->googleSheetsService->getProfessores();
+            // Buscar o professor no banco baseado no email do usuário
+            $professores = $this->databaseService->getProfessores();
             $professor = collect($professores)->firstWhere('email', $user['email']);
             
-            $linhasPesquisa = $this->googleSheetsService->getLinhasPesquisa();
+            $linhasPesquisa = $this->databaseService->getLinhasPesquisa();
             
             return view('professor.dashboard', compact('user', 'professor', 'linhasPesquisa'));
         } catch (\Exception $e) {

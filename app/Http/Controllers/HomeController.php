@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Services\GoogleSheetsService;
+use App\Services\DatabaseService;
 
 class HomeController extends Controller
 {
-    protected $googleSheetsService;
+    protected $databaseService;
 
-    public function __construct(GoogleSheetsService $googleSheetsService)
+    public function __construct(DatabaseService $databaseService)
     {
-        $this->googleSheetsService = $googleSheetsService;
+        $this->databaseService = $databaseService;
     }
 
     public function index()
@@ -22,8 +22,8 @@ class HomeController extends Controller
     public function getData()
     {
         try {
-            $professores = $this->googleSheetsService->getProfessores();
-            $linhasPesquisa = $this->googleSheetsService->getLinhasPesquisa();
+            $professores = $this->databaseService->getProfessores();
+            $linhasPesquisa = $this->databaseService->getLinhasPesquisa();
 
             return response()->json([
                 'professores' => $professores,
