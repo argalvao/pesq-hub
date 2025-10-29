@@ -18,6 +18,11 @@ php artisan migrate --force
 echo "🌱 Populando banco de dados..."
 php artisan db:seed --force
 
+# Corrigir permissões (importante para volumes montados)
+echo "🔐 Corrigindo permissões..."
+chown -R www-data:www-data /var/www/html/storage/framework /var/www/html/storage/logs /var/www/html/bootstrap/cache 2>/dev/null || true
+chmod -R 775 /var/www/html/storage/framework /var/www/html/storage/logs /var/www/html/bootstrap/cache 2>/dev/null || true
+
 # Limpar caches
 echo "🧹 Limpando caches..."
 php artisan cache:clear
