@@ -60,7 +60,9 @@ class DatabaseService
                 'email' => $data['email'],
                 'telefone' => $data['telefone'] ?? null,
                 'curso' => $data['curso'],
-                'areas_interesse' => is_array($data['areas']) ? implode(',', $data['areas']) : $data['areas']
+                'areas_interesse' => isset($data['areas_interesse']) 
+                    ? (is_array($data['areas_interesse']) ? implode(',', $data['areas_interesse']) : $data['areas_interesse'])
+                    : (isset($data['areas']) ? (is_array($data['areas']) ? implode(',', $data['areas']) : $data['areas']) : '')
             ]);
 
             // Associar linhas de pesquisa se fornecidas
@@ -95,7 +97,9 @@ class DatabaseService
                 'email' => $data['email'],
                 'telefone' => $data['telefone'] ?? null,
                 'curso' => $data['curso'],
-                'areas_interesse' => is_array($data['areas']) ? implode(',', $data['areas']) : $data['areas']
+                'areas_interesse' => isset($data['areas_interesse']) 
+                    ? (is_array($data['areas_interesse']) ? implode(',', $data['areas_interesse']) : $data['areas_interesse'])
+                    : (isset($data['areas']) ? (is_array($data['areas']) ? implode(',', $data['areas']) : $data['areas']) : '')
             ]);
 
             // Atualizar usuário relacionado

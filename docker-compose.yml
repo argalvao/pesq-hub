@@ -11,6 +11,10 @@ services:
     volumes:
       - .:/var/www/html
       - ./storage/app/credenciais.json:/var/www/html/storage/app/credenciais.json:ro
+      # Excluir diretórios que precisam de permissões específicas
+      - /var/www/html/storage/framework
+      - /var/www/html/storage/logs
+      - /var/www/html/bootstrap/cache
     depends_on:
       - db
     environment:
