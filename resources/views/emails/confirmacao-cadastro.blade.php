@@ -1,8 +1,8 @@
 @extends('emails.template')
 
-@section('titulo', 'Confirmação de Cadastro - PesqHub UEFS')
+@section('title', 'Confirmação de Cadastro - PesqHub UEFS')
 
-@section('conteudo')
+@section('content')
 <div style="padding: 30px; background-color: #ffffff; border-radius: 10px; margin: 20px 0;">
     <!-- Header -->
     <div style="text-align: center; margin-bottom: 30px;">
