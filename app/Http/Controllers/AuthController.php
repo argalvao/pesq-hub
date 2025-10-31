@@ -5,15 +5,16 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
-use App\Services\UserService;
+use Illuminate\Support\Facades\Hash;
+use App\Services\DatabaseService;
 
 class AuthController extends Controller
 {
-    protected $userService;
+    protected $databaseService;
 
-    public function __construct(UserService $userService)
+    public function __construct(DatabaseService $databaseService)
     {
-        $this->userService = $userService;
+        $this->databaseService = $databaseService;
     }
 
     public function showLogin()
@@ -32,9 +33,9 @@ class AuthController extends Controller
         ]);
 
         try {
-            if ($this->userService->validateCredentials($request->email, $request->password)) {
-                $user = $this->userService->findUserByEmail($request->email);
-                
+            $user = $this->databaseService->getUserByEmail($request->email);
+            
+            if ($user && Hash::check($request->password, $user['password'])) {
                 if (!$user['ativo']) {
                     return back()->withErrors([
                         'email' => 'Sua conta está desativada. Entre em contato com o administrador.'
@@ -81,7 +82,7 @@ class AuthController extends Controller
         ]);
 
         try {
-            $user = $this->userService->createUser([
+            $user = $this->databaseService->createUser([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => $request->password,
@@ -103,11 +104,11 @@ class AuthController extends Controller
     private function redirectBasedOnLevel($user)
     {
         switch ($user['nivel_permissao']) {
-            case UserService::NIVEL_ADMIN:
+            case DatabaseService::NIVEL_ADMIN:
                 return redirect()->route('admin.dashboard');
-            case UserService::NIVEL_PROFESSOR:
+            case DatabaseService::NIVEL_PROFESSOR:
                 return redirect()->route('professor.dashboard');
-            case UserService::NIVEL_ESTUDANTE:
+            case DatabaseService::NIVEL_ESTUDANTE:
                 return redirect()->route('estudante.dashboard');
             default:
                 return redirect()->route('home');

@@ -13,7 +13,8 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     sqlite3 \
     libsqlite3-dev \
-    && docker-php-ext-install pdo_pgsql pgsql pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd \
+    postgresql-client \
+    && docker-php-ext-install pdo_mysql pdo_sqlite pdo_pgsql mbstring exif pcntl bcmath gd \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -46,11 +47,11 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/bootstrap/cache
 
 # Copiar script de inicialização
-COPY docker/start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
+COPY docker/init-app.sh /usr/local/bin/init-app.sh
+RUN chmod +x /usr/local/bin/init-app.sh
 
 # Expor porta
 EXPOSE 80
 
 # Comando de inicialização
-CMD ["/usr/local/bin/start.sh"]
+CMD ["/usr/local/bin/init-app.sh"]

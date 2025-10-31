@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class LinhaPesquisa extends Model
 {
+    use HasFactory;
     use HasUuids;
 
     protected $table = 'linha_pesquisa';
-    
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -26,7 +28,7 @@ class LinhaPesquisa extends Model
     ];
 
     // Relacionamentos
-    
+
     /**
      * Uma linha de pesquisa pertence a uma área de pesquisa
      */

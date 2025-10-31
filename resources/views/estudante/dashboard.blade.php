@@ -165,7 +165,7 @@
                     <input type="text" name="nome" placeholder="Seu Nome" class="w-full px-3 py-2 border rounded-md" required>
                     <input type="email" name="email" placeholder="Seu E-mail" class="w-full px-3 py-2 border rounded-md" required>
                     <input type="text" name="assunto" placeholder="Assunto" class="w-full px-3 py-2 border rounded-md" required>
-                    <textarea name="mensagem" placeholder="Mensagem" rows="4" class="w-full px-3 py-2 border rounded-md" required></textarea>
+                    <textarea name="mensagem" placeholder="Digite sua mensagem (mínimo 5 caracteres)" rows="4" class="w-full px-3 py-2 border rounded-md" required></textarea>
                 </div>
                 <button type="submit" class="w-full mt-6 bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700 transition-colors">
                     Enviar Mensagem
@@ -249,8 +249,15 @@ function hideContactModal() {
     document.getElementById('contact-modal').classList.remove('flex');
 }
 
+let currentProfessorData = null;
+
 function showContactProfessorModal(professorName) {
     hideProfessorModal();
+    
+    // Buscar dados completos do professor
+    const professores = @json($professores ?? []);
+    currentProfessorData = professores.find(p => p.nome === professorName);
+    
     // Customize the contact modal for the specific professor
     const form = document.querySelector('#contact-modal form');
     const assuntoField = form.querySelector('input[name="assunto"]');
@@ -258,11 +265,74 @@ function showContactProfessorModal(professorName) {
     showContactModal();
 }
 
-function sendContact(event) {
+async function sendContact(event) {
     event.preventDefault();
-    // Simulate sending contact
-    alert('Mensagem enviada com sucesso! (Simulação)');
-    hideContactModal();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    // Validação frontend para mensagem
+    const mensagem = formData.get('mensagem');
+    if (mensagem.length < 5) {
+        alert('A mensagem deve ter pelo menos 5 caracteres.');
+        return;
+    }
+    
+    // Determinar se é contato específico com professor ou geral
+    const isContactProfessor = currentProfessorData !== null;
+    
+    try {
+        let response;
+        
+        if (isContactProfessor) {
+            // Usar rota específica para contato com professor
+            response = await fetch('/contact-professor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    email_professor: currentProfessorData.email,
+                    nome_professor: currentProfessorData.nome,
+                    nome_estudante: formData.get('nome'),
+                    email_estudante: formData.get('email'),
+                    mensagem: formData.get('mensagem'),
+                    assunto: formData.get('assunto')
+                })
+            });
+        } else {
+            // Usar rota genérica para contato geral
+            response = await fetch('/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    to: 'admin@example.com', // Email do administrador
+                    subject: formData.get('assunto'),
+                    message: `Nome: ${formData.get('nome')}\nEmail: ${formData.get('email')}\n\nMensagem:\n${formData.get('mensagem')}`,
+                    from_name: formData.get('nome'),
+                    from_email: formData.get('email')
+                })
+            });
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('E-mail enviado com sucesso!');
+            hideContactModal();
+            form.reset();
+            currentProfessorData = null;
+        } else {
+            alert('Erro ao enviar e-mail: ' + (result.message || 'Erro desconhecido'));
+        }
+    } catch (error) {
+        console.error('Erro ao enviar e-mail:', error);
+        alert('Erro de conexão. Tente novamente.');
+    }
 }
 </script>
 @endpush

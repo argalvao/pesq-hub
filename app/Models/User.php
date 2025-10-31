@@ -45,4 +45,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Relacionamento com Professor
+     */
+    public function professor()
+    {
+        return $this->hasOne(Professor::class);
+    }
 }

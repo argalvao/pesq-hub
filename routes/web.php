@@ -4,11 +4,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EmailController;
 
 // Rotas públicas
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/api/data', [HomeController::class, 'getData'])->name('api.data');
-Route::post('/contact', [HomeController::class, 'sendContact'])->name('contact.send');
 
 // Rotas de autenticação
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -20,13 +20,13 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Rotas de admin (protegidas por user.level:admin middleware)
 Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
-    
+
     // API routes para professores
     Route::get('/professores', [AdminController::class, 'getProfessores'])->name('professores.index');
     Route::post('/professores', [AdminController::class, 'storeProfessor'])->name('professores.store');
     Route::put('/professores/{id}', [AdminController::class, 'updateProfessor'])->name('professores.update');
     Route::delete('/professores/{id}', [AdminController::class, 'destroyProfessor'])->name('professores.destroy');
-    
+
     // API routes para linhas de pesquisa
     Route::get('/linhas-pesquisa', [AdminController::class, 'getLinhasPesquisa'])->name('linhas.index');
     Route::post('/linhas-pesquisa', [AdminController::class, 'storeLinhaPesquisa'])->name('linhas.store');
@@ -51,30 +51,8 @@ Route::middleware('user.level:estudante')->prefix('estudante')->name('estudante.
     Route::get('/favorites', [App\Http\Controllers\EstudanteController::class, 'favorites'])->name('favorites');
 });
 
-// Rota de teste
-Route::get('/test', function() { 
-    return 'Laravel OK - Docker funcionando!'; 
-});
+// Rotas de e-mail
+Route::post('/send-email', [EmailController::class, 'sendEmail'])->name('send.email');
 
-Route::get('/test-db', function () {
-    try {
-        // Testar conexão
-        DB::connection()->getPdo();
-        
-        // Buscar informações
-        $databaseName = DB::connection()->getDatabaseName();
-        $tables = DB::select("SELECT tablename FROM pg_tables WHERE schemaname = 'public'");
-        
-        return response()->json([
-            'status' => 'Conectado!',
-            'database' => $databaseName,
-            'tables' => $tables
-        ]);
-        
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'Erro na conexão',
-            'error' => $e->getMessage()
-        ], 500);
-    }
-});
+// Rota pública para contato com professor (sem necessidade de login)
+Route::post('/contact-professor', [EmailController::class, 'sendContactProfessor'])->name('contact.professor');
