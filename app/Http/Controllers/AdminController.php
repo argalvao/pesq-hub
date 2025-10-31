@@ -8,10 +8,12 @@ use App\Services\GoogleSheetsService;
 class AdminController extends Controller
 {
     protected $googleSheetsService;
+    protected $usuarioService;
 
-    public function __construct(GoogleSheetsService $googleSheetsService)
+    public function __construct(GoogleSheetsService $googleSheetsService, UsuarioService $usuarioService)
     {
         $this->googleSheetsService = $googleSheetsService;
+        $this->usuarioService = $usuarioService;
     }
 
     public function dashboard()
@@ -131,6 +133,26 @@ class AdminController extends Controller
         try {
             $this->googleSheetsService->deleteLinhaPesquisa($id);
             return response()->json(['success' => true, 'message' => 'Linha de pesquisa excluída com sucesso']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
+        }
+    }
+
+    public function desativarUsuario($id)
+    {
+        try {
+            $this->usuarioService->desativarUsuario($id);
+            return response()->json(['success' => true, 'message' => 'Usuário desativado com sucesso']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
+        }
+    }
+
+    public function ativarUsuario($id)
+    {
+        try {
+            $this->usuarioService->ativarUsuario($id);
+            return response()->json(['success' => true, 'message' => 'Usuário ativado com sucesso']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
         }

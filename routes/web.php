@@ -32,6 +32,11 @@ Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(fu
     Route::post('/linhas-pesquisa', [AdminController::class, 'storeLinhaPesquisa'])->name('linhas.store');
     Route::put('/linhas-pesquisa/{id}', [AdminController::class, 'updateLinhaPesquisa'])->name('linhas.update');
     Route::delete('/linhas-pesquisa/{id}', [AdminController::class, 'destroyLinhaPesquisa'])->name('linhas.destroy');
+
+    // API routes para gerenciamento de usuários
+    Route::put('/usuarios/desativar/{id}', [AdminController::class, 'desativarUsuario'])->name('usuarios.update');
+    Route::put('/usuarios/ativar/{id}', [AdminController::class, 'ativarUsuario'])->name('usuarios.update');
+
 });
 
 // Rotas de professor (protegidas por user.level:professor middleware)
@@ -49,4 +54,27 @@ Route::middleware('user.level:estudante')->prefix('estudante')->name('estudante.
 // Rota de teste
 Route::get('/test', function() { 
     return 'Laravel OK - Docker funcionando!'; 
+});
+
+Route::get('/test-db', function () {
+    try {
+        // Testar conexão
+        DB::connection()->getPdo();
+        
+        // Buscar informações
+        $databaseName = DB::connection()->getDatabaseName();
+        $tables = DB::select("SELECT tablename FROM pg_tables WHERE schemaname = 'public'");
+        
+        return response()->json([
+            'status' => 'Conectado!',
+            'database' => $databaseName,
+            'tables' => $tables
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'Erro na conexão',
+            'error' => $e->getMessage()
+        ], 500);
+    }
 });

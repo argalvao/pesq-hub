@@ -23,6 +23,13 @@ services:
       - GOOGLE_REDIRECT_URI=http://localhost:8001/google/callback
       - GOOGLE_APPLICATION_CREDENTIALS=credenciais.json
       - GOOGLE_SHEET_ID=15jSuekgRohhMeDE6uzyne_2jDb-V0lZkg5yiEkWsv80
+      # Conexão com PostgreSQL
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=pesq_hub
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
     restart: unless-stopped
     networks:
       - pesq-hub-network
@@ -36,6 +43,8 @@ services:
       - '5432:5432'
     volumes:
       - db:/var/lib/postgresql/data
+    networks:
+      - pesq-hub-network
 
 volumes:
   db:
