@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\User;
+use App\Models\Usuario;
 use Illuminate\Support\Facades\Hash;
 
 class UsersSeeder extends Seeder
@@ -68,7 +68,7 @@ class UsersSeeder extends Seeder
         ];
 
         foreach ($users as $userData) {
-            User::firstOrCreate(
+            Usuario::firstOrCreate(
                 ['email' => $userData['email']],
                 [
                     'name' => $userData['name'],

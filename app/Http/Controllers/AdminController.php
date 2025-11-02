@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\DatabaseService;
+use Illuminate\Validation\Rule; // Importante para validação de UUIDs
 
 class AdminController extends Controller
 {
@@ -14,16 +15,15 @@ class AdminController extends Controller
         $this->databaseService = $databaseService;
     }
 
+    /**
+     * Exibe o painel de administração.
+     * Os dados agora são carregados via API (JavaScript),
+     * então apenas retornamos a view.
+     */
     public function dashboard()
     {
-        try {
-            $professores = $this->databaseService->getProfessores();
-            $linhasPesquisa = $this->databaseService->getLinhasPesquisa();
-
-            return view('admin.dashboard', compact('professores', 'linhasPesquisa'));
-        } catch (\Exception $e) {
-            return view('admin.dashboard')->with('error', 'Erro ao carregar dados: ' . $e->getMessage());
-        }
+        // Não é mais necessário carregar dados aqui, o frontend fará isso.
+        return view('admin.dashboard');
     }
 
     // Professores
@@ -39,13 +39,17 @@ class AdminController extends Controller
 
     public function storeProfessor(Request $request)
     {
+        // Validação ajustada para os dados do modal
         $request->validate([
             'nome' => 'required|string|max:255',
-            'email' => 'required|email',
-            'telefone' => 'required|string',
-            'curso' => 'required|string',
-            'areas_interesse' => 'array',
-            'linhas_pesquisa_ids' => 'array'
+            'email' => 'required|email|unique:organizador,email',
+            'telefone' => 'nullable|string|max:20',
+            'id_curso' => 'required|string|exists:curso,id', // Validar o id_curso
+            'departamento' => 'nullable|string|max:255',
+            'areas_interesse_ids' => 'nullable|array', // Agora é um array de IDs
+            'areas_interesse_ids.*' => 'string|exists:area_pesquisa,id', // Validar cada ID
+            'linhas_pesquisa_ids' => 'nullable|array',
+            'linhas_pesquisa_ids.*' => 'string|exists:linha_pesquisa,id' // Validar cada ID
         ]);
 
         try {
@@ -58,13 +62,21 @@ class AdminController extends Controller
 
     public function updateProfessor(Request $request, $id)
     {
+        // Validação ajustada para os dados do modal
         $request->validate([
             'nome' => 'required|string|max:255',
-            'email' => 'required|email',
-            'telefone' => 'required|string',
-            'curso' => 'required|string',
-            'areas_interesse' => 'array',
-            'linhas_pesquisa_ids' => 'array'
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('organizador')->ignore($id), // Ignorar o próprio ID na verificação de email único
+            ],
+            'telefone' => 'nullable|string|max:20',
+            'id_curso' => 'required|string|exists:curso,id', // Validar o id_curso
+            'departamento' => 'nullable|string|max:255',
+            'areas_interesse_ids' => 'nullable|array', // Agora é um array de IDs
+            'areas_interesse_ids.*' => 'string|exists:area_pesquisa,id',
+            'linhas_pesquisa_ids' => 'nullable|array',
+            'linhas_pesquisa_ids.*' => 'string|exists:linha_pesquisa,id'
         ]);
 
         try {
@@ -98,9 +110,11 @@ class AdminController extends Controller
 
     public function storeLinhaPesquisa(Request $request)
     {
+        // Validação ajustada para os dados do modal
         $request->validate([
-            'nome' => 'required|string|max:255',
-            'descricao' => 'required|string'
+            'nome' => 'required|string|max:255|unique:linha_pesquisa,nome',
+            'descricao' => 'nullable|string', // Descrição é opcional no DatabaseService
+            'id_area_pesquisa' => 'required|string|exists:area_pesquisa,id' // Campo obrigatório
         ]);
 
         try {
@@ -113,9 +127,16 @@ class AdminController extends Controller
 
     public function updateLinhaPesquisa(Request $request, $id)
     {
+        // Validação ajustada para os dados do modal
         $request->validate([
-            'nome' => 'required|string|max:255',
-            'descricao' => 'required|string'
+            'nome' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('linha_pesquisa')->ignore($id), // Ignorar o próprio ID
+            ],
+            'descricao' => 'nullable|string', // Descrição é opcional
+            'id_area_pesquisa' => 'required|string|exists:area_pesquisa,id' // Campo obrigatório
         ]);
 
         try {
@@ -136,6 +157,49 @@ class AdminController extends Controller
         }
     }
 
+    // === NOVOS MÉTODOS PARA O DASHBOARD ===
+
+    /**
+     * Retorna a lista de Cursos para o modal de Professor.
+     */
+    public function getCursos()
+    {
+        try {
+            $cursos = $this->databaseService->getCursos();
+            return response()->json(['data' => $cursos, 'success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
+        }
+    }
+
+    /**
+     * Retorna a lista de Áreas de Pesquisa para os modais.
+     */
+    public function getAreasPesquisa()
+    {
+        try {
+            $areas = $this->databaseService->getAreasPesquisa();
+            return response()->json(['data' => $areas, 'success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
+        }
+    }
+
+    /**
+     * Retorna a lista de Usuários para o painel de admin.
+     */
+    public function getUsuarios()
+    {
+        try {
+            $usuarios = $this->databaseService->getUsers();
+            return response()->json(['data' => $usuarios, 'success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
+        }
+    }
+
+    // === GERENCIAMENTO DE USUÁRIOS ===
+
     public function desativarUsuario($id)
     {
         try {
@@ -153,6 +217,54 @@ class AdminController extends Controller
             return response()->json(['success' => true, 'message' => 'Usuário ativado com sucesso']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
+        }
+    }
+
+    // =============== ÁREAS DE PESQUISA ===============
+
+    public function storeAreaPesquisa(Request $request)
+    {
+        $request->validate([
+            'nome' => 'required|string|max:255|unique:area_pesquisa,nome',
+            'descricao' => 'nullable|string',
+        ]);
+
+        try {
+            $area = $this->databaseService->createAreaPesquisa($request->all());
+            return response()->json(['data' => $area, 'success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
+        }
+    }
+
+    public function updateAreaPesquisa(Request $request, $id)
+    {
+        $request->validate([
+            'nome' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('area_pesquisa')->ignore($id),
+            ],
+            'descricao' => 'nullable|string',
+        ]);
+
+        try {
+            $area = $this->databaseService->updateAreaPesquisa($id, $request->all());
+            return response()->json(['data' => $area, 'success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
+        }
+    }
+
+    public function destroyAreaPesquisa($id)
+    {
+        try {
+            $this->databaseService->deleteAreaPesquisa($id);
+            return response()->json(['success' => true, 'message' => 'Área de pesquisa excluída com sucesso']);
+        } catch (\Exception $e) {
+            // Captura o erro do DatabaseService (ex: "Não é possível deletar...")
+            return response()->json(['error' => $e->getMessage(), 'success' => false], 409); // 409 Conflict
         }
     }
 }

@@ -35,7 +35,8 @@ class Usuario extends Model
         'id_curso' => 'string',
         'ativo' => 'boolean',
         'data_criacao' => 'datetime',
-        'data_atualizacao' => 'datetime'
+        'data_atualizacao' => 'datetime',
+        'senha' => 'hashed'
     ];
 
     // Relacionamentos
@@ -46,16 +47,6 @@ class Usuario extends Model
     public function curso()
     {
         return $this->belongsTo(Curso::class, 'id_curso');
-    }
-
-    // Mutators (modificam dados ao salvar)
-    
-    /**
-     * Criptografa a senha automaticamente ao definir
-     */
-    public function setSenhaAttribute($value)
-    {
-        $this->attributes['senha'] = Hash::make($value);
     }
 
     // Helpers

@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+@php use App\Services\DatabaseService; @endphp
+    <!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
@@ -9,70 +10,101 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
+
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .view { display: none; }
-        .view.active { display: block; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .sidebar-link.active { background-color: #e0e7ff; color: #3730a3; font-weight: 600; }
-        .tab-button.active { border-color: #4f46e5; color: #4f46e5; background-color: #eef2ff; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .sidebar-link.active {
+            background-color: #e0e7ff;
+            color: #3730a3;
+            font-weight: 600;
+        }
+
+        .tab-button.active {
+            border-color: #4f46e5;
+            color: #4f46e5;
+            background-color: #eef2ff;
+        }
     </style>
-    
+
     @stack('styles')
 </head>
 <body class="text-gray-900">
-    <div id="app-container">
-        <!-- Header -->
-        <header class="bg-white shadow-sm sticky top-0 z-40">
-            <nav class="container mx-auto px-4 lg:px-6 py-4 flex justify-between items-center">
-                <a href="{{ route('home') }}" class="flex items-center space-x-2">
-                    <span class="bg-indigo-700 text-white font-bold text-xl rounded-md p-2">P</span>
-                    <span class="text-2xl font-bold text-indigo-800">PesqHub</span>
-                </a>
-                <div id="user-actions">
-                    @if(Session::has('user'))
-                        @php $user = Session::get('user'); @endphp
-                        <div class="flex items-center space-x-4">
-                            <span class="font-semibold">{{ $user['name'] }}</span>
-                            <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">
-                                {{ app(App\Services\UserService::class)->getNivelPermissaoTexto($user['nivel_permissao']) }}
+<div id="app-container">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <nav class="container mx-auto px-4 lg:px-6 py-4 flex justify-between items-center">
+            <a href="{{ route('home') }}" class="flex items-center space-x-2">
+                <span class="bg-indigo-700 text-white font-bold text-xl rounded-md p-2">P</span>
+                <span class="text-2xl font-bold text-indigo-800">PesqHub</span>
+            </a>
+            <div id="user-actions">
+                @if(Session::has('user'))
+                    @php $user = Session::get('user'); @endphp
+                    <div class="flex items-center space-x-4">
+                        <span class="font-semibold">{{ $user['nome'] }}</span>
+                        <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">
+                                {{ app(App\Services\UserService::class)->getNivelPermissaoTexto($user['tipo_permissao']) }}
                             </span>
-                            @if($user['nivel_permissao'] == 1)
-                                <a href="{{ route('admin.dashboard') }}" class="font-semibold text-indigo-600 hover:underline">Dashboard</a>
-                            @elseif($user['nivel_permissao'] == 2)
-                                <a href="{{ route('professor.dashboard') }}" class="font-semibold text-indigo-600 hover:underline">Painel Professor</a>
-                            @elseif($user['nivel_permissao'] == 3)
-                                <a href="{{ route('estudante.dashboard') }}" class="font-semibold text-indigo-600 hover:underline">Minha Área</a>
-                            @endif
-                            <form method="POST" action="{{ route('logout') }}" class="inline">
-                                @csrf
-                                <button type="submit" class="text-sm text-red-600 hover:underline">Sair</button>
-                            </form>
-                        </div>
-                    @else
-                        <div class="flex items-center space-x-2">
-                            <a href="{{ route('register') }}" class="text-indigo-600 font-semibold hover:underline">Cadastrar</a>
-                            <button id="login-trigger-btn" class="bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">Login</button>
-                        </div>
-                    @endif
-                </div>
-            </nav>
-        </header>
+                        @if($user['tipo_permissao'] == DatabaseService::NIVEL_ADMIN)
+                            <a href="{{ route('admin.dashboard') }}"
+                               class="font-semibold text-indigo-600 hover:underline">Dashboard</a>
+                        @elseif($user['tipo_permissao'] == DatabaseService::NIVEL_ORGANIZADOR)
+                            <a href="{{ route('organizador.dashboard') }}"
+                               class="font-semibold text-indigo-600 hover:underline">Painel Organizador</a>
+                        @elseif($user['tipo_permissao'] == DatabaseService::NIVEL_BASICO)
+                            <a href="{{ route('basico.dashboard') }}"
+                               class="font-semibold text-indigo-600 hover:underline">Minha Área</a>
+                        @endif
+                        <form method="POST" action="{{ route('logout') }}" class="inline">
+                            @csrf
+                            <button type="submit" class="text-sm text-red-600 hover:underline">Sair</button>
+                        </form>
+                    </div>
+                @else
+                    <div class="flex items-center space-x-2">
+                        <a href="{{ route('register') }}" class="text-indigo-600 font-semibold hover:underline">Cadastrar</a>
+                        <button id="login-trigger-btn" class="bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">Login</button>
+                    </div>
+                @endif
+            </div>
+        </nav>
+    </header>
 
-        <!-- Main Content -->
-        <main>
-            @yield('content')
-        </main>
+    <!-- Main Content -->
+    <main>
+        @yield('content')
+    </main>
+</div>
+
+<!-- Modals -->
+<div id="generic-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+    <div id="generic-modal-content" class="bg-white rounded-lg shadow-xl w-full max-w-lg relative">
+        <!-- Content is injected dynamically -->
     </div>
+</div>
 
-    <!-- Modals -->
-    <div id="generic-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
-        <div id="generic-modal-content" class="bg-white rounded-lg shadow-xl w-full max-w-lg relative">
-            <!-- Content is injected dynamically -->
-        </div>
-    </div>
-
-    @stack('scripts')
+@stack('scripts')
 </body>
 </html>

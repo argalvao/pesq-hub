@@ -47,7 +47,7 @@
                 </aside>
 
                 <!-- Lista Professores -->
-                <div id="professor-list-container" class="w-full md:w-3/4 lg:w-4/5 animate-fade-in">
+                <div id="organizador-list-container" class="w-full md:w-3/4 lg:w-4/5 animate-fade-in">
                     <div id="loading" class="text-center py-8 text-gray-600">
                         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
                         <p class="mt-2">Carregando professores...</p>
@@ -70,10 +70,10 @@
 </div>
 
 <!-- Modal Perfil Professor -->
-<div id="professor-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4 transition-opacity duration-300">
+<div id="organizador-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4 transition-opacity duration-300">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative transform transition-all scale-95">
         <button id="close-profile-modal" class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-800 transition-all" aria-label="Fechar modal">&times;</button>
-        <div id="professor-profile-content"></div>
+        <div id="organizador-profile-content"></div>
     </div>
 </div>
 
@@ -132,8 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Modal perfil
             document.getElementById('close-profile-modal').addEventListener('click', () => this.closeProfileModal());
-            document.getElementById('professor-list-container').addEventListener('click', e => {
-                const card = e.target.closest('.professor-card');
+            document.getElementById('organizador-list-container').addEventListener('click', e => {
+                const card = e.target.closest('.organizador-card');
                 if (card) this.showProfessorProfile(parseInt(card.dataset.id));
             });
             // Login modal
@@ -181,22 +181,22 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         renderProfessores() {
-            const c = document.getElementById('professor-list-container');
+            const c = document.getElementById('organizador-list-container');
             document.getElementById('loading')?.remove();
 
             if (!this.data.filteredProfessores.length) {
-                c.innerHTML = '<div class="bg-white p-6 rounded-lg shadow-sm text-center text-gray-500">Nenhum professor encontrado.</div>';
+                c.innerHTML = '<div class="bg-white p-6 rounded-lg shadow-sm text-center text-gray-500">Nenhum organizador encontrado.</div>';
                 return;
             }
 
             c.innerHTML = this.data.filteredProfessores.map(p => `
-                <div class="professor-card bg-white p-4 rounded-lg shadow-sm mb-4 flex items-start gap-4 hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer" data-id="${p.id}">
+                <div class="organizador-card bg-white p-4 rounded-lg shadow-sm mb-4 flex items-start gap-4 hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer" data-id="${p.id}">
                     <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center text-2xl font-bold text-indigo-700">${this.getInitials(p.nome)}</div>
                     <div>
                         <h3 class="text-lg font-bold text-indigo-800">${p.nome}</h3>
                         <p class="text-sm text-gray-600">${p.curso}</p>
                         <div class="mt-2 flex flex-wrap gap-2">
-                            ${(p.areas_interesse || []).map(a => `<span class="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2 py-1 rounded-full">${a}</span>`).join('')}
+                            ${(p.areas_interesse || []).map(a => `<span class="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2 py-1 rounded-full">${a.nome}</span>`).join('')}
                         </div>
                     </div>
                 </div>
@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p class="text-sm text-gray-600 mt-1">${l.descricao}</p>
                         <div class="mt-3 border-t pt-2">
                             <p class="text-xs font-semibold text-gray-500">Professores associados:</p>
-                            <p class="text-sm text-gray-800 mt-1">${profs || 'Nenhum professor associado.'}</p>
+                            <p class="text-sm text-gray-800 mt-1">${profs || 'Nenhum organizador associado.'}</p>
                         </div>
                     </div>`;
             }).join('');
@@ -253,8 +253,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>`).join('') : '<p class="text-gray-500">Nenhuma linha associada.</p>'}
                     </div>
                 </div>`;
-            document.getElementById('professor-profile-content').innerHTML = content;
-            this.toggleModal('professor-profile-modal', true);
+            document.getElementById('organizador-profile-content').innerHTML = content;
+            this.toggleModal('organizador-profile-modal', true);
         },
 
         toggleModal(id, show) {
@@ -264,18 +264,18 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         closeProfileModal() {
-            this.toggleModal('professor-profile-modal', false);
+            this.toggleModal('organizador-profile-modal', false);
         },
 
         showContactModal(professorName) {
-            // Encontrar dados completos do professor
+            // Encontrar dados completos do organizador
             const professor = this.data.professores.find(p => p.nome === professorName);
-            
+
             if (!professor || !professor.email) {
-                alert('Erro: Dados do professor não encontrados ou e-mail não disponível.');
+                alert('Erro: Dados do organizador não encontrados ou e-mail não disponível.');
                 return;
             }
-            
+
             const content = `
                 <button onclick="App.hideGenericModal()" class="absolute top-2 right-2 text-2xl text-gray-500 hover:text-gray-800">&times;</button>
                 <div class="p-8">
@@ -324,26 +324,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async sendContact(event) {
             event.preventDefault();
-            
+
             const form = event.target;
             const formData = new FormData(form);
-            
+
             // Validação frontend para mensagem
             const mensagem = formData.get('mensagem');
             if (mensagem.length < 5) {
                 alert('A mensagem deve ter pelo menos 5 caracteres.');
                 return;
             }
-            
-            // Verificar se é contato com professor específico
+
+            // Verificar se é contato com organizador específico
             const professorEmail = form.dataset.professorEmail;
             const professorName = form.dataset.professorName;
-            
+
             try {
                 let response;
-                
+
                 if (professorEmail && professorName) {
-                    // Contato específico com professor
+                    // Contato específico com organizador
                     response = await fetch('/contact-professor', {
                         method: 'POST',
                         headers: {
@@ -376,9 +376,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         })
                     });
                 }
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     alert('E-mail enviado com sucesso!');
                     this.hideGenericModal();

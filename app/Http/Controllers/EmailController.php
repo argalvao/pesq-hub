@@ -74,7 +74,7 @@ class EmailController extends Controller
     }
 
     /**
-     * Enviar e-mail de contato com professor
+     * Enviar e-mail de contato com organizador
      *
      * @param Request $request
      * @return JsonResponse
@@ -82,7 +82,7 @@ class EmailController extends Controller
     public function sendContactProfessor(Request $request): JsonResponse
     {
         try {
-            // Validação específica para contato com professor
+            // Validação específica para contato com organizador
             $validatedData = $request->validate([
                 'email_professor' => 'required|email',
                 'nome_professor' => 'required|string|max:100',
@@ -110,7 +110,7 @@ class EmailController extends Controller
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ Dados inválidos para contato com professor',
+                'message' => '❌ Dados inválidos para contato com organizador',
                 'errors' => $e->errors()
             ], 422);
 
