@@ -12,7 +12,7 @@ class UserService
     
     // Níveis de permissão
     const NIVEL_ADMIN = 1;
-    const NIVEL_PROFESSOR = 2;
+    const NIVEL_ORGANIZADOR = 2;
     const NIVEL_ESTUDANTE = 3;
 
     public function __construct(GoogleSheetsService $googleSheetsService)
@@ -228,7 +228,7 @@ class UserService
         switch ($nivel) {
             case self::NIVEL_ADMIN:
                 return 'Administrador';
-            case self::NIVEL_PROFESSOR:
+            case self::NIVEL_ORGANIZADOR:
                 return 'Professor';
             case self::NIVEL_ESTUDANTE:
                 return 'Estudante';
@@ -242,13 +242,13 @@ class UserService
         return $user && $user['nivel_permissao'] == self::NIVEL_ADMIN;
     }
 
-    public function canAccessProfessor($user)
+    public function canAccessOrganizador($user)
     {
-        return $user && in_array($user['nivel_permissao'], [self::NIVEL_ADMIN, self::NIVEL_PROFESSOR]);
+        return $user && in_array($user['nivel_permissao'], [self::NIVEL_ADMIN, self::NIVEL_ORGANIZADOR]);
     }
 
     public function canAccessEstudante($user)
     {
-        return $user && in_array($user['nivel_permissao'], [self::NIVEL_ADMIN, self::NIVEL_PROFESSOR, self::NIVEL_ESTUDANTE]);
+        return $user && in_array($user['nivel_permissao'], [self::NIVEL_ADMIN, self::NIVEL_ORGANIZADOR, self::NIVEL_ESTUDANTE]);
     }
 }

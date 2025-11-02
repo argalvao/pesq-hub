@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\OrganizadorController;
 use App\Http\Controllers\AuthController;
 
 // Rotas públicas
@@ -34,7 +35,26 @@ Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(fu
     Route::delete('/linhas-pesquisa/{id}', [AdminController::class, 'destroyLinhaPesquisa'])->name('linhas.destroy');
 });
 
-// Rotas de professor (protegidas por user.level:professor middleware)
+Route::middleware('user.level:organizador')->prefix('organizador')->name('organizador.')->group(function () {
+    Route::get('/dashboard', [OrganizadorController::class, 'dashboard'])->name('dashboard');
+    
+    // API routes para professores
+    Route::get('/professores', [OrganizadorController::class, 'getProfessores'])->name('professores.index');
+    Route::post('/professores', [OrganizadorController::class, 'storeProfessor'])->name('professores.store');
+    Route::put('/professores/{id}', [OrganizadorController::class, 'updateProfessor'])->name('professores.update');
+    Route::delete('/professores/{id}', [OrganizadorController::class, 'destroyProfessor'])->name('professores.destroy');
+    
+    // API routes para linhas de pesquisa
+    Route::get('/linhas-pesquisa', [OrganizadorController::class, 'getLinhasPesquisa'])->name('linhas.index');
+    Route::post('/linhas-pesquisa', [OrganizadorController::class, 'storeLinhaPesquisa'])->name('linhas.store');
+    Route::put('/linhas-pesquisa/{id}', [OrganizadorController::class, 'updateLinhaPesquisa'])->name('linhas.update');
+    Route::delete('/linhas-pesquisa/{id}', [OrganizadorController::class, 'destroyLinhaPesquisa'])->name('linhas.destroy');
+});
+
+
+
+// Rotas de professor (protegidas por user.level:professor middleware) 
+// TODO alterar isso aqui para serem rotas tbm do Organizador, incluir no organizador o Profile
 Route::middleware('user.level:professor')->prefix('professor')->name('organizador.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\ProfessorController::class, 'dashboard'])->name('dashboard');
     Route::post('/profile', [App\Http\Controllers\ProfessorController::class, 'updateProfile'])->name('profile.update');

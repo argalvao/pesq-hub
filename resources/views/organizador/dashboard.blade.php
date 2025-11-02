@@ -1,190 +1,94 @@
 @extends('layouts.app')
 
-@section('title', 'Painel do Organizador Estudantil - PesqHub')
+@section('title', 'Dashboard Organizador - PesqHub')
 
 @section('content')
 <div class="container mx-auto px-4 lg:px-6 py-8">
-    <!-- Cabeçalho -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <h1 class="text-3xl font-bold text-indigo-700">Painel do Organizador Estudantil</h1>
-        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-            Organizador Estudantil
-        </span>
-    </div>
-
-    <!-- Mensagens de Sucesso / Erro -->
-    @if(session('success'))
-        <div class="bg-green-50 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            {{ session('success') }}
+    <h1 class="text-3xl font-bold mb-6">Painel do Organizador</h1>
+    
+    @if(isset($error))
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {{ $error }}
         </div>
     @endif
 
-    @if(session('error') || isset($error))
-        <div class="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {{ session('error') ?? $error }}
-        </div>
-    @endif
+    <div class="flex flex-col md:flex-row gap-8">
+        <aside class="w-full md:w-1/4 lg:w-1/5">
+            <nav class="bg-white p-4 rounded-lg shadow-sm space-y-2 sticky top-24">
+                <a href="#" class="sidebar-link block px-3 py-2 rounded-md admin-panel-trigger active" data-panel="linhas">
+                    Gerenciar Linhas de Pesquisa
+                </a>
+                <a href="#" class="sidebar-link block px-3 py-2 rounded-md admin-panel-trigger" data-panel="professores">
+                    Gerenciar Professores
+                </a>
+            </nav>
+        </aside>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Perfil do Organizador -->
-        <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-            <h2 class="text-2xl font-bold mb-4 text-indigo-700">Meu Perfil</h2>
-
-            @if(isset($professor))
-                <div class="mb-4 p-4 bg-blue-50 rounded-md">
-                    <p class="text-sm text-blue-800 font-medium">
-                        <strong>Status:</strong> Perfil público ativo - visível para estudantes
-                    </p>
-                </div>
-
-                <div class="space-y-3 mb-6">
-                    <div><strong>Nome:</strong> {{ $professor['nome'] }}</div>
-                    <div><strong>Email:</strong> {{ $professor['email'] }}</div>
-                    <div><strong>Telefone:</strong> {{ $professor['telefone'] ?? 'Não informado' }}</div>
-                    <div><strong>Curso:</strong> {{ $professor['curso'] ?? 'Não informado' }}</div>
-                    <div>
-                        <strong>Áreas de Interesse:</strong>
-                        <div class="mt-1 flex flex-wrap gap-2">
-                            @if(!empty($professor['areas_interesse']))
-                                @foreach($professor['areas_interesse'] as $area)
-                                    <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">{{ $area }}</span>
-                                @endforeach
-                            @else
-                                <span class="text-gray-500">Nenhuma área definida</span>
-                            @endif
+        <div class="w-full md:w-3/4 lg:w-4/5">
+            <div id="admin-content">
+                <!-- Linhas de Pesquisa Panel -->
+                <div id="panel-linhas" class="admin-panel active">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-2xl font-bold">Linhas de Pesquisa</h2>
+                            <button id="add-linha-btn" class="bg-green-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-green-600 text-sm">
+                                Adicionar Nova
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table id="linhas-table" class="w-full text-left text-sm">
+                                <thead class="bg-gray-50 border-b">
+                                    <tr>
+                                        <th class="p-3 font-semibold">Nome</th>
+                                        <th class="p-3 font-semibold">Descrição</th>
+                                        <th class="p-3 font-semibold">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="linhas-tbody">
+                                    <tr>
+                                        <td colspan="3" class="p-3 text-center">
+                                            <div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
+                                            Carregando...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-            @else
-                <div class="mb-4 p-4 bg-yellow-50 rounded-md">
-                    <p class="text-sm text-yellow-800 font-medium">
-                        <strong>Perfil não encontrado:</strong> Complete seu perfil para aparecer na busca pública
-                    </p>
-                </div>
-            @endif
 
-            <button onclick="showEditProfileModal()" 
-                    class="bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors w-full md:w-auto">
-                {{ isset($professor) ? 'Editar Perfil' : 'Completar Perfil' }}
-            </button>
-        </div>
-
-        <!-- Linhas de Pesquisa -->
-        <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-            <h2 class="text-2xl font-bold mb-4 text-indigo-700">Linhas de Pesquisa Disponíveis</h2>
-
-            @if(isset($linhasPesquisa) && count($linhasPesquisa) > 0)
-                <div class="space-y-3 max-h-96 overflow-y-auto">
-                    @foreach($linhasPesquisa as $linha)
-                        <div class="p-3 border rounded-md hover:bg-gray-50 transition-colors">
-                            <h4 class="font-semibold text-indigo-800">{{ $linha['nome'] }}</h4>
-                            <p class="text-sm text-gray-600 mt-1">{{ $linha['descricao'] }}</p>
-                            @if(isset($professor) && in_array($linha['id'], $professor['linhas_pesquisa_ids'] ?? []))
-                                <span class="inline-block mt-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                                    Associado
-                                </span>
-                            @endif
+                <!-- Professores Panel -->
+                <div id="panel-professores" class="admin-panel hidden">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-2xl font-bold">Professores</h2>
+                            <button id="add-professor-btn" class="bg-green-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-green-600 text-sm">
+                                Adicionar Novo
+                            </button>
                         </div>
-                    @endforeach
-                </div>
-            @else
-                <p class="text-gray-500">Nenhuma linha de pesquisa disponível.</p>
-            @endif
-        </div>
-    </div>
-
-    <!-- Estatísticas -->
-    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white p-6 rounded-lg shadow-sm text-center hover:shadow-md transition-shadow">
-            <div class="text-3xl font-bold text-indigo-600">
-                {{ isset($professor) && !empty($professor['linhas_pesquisa_ids']) ? count($professor['linhas_pesquisa_ids']) : 0 }}
-            </div>
-            <div class="text-sm text-gray-600">Linhas de Pesquisa</div>
-        </div>
-
-        <div class="bg-white p-6 rounded-lg shadow-sm text-center hover:shadow-md transition-shadow">
-            <div class="text-3xl font-bold text-green-600">
-                {{ isset($professor) ? (isset($professor['areas_interesse']) ? count($professor['areas_interesse']) : 0) : 0 }}
-            </div>
-            <div class="text-sm text-gray-600">Áreas de Interesse</div>
-        </div>
-
-        <div class="bg-white p-6 rounded-lg shadow-sm text-center hover:shadow-md transition-shadow">
-            <div class="text-3xl font-bold text-purple-600">
-                {{ isset($professor) ? 'Ativo' : 'Inativo' }}
-            </div>
-            <div class="text-sm text-gray-600">Status do Perfil</div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de Edição de Perfil -->
-<div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
-        <button onclick="hideEditProfileModal()" class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-800 z-10">&times;</button>
-        <div class="p-8">
-            <h2 class="text-2xl font-bold mb-6">{{ isset($professor) ? 'Editar' : 'Completar' }} Perfil</h2>
-
-            <form method="POST" action="{{ route('organizador.profile.update') }}">
-                @csrf
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Nome Completo</label>
-                        <input type="text" name="nome" value="{{ $professor['nome'] ?? $user['name'] }}" 
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-400" required>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Telefone</label>
-                        <input type="text" name="telefone" value="{{ $professor['telefone'] ?? '' }}" 
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-400" required>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Curso</label>
-                        <input type="text" name="curso" value="{{ $professor['curso'] ?? '' }}" 
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-400" required>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Áreas de Interesse (separadas por vírgula)</label>
-                        <input type="text" name="areas_interesse" 
-                               value="{{ isset($professor['areas_interesse']) ? implode(', ', $professor['areas_interesse']) : '' }}" 
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-400" 
-                               placeholder="Ex.: Inteligência Artificial, Machine Learning, etc.">
-                    </div>
-
-                    @if(isset($linhasPesquisa) && count($linhasPesquisa) > 0)
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Linhas de Pesquisa</label>
-                        <div class="mt-2 space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
-                            @foreach($linhasPesquisa as $linha)
-                                <label class="flex items-start space-x-2">
-                                    <input type="checkbox" name="linhas_pesquisa_ids[]" value="{{ $linha['id'] }}" 
-                                           {{ isset($professor) && in_array($linha['id'], $professor['linhas_pesquisa_ids'] ?? []) ? 'checked' : '' }}
-                                           class="mt-1">
-                                    <div>
-                                        <div class="font-medium">{{ $linha['nome'] }}</div>
-                                        <div class="text-sm text-gray-600">{{ $linha['descricao'] }}</div>
-                                    </div>
-                                </label>
-                            @endforeach
+                        <div class="overflow-x-auto">
+                            <table id="professores-table" class="w-full text-left text-sm">
+                                <thead class="bg-gray-50 border-b">
+                                    <tr>
+                                        <th class="p-3 font-semibold">Nome</th>
+                                        <th class="p-3 font-semibold">Curso</th>
+                                        <th class="p-3 font-semibold">Email</th>
+                                        <th class="p-3 font-semibold">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="professores-tbody">
+                                    <tr>
+                                        <td colspan="4" class="p-3 text-center">
+                                            <div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
+                                            Carregando...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    @endif
                 </div>
-
-                <div class="mt-6 flex justify-end space-x-2">
-                    <button type="button" onclick="hideEditProfileModal()" 
-                            class="px-4 py-2 text-gray-600 border rounded-lg hover:bg-gray-50 transition-colors">
-                        Cancelar
-                    </button>
-                    <button type="submit" 
-                            class="bg-indigo-600 text-white font-semibold px-5 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
-                        Salvar Perfil
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
@@ -192,16 +96,380 @@
 
 @push('scripts')
 <script>
-function showEditProfileModal() {
-    const modal = document.getElementById('edit-profile-modal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-}
+document.addEventListener('DOMContentLoaded', function() {
+    const AdminPanel = {
+        data: {
+            linhasPesquisa: [],
+            professores: [],
+            currentPanel: 'linhas'
+        },
 
-function hideEditProfileModal() {
-    const modal = document.getElementById('edit-profile-modal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-}
+        async init() {
+            this.setupEventListeners();
+            await this.loadLinhasPesquisa();
+            await this.loadProfessores();
+        },
+
+        setupEventListeners() {
+            // Panel navigation
+            document.querySelectorAll('.admin-panel-trigger').forEach(trigger => {
+                trigger.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showPanel(trigger.dataset.panel);
+                });
+            });
+
+            // Add buttons
+            document.getElementById('add-linha-btn').addEventListener('click', () => this.showLinhaModal());
+            document.getElementById('add-professor-btn').addEventListener('click', () => this.showProfessorModal());
+
+            // Table actions
+            document.getElementById('linhas-tbody').addEventListener('click', (e) => {
+                if (e.target.classList.contains('edit-linha-btn')) {
+                    this.showLinhaModal(parseInt(e.target.dataset.id));
+                } else if (e.target.classList.contains('delete-linha-btn')) {
+                    this.deleteLinha(parseInt(e.target.dataset.id));
+                }
+            });
+
+            document.getElementById('professores-tbody').addEventListener('click', (e) => {
+                if (e.target.classList.contains('edit-professor-btn')) {
+                    this.showProfessorModal(parseInt(e.target.dataset.id));
+                } else if (e.target.classList.contains('delete-professor-btn')) {
+                    this.deleteProfessor(parseInt(e.target.dataset.id));
+                }
+            });
+        },
+
+        showPanel(panel) {
+            this.currentPanel = panel;
+            
+            // Update sidebar
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.toggle('active', link.dataset.panel === panel);
+            });
+
+            // Update panels
+            document.querySelectorAll('.admin-panel').forEach(panelEl => {
+                panelEl.classList.toggle('active', panelEl.id === `panel-${panel}`);
+                panelEl.classList.toggle('hidden', panelEl.id !== `panel-${panel}`);
+            });
+        },
+
+        async loadLinhasPesquisa() {
+            try {
+                const response = await fetch('/organizador/linhas-pesquisa');
+                const result = await response.json();
+                
+                if (result.success) {
+                    this.data.linhasPesquisa = result.data;
+                    this.renderLinhasTable();
+                } else {
+                    this.showError('Erro ao carregar linhas de pesquisa');
+                }
+            } catch (error) {
+                this.showError('Erro de conexão');
+            }
+        },
+
+        async loadProfessores() {
+            try {
+                const response = await fetch('/organizador/professores');
+                const result = await response.json();
+                
+                if (result.success) {
+                    this.data.professores = result.data;
+                    this.renderProfessoresTable();
+                } else {
+                    this.showError('Erro ao carregar professores');
+                }
+            } catch (error) {
+                this.showError('Erro de conexão');
+            }
+        },
+
+        renderLinhasTable() {
+            const tbody = document.getElementById('linhas-tbody');
+            
+            if (this.data.linhasPesquisa.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-gray-500">Nenhuma linha de pesquisa cadastrada</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = this.data.linhasPesquisa.map(linha => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-3 font-medium">${linha.nome}</td>
+                    <td class="p-3 text-gray-600">${linha.descricao}</td>
+                    <td class="p-3 space-x-2">
+                        <button data-id="${linha.id}" class="edit-linha-btn text-blue-600 hover:underline">Editar</button>
+                        <button data-id="${linha.id}" class="delete-linha-btn text-red-600 hover:underline">Excluir</button>
+                    </td>
+                </tr>
+            `).join('');
+        },
+
+        renderProfessoresTable() {
+            const tbody = document.getElementById('professores-tbody');
+            
+            if (this.data.professores.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-gray-500">Nenhum professor cadastrado</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = this.data.professores.map(professor => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-3 font-medium">${professor.nome}</td>
+                    <td class="p-3 text-gray-600">${professor.curso}</td>
+                    <td class="p-3 text-gray-600">${professor.email}</td>
+                    <td class="p-3 space-x-2">
+                        <button data-id="${professor.id}" class="edit-professor-btn text-blue-600 hover:underline">Editar</button>
+                        <button data-id="${professor.id}" class="delete-professor-btn text-red-600 hover:underline">Excluir</button>
+                    </td>
+                </tr>
+            `).join('');
+        },
+
+        showLinhaModal(id = null) {
+            const isEditing = id !== null;
+            const linha = isEditing ? this.data.linhasPesquisa.find(l => l.id === id) : { nome: '', descricao: '' };
+
+            const content = `
+                <button onclick="App.hideGenericModal()" class="absolute top-2 right-2 text-2xl text-gray-500 hover:text-gray-800">&times;</button>
+                <form onsubmit="AdminPanel.saveLinha(event)" class="p-8" data-id="${isEditing ? linha.id : ''}">
+                    <h2 class="text-2xl font-bold mb-4">${isEditing ? 'Editar' : 'Adicionar'} Linha de Pesquisa</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-sm font-medium block mb-1">Nome</label>
+                            <input type="text" name="nome" class="w-full px-3 py-2 border rounded-md" value="${linha.nome}" required>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium block mb-1">Descrição</label>
+                            <textarea name="descricao" rows="4" class="w-full px-3 py-2 border rounded-md" required>${linha.descricao}</textarea>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end space-x-2">
+                        <button type="button" onclick="App.hideGenericModal()" class="px-4 py-2 text-gray-600 border rounded-lg hover:bg-gray-50">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="bg-indigo-600 text-white font-semibold px-5 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                            Salvar
+                        </button>
+                    </div>
+                </form>
+            `;
+            App.showGenericModal(content);
+        },
+
+        showProfessorModal(id = null) {
+            const isEditing = id !== null;
+            const professor = isEditing ? this.data.professores.find(p => p.id === id) : 
+                { nome: '', email: '', telefone: '', curso: '', areas_interesse: [], linhas_pesquisa_ids: [] };
+
+            const linhasOptions = this.data.linhasPesquisa.map(linha => 
+                `<option value="${linha.id}" ${professor.linhas_pesquisa_ids.includes(linha.id) ? 'selected' : ''}>${linha.nome}</option>`
+            ).join('');
+
+            const content = `
+                <button onclick="App.hideGenericModal()" class="absolute top-2 right-2 text-2xl text-gray-500 hover:text-gray-800">&times;</button>
+                <form onsubmit="AdminPanel.saveProfessor(event)" class="p-8" data-id="${isEditing ? professor.id : ''}">
+                    <h2 class="text-2xl font-bold mb-6">${isEditing ? 'Editar' : 'Adicionar'} Professor</h2>
+                    <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                        <input type="text" name="nome" placeholder="Nome Completo" class="w-full px-3 py-2 border rounded-md" value="${professor.nome}" required>
+                        <input type="email" name="email" placeholder="E-mail" class="w-full px-3 py-2 border rounded-md" value="${professor.email}" required>
+                        <input type="tel" name="telefone" placeholder="Telefone" class="w-full px-3 py-2 border rounded-md" value="${professor.telefone}" required>
+                        <input type="text" name="curso" placeholder="Curso" class="w-full px-3 py-2 border rounded-md" value="${professor.curso}" required>
+                        <div>
+                            <label class="text-sm font-medium block mb-1">Áreas de Interesse (separadas por vírgula)</label>
+                            <input type="text" name="areas_interesse" class="w-full px-3 py-2 border rounded-md" value="${(professor.areas_interesse || []).join(', ')}" placeholder="IA, Machine Learning, etc.">
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium block mb-1">Linhas de Pesquisa</label>
+                            <select name="linhas_pesquisa_ids" multiple class="w-full h-32 px-3 py-2 border rounded-md">
+                                ${linhasOptions}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end space-x-2">
+                        <button type="button" onclick="App.hideGenericModal()" class="px-4 py-2 text-gray-600 border rounded-lg hover:bg-gray-50">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="bg-indigo-600 text-white font-semibold px-5 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                            Salvar Professor
+                        </button>
+                    </div>
+                </form>
+            `;
+            App.showGenericModal(content);
+        },
+
+        async saveLinha(event) {
+            event.preventDefault();
+            const form = event.target;
+            const id = form.dataset.id;
+            const isEditing = id !== '';
+
+            const data = {
+                nome: form.nome.value,
+                descricao: form.descricao.value
+            };
+
+            try {
+                const url = isEditing ? `/organizador/linhas-pesquisa/${id}` : '/organizador/linhas-pesquisa';
+                const method = isEditing ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    App.hideGenericModal();
+                    await this.loadLinhasPesquisa();
+                    this.showSuccess(isEditing ? 'Linha de pesquisa atualizada!' : 'Linha de pesquisa criada!');
+                } else {
+                    this.showError(result.error || 'Erro ao salvar');
+                }
+            } catch (error) {
+                this.showError('Erro de conexão');
+            }
+        },
+
+        async saveProfessor(event) {
+            event.preventDefault();
+            const form = event.target;
+            const id = form.dataset.id;
+            const isEditing = id !== '';
+
+            const data = {
+                nome: form.nome.value,
+                email: form.email.value,
+                telefone: form.telefone.value,
+                curso: form.curso.value,
+                areas_interesse: form.areas_interesse.value.split(',').map(s => s.trim()).filter(s => s),
+                linhas_pesquisa_ids: Array.from(form.linhas_pesquisa_ids.selectedOptions).map(opt => parseInt(opt.value))
+            };
+
+            try {
+                const url = isEditing ? `/organizador/professores/${id}` : '/organizador/professores';
+                const method = isEditing ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    App.hideGenericModal();
+                    await this.loadProfessores();
+                    this.showSuccess(isEditing ? 'Professor atualizado!' : 'Professor criado!');
+                } else {
+                    this.showError(result.error || 'Erro ao salvar');
+                }
+            } catch (error) {
+                this.showError('Erro de conexão');
+            }
+        },
+
+        async deleteLinha(id) {
+            if (!confirm('Tem certeza de que deseja excluir esta linha de pesquisa?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/organizador/linhas-pesquisa/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    await this.loadLinhasPesquisa();
+                    this.showSuccess('Linha de pesquisa excluída!');
+                } else {
+                    this.showError(result.error || 'Erro ao excluir');
+                }
+            } catch (error) {
+                this.showError('Erro de conexão');
+            }
+        },
+
+        async deleteProfessor(id) {
+            if (!confirm('Tem certeza de que deseja excluir este professor?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/organizador/professores/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    await this.loadProfessores();
+                    this.showSuccess('Professor excluído!');
+                } else {
+                    this.showError(result.error || 'Erro ao excluir');
+                }
+            } catch (error) {
+                this.showError('Erro de conexão');
+            }
+        },
+
+        showSuccess(message) {
+            // Simple alert for now - you can replace with a toast notification
+            alert(message);
+        },
+
+        showError(message) {
+            alert('Erro: ' + message);
+        }
+    };
+
+    // Make AdminPanel globally available
+    window.AdminPanel = AdminPanel;
+    AdminPanel.init();
+
+    // Keep App available for modal functions
+    if (!window.App) {
+        window.App = {
+            showGenericModal(content) {
+                document.getElementById('generic-modal-content').innerHTML = content;
+                document.getElementById('generic-modal').classList.remove('hidden');
+                document.getElementById('generic-modal').classList.add('flex');
+            },
+
+            hideGenericModal() {
+                document.getElementById('generic-modal').classList.add('hidden');
+                document.getElementById('generic-modal').classList.remove('flex');
+            }
+        };
+    }
+});
 </script>
+@endpush
+
+@push('styles')
+<style>
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+</style>
 @endpush
