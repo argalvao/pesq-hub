@@ -25,7 +25,7 @@
 
     <!-- Welcome Section -->
     <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6 rounded-lg mb-8">
-        <h2 class="text-2xl font-bold mb-2">Bem-vindo, {{ $user['name'] }}!</h2>
+        <h2 class="text-2xl font-bold mb-2">Bem-vindo, {{ $user['nome'] }}!</h2>
         <p class="text-indigo-100">Explore professores e linhas de pesquisa para encontrar seu orientador ideal.</p>
     </div>
 
@@ -37,14 +37,14 @@
             </div>
             <div class="text-sm text-gray-600">Professores Disponíveis</div>
         </div>
-        
+
         <div class="bg-white p-6 rounded-lg shadow-sm text-center">
             <div class="text-3xl font-bold text-green-600">
                 {{ isset($linhasPesquisa) ? count($linhasPesquisa) : 0 }}
             </div>
             <div class="text-sm text-gray-600">Linhas de Pesquisa</div>
         </div>
-        
+
         <div class="bg-white p-6 rounded-lg shadow-sm text-center">
             <div class="text-3xl font-bold text-purple-600">
                 {{ isset($professores) ? count(array_filter($professores, function($p) { return !empty($p['areas_interesse']); })) : 0 }}
@@ -58,7 +58,7 @@
         <!-- Professores Recentes -->
         <div class="bg-white p-6 rounded-lg shadow-sm">
             <h2 class="text-2xl font-bold mb-4">Professores em Destaque</h2>
-            
+
             @if(isset($professores) && count($professores) > 0)
                 <div class="space-y-4">
                     @foreach(array_slice($professores, 0, 3) as $professor)
@@ -73,7 +73,7 @@
                                     @if(!empty($professor['areas_interesse']))
                                         <div class="mt-2 flex flex-wrap gap-1">
                                             @foreach(array_slice($professor['areas_interesse'], 0, 2) as $area)
-                                                <span class="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full">{{ $area }}</span>
+                                                <span class="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full">{{ $area['nome'] }}</span>
                                             @endforeach
                                             @if(count($professor['areas_interesse']) > 2)
                                                 <span class="text-xs text-gray-500">+{{ count($professor['areas_interesse']) - 2 }} mais</span>
@@ -85,7 +85,7 @@
                         </div>
                     @endforeach
                 </div>
-                
+
                 <div class="mt-4 text-center">
                     <a href="{{ route('home') }}" class="text-indigo-600 hover:underline">Ver todos os professores</a>
                 </div>
@@ -97,7 +97,7 @@
         <!-- Linhas de Pesquisa -->
         <div class="bg-white p-6 rounded-lg shadow-sm">
             <h2 class="text-2xl font-bold mb-4">Linhas de Pesquisa</h2>
-            
+
             @if(isset($linhasPesquisa) && count($linhasPesquisa) > 0)
                 <div class="space-y-3 max-h-80 overflow-y-auto">
                     @foreach($linhasPesquisa as $linha)
@@ -117,7 +117,7 @@
                         </div>
                     @endforeach
                 </div>
-                
+
                 <div class="mt-4 text-center">
                     <a href="{{ route('home') }}#linhas" class="text-indigo-600 hover:underline">Explorar todas as linhas</a>
                 </div>
@@ -165,7 +165,7 @@
                     <input type="text" name="nome" placeholder="Seu Nome" class="w-full px-3 py-2 border rounded-md" required>
                     <input type="email" name="email" placeholder="Seu E-mail" class="w-full px-3 py-2 border rounded-md" required>
                     <input type="text" name="assunto" placeholder="Assunto" class="w-full px-3 py-2 border rounded-md" required>
-                    <textarea name="mensagem" placeholder="Mensagem" rows="4" class="w-full px-3 py-2 border rounded-md" required></textarea>
+                    <textarea name="mensagem" placeholder="Digite sua mensagem (mínimo 5 caracteres)" rows="4" class="w-full px-3 py-2 border rounded-md" required></textarea>
                 </div>
                 <button type="submit" class="w-full mt-6 bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700 transition-colors">
                     Enviar Mensagem
@@ -206,7 +206,7 @@ function showProfessorModal(professor) {
                 </div>
             </div>
         ` : ''}
-        
+
         ${professorLinhas.length > 0 ? `
             <div class="mb-6">
                 <h3 class="text-lg font-semibold mb-2">Linhas de Pesquisa</h3>
@@ -220,7 +220,7 @@ function showProfessorModal(professor) {
                 </div>
             </div>
         ` : ''}
-        
+
         <div class="flex justify-end">
             <button onclick="showContactProfessorModal('${organizador.nome}')" 
                     class="bg-indigo-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
@@ -229,14 +229,14 @@ function showProfessorModal(professor) {
         </div>
     `;
 
-    document.getElementById('professor-modal-content').innerHTML = content;
-    document.getElementById('professor-modal').classList.remove('hidden');
-    document.getElementById('professor-modal').classList.add('flex');
+    document.getElementById('organizador-modal-content').innerHTML = content;
+    document.getElementById('organizador-modal').classList.remove('hidden');
+    document.getElementById('organizador-modal').classList.add('flex');
 }
 
 function hideProfessorModal() {
-    document.getElementById('professor-modal').classList.add('hidden');
-    document.getElementById('professor-modal').classList.remove('flex');
+    document.getElementById('organizador-modal').classList.add('hidden');
+    document.getElementById('organizador-modal').classList.remove('flex');
 }
 
 function showContactModal() {
@@ -249,20 +249,90 @@ function hideContactModal() {
     document.getElementById('contact-modal').classList.remove('flex');
 }
 
+let currentProfessorData = null;
+
 function showContactProfessorModal(professorName) {
     hideProfessorModal();
-    // Customize the contact modal for the specific professor
+
+    // Buscar dados completos do organizador
+    const professores = @json($professores ?? []);
+    currentProfessorData = professores.find(p => p.nome === professorName);
+
+    // Customize the contact modal for the specific organizador
     const form = document.querySelector('#contact-modal form');
     const assuntoField = form.querySelector('input[name="assunto"]');
     assuntoField.value = `Contato com ${professorName}`;
     showContactModal();
 }
 
-function sendContact(event) {
+async function sendContact(event) {
     event.preventDefault();
-    // Simulate sending contact
-    alert('Mensagem enviada com sucesso! (Simulação)');
-    hideContactModal();
+
+    const form = event.target;
+    const formData = new FormData(form);
+
+    // Validação frontend para mensagem
+    const mensagem = formData.get('mensagem');
+    if (mensagem.length < 5) {
+        alert('A mensagem deve ter pelo menos 5 caracteres.');
+        return;
+    }
+
+    // Determinar se é contato específico com organizador ou geral
+    const isContactProfessor = currentProfessorData !== null;
+
+    try {
+        let response;
+
+        if (isContactProfessor) {
+            // Usar rota específica para contato com organizador
+            response = await fetch('/contact-professor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    email_professor: currentProfessorData.email,
+                    nome_professor: currentProfessorData.nome,
+                    nome_estudante: formData.get('nome'),
+                    email_estudante: formData.get('email'),
+                    mensagem: formData.get('mensagem'),
+                    assunto: formData.get('assunto')
+                })
+            });
+        } else {
+            // Usar rota genérica para contato geral
+            response = await fetch('/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    to: 'admin@example.com', // Email do administrador
+                    subject: formData.get('assunto'),
+                    message: `Nome: ${formData.get('nome')}\nEmail: ${formData.get('email')}\n\nMensagem:\n${formData.get('mensagem')}`,
+                    from_name: formData.get('nome'),
+                    from_email: formData.get('email')
+                })
+            });
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert('E-mail enviado com sucesso!');
+            hideContactModal();
+            form.reset();
+            currentProfessorData = null;
+        } else {
+            alert('Erro ao enviar e-mail: ' + (result.message || 'Erro desconhecido'));
+        }
+    } catch (error) {
+        console.error('Erro ao enviar e-mail:', error);
+        alert('Erro de conexão. Tente novamente.');
+    }
 }
 </script>
 @endpush
