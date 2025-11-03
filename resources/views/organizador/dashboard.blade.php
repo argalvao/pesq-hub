@@ -15,19 +15,19 @@
     <div class="flex flex-col md:flex-row gap-8">
         <aside class="w-full md:w-1/4 lg:w-1/5">
             <nav class="bg-white p-4 rounded-lg shadow-sm space-y-2 sticky top-24">
-                <a href="#" class="sidebar-link block px-3 py-2 rounded-md admin-panel-trigger active" data-panel="linhas">
+                <a href="#" class="sidebar-link block px-3 py-2 rounded-md organizador-panel-trigger active" data-panel="linhas">
                     Gerenciar Linhas de Pesquisa
                 </a>
-                <a href="#" class="sidebar-link block px-3 py-2 rounded-md admin-panel-trigger" data-panel="professores">
+                <a href="#" class="sidebar-link block px-3 py-2 rounded-md organizador-panel-trigger" data-panel="professores">
                     Gerenciar Professores
                 </a>
             </nav>
         </aside>
 
         <div class="w-full md:w-3/4 lg:w-4/5">
-            <div id="admin-content">
+            <div id="organizador-content">
                 <!-- Linhas de Pesquisa Panel -->
-                <div id="panel-linhas" class="admin-panel active">
+                <div id="panel-linhas" class="organizador-panel active">
                     <div class="bg-white p-6 rounded-lg shadow-sm">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-2xl font-bold">Linhas de Pesquisa</h2>
@@ -58,7 +58,7 @@
                 </div>
 
                 <!-- Professores Panel -->
-                <div id="panel-professores" class="admin-panel hidden">
+                <div id="panel-professores" class="organizador-panel hidden">
                     <div class="bg-white p-6 rounded-lg shadow-sm">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-2xl font-bold">Professores</h2>
@@ -97,7 +97,7 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const AdminPanel = {
+    const organizadorPanel = {
         data: {
             linhasPesquisa: [],
             professores: [],
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         setupEventListeners() {
             // Panel navigation
-            document.querySelectorAll('.admin-panel-trigger').forEach(trigger => {
+            document.querySelectorAll('.organizador-panel-trigger').forEach(trigger => {
                 trigger.addEventListener('click', (e) => {
                     e.preventDefault();
                     this.showPanel(trigger.dataset.panel);
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             // Update panels
-            document.querySelectorAll('.admin-panel').forEach(panelEl => {
+            document.querySelectorAll('.organizador-panel').forEach(panelEl => {
                 panelEl.classList.toggle('active', panelEl.id === `panel-${panel}`);
                 panelEl.classList.toggle('hidden', panelEl.id !== `panel-${panel}`);
             });
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const content = `
                 <button onclick="App.hideGenericModal()" class="absolute top-2 right-2 text-2xl text-gray-500 hover:text-gray-800">&times;</button>
-                <form onsubmit="AdminPanel.saveLinha(event)" class="p-8" data-id="${isEditing ? linha.id : ''}">
+                <form onsubmit="organizadorPanel.saveLinha(event)" class="p-8" data-id="${isEditing ? linha.id : ''}">
                     <h2 class="text-2xl font-bold mb-4">${isEditing ? 'Editar' : 'Adicionar'} Linha de Pesquisa</h2>
                     <div class="space-y-4">
                         <div>
@@ -271,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const content = `
                 <button onclick="App.hideGenericModal()" class="absolute top-2 right-2 text-2xl text-gray-500 hover:text-gray-800">&times;</button>
-                <form onsubmit="AdminPanel.saveProfessor(event)" class="p-8" data-id="${isEditing ? professor.id : ''}">
+                <form onsubmit="organizadorPanel.saveProfessor(event)" class="p-8" data-id="${isEditing ? professor.id : ''}">
                     <h2 class="text-2xl font-bold mb-6">${isEditing ? 'Editar' : 'Adicionar'} Professor</h2>
                     <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
                         <input type="text" name="nome" placeholder="Nome Completo" class="w-full px-3 py-2 border rounded-md" value="${professor.nome}" required>
@@ -444,9 +444,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Make AdminPanel globally available
-    window.AdminPanel = AdminPanel;
-    AdminPanel.init();
+    // Make organizadorPanel globally available
+    window.organizadorPanel = organizadorPanel;
+    organizadorPanel.init();
 
     // Keep App available for modal functions
     if (!window.App) {
@@ -469,7 +469,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 @push('styles')
 <style>
-    .admin-panel { display: none; }
-    .admin-panel.active { display: block; }
+    .organizador-panel { display: none; }
+    .organizador-panel.active { display: block; }
 </style>
 @endpush

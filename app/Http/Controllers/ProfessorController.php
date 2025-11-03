@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Session;
 use App\Services\GoogleSheetsService;
 use App\Services\UserService;
 
+#TODO, enviar uma dessas rotas pro Organizador posteriormente, estudar se vale a pena ter um usuario professor futuramente
 class ProfessorController extends Controller
 {
     protected $googleSheetsService;
@@ -29,9 +30,9 @@ class ProfessorController extends Controller
             
             $linhasPesquisa = $this->googleSheetsService->getLinhasPesquisa();
             
-            return view('organizador.dashboard', compact('user', 'professor', 'linhasPesquisa'));
+            return view('professor.dashboard', compact('user', 'professor', 'linhasPesquisa'));
         } catch (\Exception $e) {
-            return view('organizador.dashboard', compact('user'))->with('error', 'Erro ao carregar dados: ' . $e->getMessage());
+            return view('professor.dashboard', compact('user'))->with('error', 'Erro ao carregar dados: ' . $e->getMessage());
         }
     }
 
@@ -73,7 +74,7 @@ class ProfessorController extends Controller
                 ]);
             }
 
-            return redirect()->route('organizador.dashboard')->with('success', 'Perfil atualizado com sucesso!');
+            return redirect()->route('professor.dashboard')->with('success', 'Perfil atualizado com sucesso!');
         } catch (\Exception $e) {
             return back()->with('error', 'Erro ao atualizar perfil: ' . $e->getMessage());
         }
