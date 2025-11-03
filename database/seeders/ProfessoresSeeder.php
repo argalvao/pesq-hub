@@ -68,7 +68,7 @@ class ProfessoresSeeder extends Seeder
                 ]
             );
 
-            // Criar professor
+            // Criar organizador
             $professor = Professor::firstOrCreate(
                 ['email' => $profData['email']],
                 [

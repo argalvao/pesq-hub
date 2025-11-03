@@ -2,10 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\UsuarioService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
-use App\Services\UserService;
 
 class CheckUserLevel
 {
@@ -35,7 +35,7 @@ class CheckUserLevel
             return $next($request);
         }
 
-        $userService = app(UserService::class);
+        $userService = app(UsuarioService::class);
 
         switch ($level) {
             case 'admin':
@@ -44,14 +44,14 @@ class CheckUserLevel
                 }
                 break;
 
-            case 'professor':
-                if (!$userService->canAccessProfessor($user)) {
-                    return redirect()->route('home')->with('error', 'Acesso negado. Você não tem permissão de professor.');
+            case 'organizador':
+                if (!$userService->canAccessOrganizador($user)) {
+                    return redirect()->route('home')->with('error', 'Acesso negado. Você não tem permissão de organizador.');
                 }
                 break;
 
-            case 'estudante':
-                if (!$userService->canAccessEstudante($user)) {
+            case 'basico':
+                if (!$userService->canAccessBasico($user)) {
                     return redirect()->route('home')->with('error', 'Acesso negado.');
                 }
                 break;

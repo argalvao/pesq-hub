@@ -35,15 +35,15 @@ class EmailService
 
             // Construir caminho do template
             $templatePath = 'emails.' . $template;
-            
+
             // Definir assunto se não fornecido
             if (!$assunto) {
                 $assunto = $this->definirAssuntoPorTemplate($template);
             }
-            
+
             // Adicionar assunto aos dados do template
             $dados['assunto'] = $assunto;
-            
+
             // Criar instância de Mailable dinâmica
             $mailable = new class($templatePath, $dados, $remetente, $nomeRemetente, $assunto) extends Mailable {
                 public $templatePath;
@@ -103,8 +103,8 @@ class EmailService
     {
         $assuntos = [
             'teste-sistema' => '🧪 Teste do Sistema de E-mails - PesqHub UEFS',
-            'contato-com-professor' => '📧 Contato via PesqHub UEFS',
-            'contato-professor' => '📧 Contato via PesqHub UEFS',
+            'contato-com-organizador' => '📧 Contato via PesqHub UEFS',
+            'contato-organizador' => '📧 Contato via PesqHub UEFS',
             'notificacao' => '🔔 Notificação - PesqHub UEFS',
             'boas-vindas' => '👋 Bem-vindo ao PesqHub UEFS',
         ];
@@ -126,17 +126,17 @@ class EmailService
             'corpo' => 'Este é um e-mail de teste enviado às ' . date('H:i:s') . ' em ' . date('d/m/Y'),
             'mensagem' => 'Teste do sistema de e-mails do PesqHub UEFS'
         ];
-        
+
         $assunto = '🧪 Teste do Sistema - ' . date('H:i:s');
-        
+
         return $this->enviarEmail($destinatario, $template, $dadosTemplate, $assunto);
     }
 
     /**
-     * Enviar e-mail de contato com professor
+     * Enviar e-mail de contato com organizador
      *
-     * @param string $emailProfessor E-mail do professor destinatário
-     * @param string $nomeProfessor Nome do professor
+     * @param string $emailProfessor E-mail do organizador destinatário
+     * @param string $nomeProfessor Nome do organizador
      * @param string $nomeEstudante Nome do estudante remetente
      * @param string $emailEstudante E-mail do estudante remetente
      * @param string $mensagem Mensagem do estudante
@@ -171,14 +171,14 @@ class EmailService
 
         return $this->enviarEmail(
             $emailProfessor,
-            'contato-com-professor',
+            'contato-com-organizador',
             $dadosTemplate,
             $assunto,
             'abel@ecomp.uefs.br', // Sempre usar o e-mail oficial
             'PesqHub UEFS - Sistema de Contatos' // Nome do remetente oficial
         );
     }
-    
+
     /**
      * Verificar se um template existe
      *
@@ -190,7 +190,7 @@ class EmailService
         $templatePath = resource_path('views/emails/' . $template . '.blade.php');
         return file_exists($templatePath);
     }
-    
+
     /**
      * Listar templates disponíveis
      *
@@ -199,14 +199,14 @@ class EmailService
     public function listarTemplates(): array
     {
         $emailsPath = resource_path('views/emails');
-        
+
         if (!is_dir($emailsPath)) {
             return [];
         }
-        
+
         $templates = [];
         $files = scandir($emailsPath);
-        
+
         foreach ($files as $file) {
             if (pathinfo($file, PATHINFO_EXTENSION) === 'php' && strpos($file, '.blade.php') !== false) {
                 $templateName = str_replace('.blade.php', '', $file);
@@ -215,7 +215,7 @@ class EmailService
                 }
             }
         }
-        
+
         return $templates;
     }
 }

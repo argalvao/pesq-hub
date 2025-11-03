@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Painel do Professor - PesqHub')
+@section('title', 'Painel do Organizador - PesqHub')
 
 @section('content')
 <div class="container mx-auto px-4 lg:px-6 py-8">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold">Painel do Professor</h1>
+        <h1 class="text-3xl font-bold">Painel do Organizador</h1>
         <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-            Professor
+            Organizador
         </span>
     </div>
 
@@ -24,17 +24,17 @@
     @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Perfil do Professor -->
+        <!-- Perfil do Organizador -->
         <div class="bg-white p-6 rounded-lg shadow-sm">
             <h2 class="text-2xl font-bold mb-4">Meu Perfil</h2>
-            
+
             @if(isset($professor))
                 <div class="mb-4 p-4 bg-blue-50 rounded-md">
                     <p class="text-sm text-blue-800">
                         <strong>Status:</strong> Perfil público ativo - visível para estudantes
                     </p>
                 </div>
-                
+
                 <div class="space-y-3 mb-6">
                     <div>
                         <strong>Nome:</strong> {{ $professor['nome'] }}
@@ -77,7 +77,7 @@
         <!-- Linhas de Pesquisa -->
         <div class="bg-white p-6 rounded-lg shadow-sm">
             <h2 class="text-2xl font-bold mb-4">Linhas de Pesquisa Disponíveis</h2>
-            
+
             @if(isset($linhasPesquisa) && count($linhasPesquisa) > 0)
                 <div class="space-y-3 max-h-96 overflow-y-auto">
                     @foreach($linhasPesquisa as $linha)
@@ -106,14 +106,14 @@
             </div>
             <div class="text-sm text-gray-600">Linhas de Pesquisa</div>
         </div>
-        
+
         <div class="bg-white p-6 rounded-lg shadow-sm text-center">
             <div class="text-3xl font-bold text-green-600">
                 {{ isset($professor) ? (isset($professor['areas_interesse']) ? count($professor['areas_interesse']) : 0) : 0 }}
             </div>
             <div class="text-sm text-gray-600">Áreas de Interesse</div>
         </div>
-        
+
         <div class="bg-white p-6 rounded-lg shadow-sm text-center">
             <div class="text-3xl font-bold text-purple-600">
                 {{ isset($professor) ? 'Ativo' : 'Inativo' }}
@@ -129,43 +129,43 @@
         <button onclick="hideEditProfileModal()" class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-800 z-10">&times;</button>
         <div class="p-8">
             <h2 class="text-2xl font-bold mb-6">{{ isset($professor) ? 'Editar' : 'Completar' }} Perfil</h2>
-            
-            <form method="POST" action="{{ route('professor.profile.update') }}">
+
+            <form method="POST" action="{{ route('organizador.profile.update') }}">
                 @csrf
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Nome Completo</label>
-                        <input type="text" name="nome" value="{{ $professor['nome'] ?? $user['name'] }}" 
+                        <input type="text" name="nome" value="{{ $professor['nome'] ?? '' }}"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" required>
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Telefone</label>
-                        <input type="text" name="telefone" value="{{ $professor['telefone'] ?? '' }}" 
+                        <input type="text" name="telefone" value="{{ $professor['telefone'] ?? '' }}"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" required>
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Curso</label>
-                        <input type="text" name="curso" value="{{ $professor['curso'] ?? '' }}" 
+                        <input type="text" name="curso" value="{{ $professor['curso'] ?? '' }}"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" required>
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Áreas de Interesse (separadas por vírgula)</label>
-                        <input type="text" name="areas_interesse" 
-                               value="{{ isset($professor['areas_interesse']) ? implode(', ', $professor['areas_interesse']) : '' }}" 
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" 
+                        <input type="text" name="areas_interesse"
+                               value="{{ isset($professor['areas_interesse']) ? implode(', ', $professor['areas_interesse']) : '' }}"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
                                placeholder="Inteligência Artificial, Machine Learning, etc.">
                     </div>
-                    
+
                     @if(isset($linhasPesquisa) && count($linhasPesquisa) > 0)
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Linhas de Pesquisa</label>
                         <div class="mt-2 space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
                             @foreach($linhasPesquisa as $linha)
                                 <label class="flex items-start space-x-2">
-                                    <input type="checkbox" name="linhas_pesquisa_ids[]" value="{{ $linha['id'] }}" 
+                                    <input type="checkbox" name="linhas_pesquisa_ids[]" value="{{ $linha['id'] }}"
                                            {{ isset($professor) && in_array($linha['id'], $professor['linhas_pesquisa_ids'] ?? []) ? 'checked' : '' }}
                                            class="mt-1">
                                     <div>
@@ -178,13 +178,13 @@
                     </div>
                     @endif
                 </div>
-                
+
                 <div class="mt-6 flex justify-end space-x-2">
-                    <button type="button" onclick="hideEditProfileModal()" 
+                    <button type="button" onclick="hideEditProfileModal()"
                             class="px-4 py-2 text-gray-600 border rounded-lg hover:bg-gray-50">
                         Cancelar
                     </button>
-                    <button type="submit" 
+                    <button type="submit"
                             class="bg-indigo-600 text-white font-semibold px-5 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
                         Salvar Perfil
                     </button>
