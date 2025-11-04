@@ -181,26 +181,26 @@
 function showProfessorModal(professor) {
     const linhasPesquisa = @json($linhasPesquisa ?? []);
     const professorLinhas = linhasPesquisa.filter(linha => 
-        organizador.linhas_pesquisa_ids && organizador.linhas_pesquisa_ids.includes(linha.id)
+        professor.linhas_pesquisa_ids && professor.linhas_pesquisa_ids.includes(linha.id)
     );
 
     const content = `
         <div class="flex items-start space-x-4 mb-6">
             <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center text-3xl font-bold text-indigo-700">
-                ${organizador.nome.charAt(0)}
+                ${professor.nome.charAt(0)}
             </div>
             <div class="flex-grow">
-                <h2 class="text-3xl font-bold">${organizador.nome}</h2>
-                <p class="text-xl text-gray-600">${organizador.curso}</p>
-                <p class="text-gray-500 mt-1">📞 ${organizador.telefone || 'Não informado'}</p>
+                <h2 class="text-3xl font-bold">${professor.nome}</h2>
+                <p class="text-xl text-gray-600">${professor.curso}</p>
+                <p class="text-gray-500 mt-1">📞 ${professor.telefone || 'Não informado'}</p>
             </div>
         </div>
         
-        ${organizador.areas_interesse && organizador.areas_interesse.length > 0 ? `
+        ${professor.areas_interesse && professor.areas_interesse.length > 0 ? `
             <div class="mb-6">
                 <h3 class="text-lg font-semibold mb-2">Áreas de Interesse</h3>
                 <div class="flex flex-wrap gap-2">
-                    ${organizador.areas_interesse.map(area => 
+                    ${professor.areas_interesse.map(area => 
                         `<span class="bg-gray-200 text-gray-700 text-sm px-3 py-1 rounded-full">${area}</span>`
                     ).join('')}
                 </div>
@@ -222,7 +222,7 @@ function showProfessorModal(professor) {
         ` : ''}
 
         <div class="flex justify-end">
-            <button onclick="showContactProfessorModal('${organizador.nome}')" 
+            <button onclick="showContactProfessorModal('${professor.nome}')" 
                     class="bg-indigo-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
                 Entrar em Contato
             </button>
