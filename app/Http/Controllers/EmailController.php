@@ -51,7 +51,7 @@ class EmailController extends Controller
                 $validatedData['template'],
                 $validatedData['dados'] ?? [],
                 $validatedData['assunto'] ?? null,
-                $validatedData['remetente'] ?? 'abel@ecomp.uefs.br',
+                $validatedData['remetente'] ?? 'pesqhub@gmail.com',
                 $validatedData['nome_remetente'] ?? 'PesqHub - UEFS'
             );
 

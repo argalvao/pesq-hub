@@ -24,7 +24,7 @@ class EmailService
         string $template,
         array $dados = [],
         ?string $assunto = null,
-        string $remetente = 'abel@ecomp.uefs.br',
+        string $remetente = 'pesqhub@gmail.com',
         string $nomeRemetente = 'PesqHub - UEFS'
     ): array {
         try {
@@ -103,6 +103,9 @@ class EmailService
     {
         $assuntos = [
             'teste-sistema' => '🧪 Teste do Sistema de E-mails - PesqHub UEFS',
+            'contato-com-professor' => '📧 Contato via PesqHub UEFS',
+            'contato-professor' => '📧 Contato via PesqHub UEFS',
+            'confirmacao-cadastro' => '🔐 Confirmação de Cadastro - PesqHub UEFS',
             'contato-com-organizador' => '📧 Contato via PesqHub UEFS',
             'contato-organizador' => '📧 Contato via PesqHub UEFS',
             'notificacao' => '🔔 Notificação - PesqHub UEFS',
@@ -133,6 +136,51 @@ class EmailService
     }
 
     /**
+     * Enviar e-mail de confirmação de cadastro com token
+     *
+     * @param string $emailUsuario E-mail do usuário
+     * @param string $nomeUsuario Nome do usuário
+     * @param string $token Token de 6 dígitos
+     * @param string|null $tipoUsuario Tipo do usuário (admin, professor, estudante)
+     * @return array
+     */
+    public function enviarConfirmacaoCadastro(
+        string $emailUsuario,
+        string $nomeUsuario,
+        string $token,
+        ?string $tipoUsuario = null
+    ): array {
+        $dadosTemplate = [
+            'nome_usuario' => $nomeUsuario,
+            'email_usuario' => $emailUsuario,
+            'token' => $token,
+            'tipo_usuario' => $tipoUsuario
+        ];
+
+        $assunto = '🔐 Confirmação de Cadastro - PesqHub UEFS';
+        
+        return $this->enviarEmail(
+            $emailUsuario,
+            'confirmacao-cadastro',
+            $dadosTemplate,
+            $assunto,
+            'pesqhub@gmail.com',
+            'PesqHub UEFS - Sistema de Cadastros'
+        );
+    }
+
+    /**
+     * Gerar token numérico de 6 dígitos
+     *
+     * @return string
+     */
+    public function gerarToken(): string
+    {
+        return str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Enviar e-mail de contato com professor
      * Enviar e-mail de contato com organizador
      *
      * @param string $emailProfessor E-mail do organizador destinatário
@@ -174,7 +222,7 @@ class EmailService
             'contato-com-organizador',
             $dadosTemplate,
             $assunto,
-            'abel@ecomp.uefs.br', // Sempre usar o e-mail oficial
+            'pesqhub@gmail.com', // Sempre usar o e-mail oficial
             'PesqHub UEFS - Sistema de Contatos' // Nome do remetente oficial
         );
     }
