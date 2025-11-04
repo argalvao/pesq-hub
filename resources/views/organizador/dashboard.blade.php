@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Admin - PesqHub')
+@section('title', 'Dashboard organizador - PesqHub')
 
 @section('content')
     <div class="container mx-auto px-4 lg:px-6 py-8">
-        <h1 class="text-3xl font-bold mb-6">Painel do Administrador</h1>
+        <h1 class="text-3xl font-bold mb-6">Painel do organizador</h1>
 
         @if(isset($error))
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -15,24 +15,21 @@
         <div class="flex flex-col md:flex-row gap-8">
             <aside class="w-full md:w-1/4 lg:w-1/5">
                 <nav class="bg-white p-4 rounded-lg shadow-sm space-y-2 sticky top-24">
-                    <a href="#" class="sidebar-link block px-3 py-2 rounded-md admin-panel-trigger active" data-panel="linhas">
+                    <a href="#" class="sidebar-link block px-3 py-2 rounded-md organizador-panel-trigger active" data-panel="linhas">
                         Gerenciar Linhas de Pesquisa
                     </a>
-                    <a href="#" class="sidebar-link block px-3 py-2 rounded-md admin-panel-trigger" data-panel="professores">
+                    <a href="#" class="sidebar-link block px-3 py-2 rounded-md organizador-panel-trigger" data-panel="professores">
                         Gerenciar Professores
                     </a>
-                    <a href="#" class="sidebar-link block px-3 py-2 rounded-md admin-panel-trigger" data-panel="usuarios">
-                        Gerenciar Usuários
-                    </a>
-                    <a href="#" class="sidebar-link block px-3 py-2 rounded-md admin-panel-trigger" data-panel="areas">
+                    <a href="#" class="sidebar-link block px-3 py-2 rounded-md organizador-panel-trigger" data-panel="areas">
                         Gerenciar Áreas de Pesquisa
                     </a>
                 </nav>
             </aside>
 
             <div class="w-full md:w-3/4 lg:w-4/5">
-                <div id="admin-content">
-                    <div id="panel-linhas" class="admin-panel active">
+                <div id="organizador-content">
+                    <div id="panel-linhas" class="organizador-panel active">
                         <div class="bg-white p-6 rounded-lg shadow-sm">
                             <div class="flex justify-between items-center mb-4">
                                 <h2 class="text-2xl font-bold">Linhas de Pesquisa</h2>
@@ -63,7 +60,7 @@
                         </div>
                     </div>
 
-                    <div id="panel-professores" class="admin-panel hidden">
+                    <div id="panel-professores" class="organizador-panel hidden">
                         <div class="bg-white p-6 rounded-lg shadow-sm">
                             <div class="flex justify-between items-center mb-4">
                                 <h2 class="text-2xl font-bold">Professores</h2>
@@ -94,7 +91,7 @@
                         </div>
                     </div>
 
-                    <div id="panel-usuarios" class="admin-panel hidden">
+                    <div id="panel-usuarios" class="organizador-panel hidden">
                         <div class="bg-white p-6 rounded-lg shadow-sm">
                             <div class="flex justify-between items-center mb-4">
                                 <h2 class="text-2xl font-bold">Usuários</h2>
@@ -123,8 +120,8 @@
                         </div>
                     </div>
 
-                    <div id="panel-areas" class="admin-panel hidden">
-                        <x-manage-areas-panel base-path="/admin" />
+                    <div id="panel-areas" class="organizador-panel hidden">
+                        <x-manage-areas-panel base-path="/organizador" />
                     </div>
 
                 </div>
@@ -136,13 +133,12 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const AdminPanel = {
+            const organizadorPanel = {
                 data: {
                     linhasPesquisa: [],
                     professores: [],
                     cursos: [],
                     areasPesquisa: [],
-                    usuarios: [], // NOVO DADO
                     currentPanel: 'linhas'
                 },
 
@@ -154,13 +150,12 @@
                         this.loadProfessores(),
                         this.loadCursos(),
                         this.loadAreasPesquisa(),
-                        this.loadUsuarios() // NOVO LOAD
                     ]);
                 },
 
                 setupEventListeners() {
                     // Panel navigation
-                    document.querySelectorAll('.admin-panel-trigger').forEach(trigger => {
+                    document.querySelectorAll('.organizador-panel-trigger').forEach(trigger => {
                         trigger.addEventListener('click', (e) => {
                             e.preventDefault();
                             this.showPanel(trigger.dataset.panel);
@@ -208,7 +203,7 @@
                     });
 
                     // Update panels
-                    document.querySelectorAll('.admin-panel').forEach(panelEl => {
+                    document.querySelectorAll('.organizador-panel').forEach(panelEl => {
                         panelEl.classList.toggle('active', panelEl.id === `panel-${panel}`);
                         panelEl.classList.toggle('hidden', panelEl.id !== `panel-${panel}`);
                     });
@@ -217,9 +212,8 @@
                 // =============== FUNÇÕES DE CARREGAMENTO DE DADOS ===============
 
                 async loadLinhasPesquisa() {
-                    // ... (código existente - sem alteração)
                     try {
-                        const response = await fetch('/admin/linhas-pesquisa');
+                        const response = await fetch('/organizador/linhas-pesquisa');
                         const result = await response.json();
 
                         if (result.success) {
@@ -234,9 +228,8 @@
                 },
 
                 async loadProfessores() {
-                    // ... (código existente - sem alteração)
                     try {
-                        const response = await fetch('/admin/professores');
+                        const response = await fetch('/organizador/professores');
                         const result = await response.json();
 
                         if (result.success) {
@@ -251,9 +244,8 @@
                 },
 
                 async loadCursos() {
-                    // ... (código existente - sem alteração)
                     try {
-                        const response = await fetch('/admin/cursos');
+                        const response = await fetch('/organizador/cursos');
                         const result = await response.json();
                         if (result.success) {
                             this.data.cursos = result.data;
@@ -268,7 +260,7 @@
                 async loadAreasPesquisa() {
                     // ... (código existente - sem alteração)
                     try {
-                        const response = await fetch('/admin/areas-pesquisa');
+                        const response = await fetch('/organizador/areas-pesquisa');
                         const result = await response.json();
                         if (result.success) {
                             this.data.areasPesquisa = result.data;
@@ -280,28 +272,9 @@
                     }
                 },
 
-                // NOVA FUNÇÃO: Carregar Usuários
-                async loadUsuarios() {
-                    try {
-                        // !! ATENÇÃO: Esta rota /admin/usuarios precisa ser criada no seu web.php !!
-                        const response = await fetch('/admin/usuarios');
-                        const result = await response.json();
-
-                        if (result.success) {
-                            this.data.usuarios = result.data;
-                            this.renderUsuariosTable();
-                        } else {
-                            this.showError('Erro ao carregar usuários. Verifique se a rota GET /admin/usuarios existe.');
-                        }
-                    } catch (error) {
-                        this.showError('Erro de conexão ao carregar usuários');
-                    }
-                },
-
                 // =============== FUNÇÕES DE RENDERIZAÇÃO ===============
 
                 renderLinhasTable() {
-                    // ... (código existente - sem alteração)
                     const tbody = document.getElementById('linhas-tbody');
 
                     if (this.data.linhasPesquisa.length === 0) {
@@ -323,7 +296,6 @@
                 },
 
                 renderProfessoresTable() {
-                    // ... (código existente - sem alteração)
                     const tbody = document.getElementById('professores-tbody');
 
                     if (this.data.professores.length === 0) {
@@ -344,40 +316,9 @@
             `).join('');
                 },
 
-                // NOVA FUNÇÃO: Renderizar Tabela de Usuários
-                renderUsuariosTable() {
-                    const tbody = document.getElementById('usuarios-tbody');
-
-                    if (this.data.usuarios.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-gray-500">Nenhum usuário cadastrado</td></tr>';
-                        return;
-                    }
-
-                    tbody.innerHTML = this.data.usuarios.map(usuario => `
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-3 font-medium">${usuario.nome}</td>
-                    <td class="p-3 text-gray-600">${usuario.email}</td>
-                    <td class="p-3 text-gray-600">${usuario.curso || 'N/A'}</td>
-                    <td class="p-3">
-                        ${usuario.ativo
-                        ? '<span class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">Ativo</span>'
-                        : '<span class="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 rounded-full">Inativo</span>'
-                    }
-                    </td>
-                    <td class="p-3 space-x-2">
-                        ${usuario.ativo
-                        ? `<button data-id="${usuario.id}" class="deactivate-user-btn text-red-600 hover:underline">Desativar</button>`
-                        : `<button data-id="${usuario.id}" class="activate-user-btn text-green-600 hover:underline">Ativar</button>`
-                    }
-                    </td>
-                </tr>
-            `).join('');
-                },
-
                 // =============== MODAIS E SALVAMENTO ===============
 
                 showLinhaModal(id = null) {
-                    // ... (código existente - sem alteração)
                     const isEditing = id !== null;
                     const linha = isEditing
                         ? this.data.linhasPesquisa.find(l => l.id === id)
@@ -391,7 +332,7 @@
 
                     const content = `
                 <button onclick="App.hideGenericModal()" class="absolute top-2 right-2 text-2xl text-gray-500 hover:text-gray-800">&times;</button>
-                <form onsubmit="AdminPanel.saveLinha(event)" class="p-8" data-id="${isEditing ? linha.id : ''}">
+                <form onsubmit="organizadorPanel.saveLinha(event)" class="p-8" data-id="${isEditing ? linha.id : ''}">
                     <h2 class="text-2xl font-bold mb-4">${isEditing ? 'Editar' : 'Adicionar'} Linha de Pesquisa</h2>
                     <div class="space-y-4">
                         <div>
@@ -424,7 +365,6 @@
                 },
 
                 showProfessorModal(id = null) {
-                    // ... (código existente - sem alteração)
                     const isEditing = id !== null;
                     const professor = isEditing
                         ? this.data.professores.find(p => p.id === id)
@@ -444,7 +384,7 @@
 
                     const content = `
                 <button onclick="App.hideGenericModal()" class="absolute top-2 right-2 text-2xl text-gray-500 hover:text-gray-800">&times;</button>
-                <form onsubmit="AdminPanel.saveProfessor(event)" class="p-8" data-id="${isEditing ? professor.id : ''}">
+                <form onsubmit="organizadorPanel.saveProfessor(event)" class="p-8" data-id="${isEditing ? professor.id : ''}">
                     <h2 class="text-2xl font-bold mb-6">${isEditing ? 'Editar' : 'Adicionar'} Professor</h2>
                     <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
                         <input type="text" name="nome" placeholder="Nome Completo" class="w-full px-3 py-2 border rounded-md" value="${professor.nome}" required>
@@ -486,7 +426,6 @@
                 },
 
                 async saveLinha(event) {
-                    // ... (código existente - sem alteração)
                     event.preventDefault();
                     const form = event.target;
                     const id = form.dataset.id;
@@ -499,7 +438,7 @@
                     };
 
                     try {
-                        const url = isEditing ? `/admin/linhas-pesquisa/${id}` : '/admin/linhas-pesquisa';
+                        const url = isEditing ? `/organizador/linhas-pesquisa/${id}` : '/organizador/linhas-pesquisa';
                         const method = isEditing ? 'PUT' : 'POST';
 
                         const response = await fetch(url, {
@@ -526,7 +465,6 @@
                 },
 
                 async saveProfessor(event) {
-                    // ... (código existente - sem alteração)
                     event.preventDefault();
                     const form = event.target;
                     const id = form.dataset.id;
@@ -543,7 +481,7 @@
                     };
 
                     try {
-                        const url = isEditing ? `/admin/professores/${id}` : '/admin/professores';
+                        const url = isEditing ? `/organizador/professores/${id}` : '/organizador/professores';
                         const method = isEditing ? 'PUT' : 'POST';
 
                         const response = await fetch(url, {
@@ -570,13 +508,12 @@
                 },
 
                 async deleteLinha(id) {
-                    // ... (código existente - sem alteração)
                     if (!confirm('Tem certeza de que deseja excluir esta linha de pesquisa?')) {
                         return;
                     }
 
                     try {
-                        const response = await fetch(`/admin/linhas-pesquisa/${id}`, {
+                        const response = await fetch(`/organizador/linhas-pesquisa/${id}`, {
                             method: 'DELETE',
                             headers: {
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -597,13 +534,12 @@
                 },
 
                 async deleteProfessor(id) {
-                    // ... (código existente - sem alteração)
                     if (!confirm('Tem certeza de que deseja excluir este professor?')) {
                         return;
                     }
 
                     try {
-                        const response = await fetch(`/admin/professores/${id}`, {
+                        const response = await fetch(`/organizador/professores/${id}`, {
                             method: 'DELETE',
                             headers: {
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -623,61 +559,6 @@
                     }
                 },
 
-                // --- NOVAS FUNÇÕES ---
-
-                async desativarUsuario(id) {
-                    if (!confirm('Tem certeza de que deseja desativar este usuário?')) {
-                        return;
-                    }
-
-                    try {
-                        const response = await fetch(`/admin/usuarios/desativar/${id}`, {
-                            method: 'PUT',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                            }
-                        });
-
-                        const result = await response.json();
-
-                        if (result.success) {
-                            await this.loadUsuarios(); // Recarrega a tabela de usuários
-                            this.showSuccess('Usuário desativado com sucesso!');
-                        } else {
-                            this.showError(result.error || 'Erro ao desativar usuário');
-                        }
-                    } catch (error) {
-                        this.showError('Erro de conexão');
-                    }
-                },
-
-                async ativarUsuario(id) {
-                    if (!confirm('Tem certeza de que deseja ativar este usuário?')) {
-                        return;
-                    }
-
-                    try {
-                        const response = await fetch(`/admin/usuarios/ativar/${id}`, {
-                            method: 'PUT',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                            }
-                        });
-
-                        const result = await response.json();
-
-                        if (result.success) {
-                            await this.loadUsuarios(); // Recarrega a tabela de usuários
-                            this.showSuccess('Usuário ativado com sucesso!');
-                        } else {
-                            this.showError(result.error || 'Erro ao ativar usuário');
-                        }
-                    } catch (error) {
-                        this.showError('Erro de conexão');
-                    }
-                },
-
-
                 showSuccess(message) {
                     // Simple alert for now - you can replace with a toast notification
                     alert(message);
@@ -688,9 +569,9 @@
                 }
             };
 
-            // Make AdminPanel globally available
-            window.AdminPanel = AdminPanel;
-            AdminPanel.init();
+            // Make organizadorPanel globally available
+            window.organizadorPanel = organizadorPanel;
+            organizadorPanel.init();
 
             // Keep App available for modal functions
             if (!window.App) {
@@ -722,8 +603,8 @@
 
 @push('styles')
     <style>
-        .admin-panel { display: none; }
-        .admin-panel.active { display: block; }
+        .organizador-panel { display: none; }
+        .organizador-panel.active { display: block; }
 
         /* Melhoria: Estilo para selects múltiplos */
         select[multiple] {

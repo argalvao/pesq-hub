@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Login Admin - PesqHub')
+@section('title', 'Login - PesqHub')
 
 @section('content')
 <div class="min-h-[calc(100vh-80px)] flex items-center justify-center">
     <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <div class="text-center mb-6">
-            <h2 class="text-3xl font-bold text-gray-900">Login de Administrador</h2>
+            <h2 class="text-3xl font-bold text-gray-900">Login</h2>
             <p class="text-gray-600 mt-2">Digite suas credenciais para acessar o painel</p>
         </div>
 

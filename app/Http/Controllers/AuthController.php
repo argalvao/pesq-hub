@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use App\Services\DatabaseService;
 
 class AuthController extends Controller
@@ -34,8 +35,8 @@ class AuthController extends Controller
 
         try {
             $user = $this->databaseService->getUserByEmail($request->email);
-            
-            if ($user && Hash::check($request->password, $user['password'])) {
+
+            if ($user && Hash::check($request->password, $user['senha'])) {
                 if (!$user['ativo']) {
                     return back()->withErrors([
                         'email' => 'Sua conta está desativada. Entre em contato com o administrador.'
@@ -44,7 +45,7 @@ class AuthController extends Controller
 
                 // Salvar usuário na sessão
                 Session::put('user', $user);
-                
+
                 return $this->redirectBasedOnLevel($user);
             }
         } catch (\Exception $e) {
@@ -63,7 +64,7 @@ class AuthController extends Controller
         Session::forget('user');
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        
+
         return redirect()->route('home')->with('success', 'Logout realizado com sucesso.');
     }
 
@@ -78,22 +79,23 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'password' => 'required|string|min:6|confirmed',
-            'nivel_permissao' => 'required|in:2,3' // Só professor ou estudante
+            'nivel_permissao' => 'required|in:2,3' // Só organizador ou estudante
         ]);
 
         try {
             $user = $this->databaseService->createUser([
-                'name' => $request->name,
+                'nome' => $request->name,
                 'email' => $request->email,
-                'password' => $request->password,
-                'nivel_permissao' => $request->nivel_permissao,
-                'ativo' => 1
+                'senha' => $request->password,
+                'tipo_permissao' => ($request->nivel_permissao == 2? DatabaseService::NIVEL_ORGANIZADOR : DatabaseService::NIVEL_BASICO),
+                'ativo' => !($request->nivel_permissao == 2),
+                'id_curso' => $request->id_curso ?? null
             ]);
 
             Session::put('user', $user);
-            
+
             return $this->redirectBasedOnLevel($user)->with('success', 'Conta criada com sucesso!');
-            
+
         } catch (\Exception $e) {
             return back()->withErrors([
                 'email' => $e->getMessage()
@@ -103,13 +105,13 @@ class AuthController extends Controller
 
     private function redirectBasedOnLevel($user)
     {
-        switch ($user['nivel_permissao']) {
+        switch ($user['tipo_permissao']) {
             case DatabaseService::NIVEL_ADMIN:
                 return redirect()->route('admin.dashboard');
-            case DatabaseService::NIVEL_PROFESSOR:
-                return redirect()->route('professor.dashboard');
-            case DatabaseService::NIVEL_ESTUDANTE:
-                return redirect()->route('estudante.dashboard');
+            case DatabaseService::NIVEL_ORGANIZADOR:
+                return redirect()->route('organizador.dashboard');
+            case DatabaseService::NIVEL_BASICO:
+                return redirect()->route('basico.dashboard');
             default:
                 return redirect()->route('home');
         }
