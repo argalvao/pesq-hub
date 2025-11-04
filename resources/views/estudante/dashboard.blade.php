@@ -180,7 +180,7 @@
 <script>
 function showProfessorModal(professor) {
     const linhasPesquisa = @json($linhasPesquisa ?? []);
-    const professorLinhas = linhasPesquisa.filter(linha =>
+    const professorLinhas = linhasPesquisa.filter(linha => 
         professor.linhas_pesquisa_ids && professor.linhas_pesquisa_ids.includes(linha.id)
     );
 
@@ -195,12 +195,12 @@ function showProfessorModal(professor) {
                 <p class="text-gray-500 mt-1">📞 ${professor.telefone || 'Não informado'}</p>
             </div>
         </div>
-
+        
         ${professor.areas_interesse && professor.areas_interesse.length > 0 ? `
             <div class="mb-6">
                 <h3 class="text-lg font-semibold mb-2">Áreas de Interesse</h3>
                 <div class="flex flex-wrap gap-2">
-                    ${professor.areas_interesse.map(area =>
+                    ${professor.areas_interesse.map(area => 
                         `<span class="bg-gray-200 text-gray-700 text-sm px-3 py-1 rounded-full">${area}</span>`
                     ).join('')}
                 </div>
@@ -222,7 +222,7 @@ function showProfessorModal(professor) {
         ` : ''}
 
         <div class="flex justify-end">
-            <button onclick="showContactProfessorModal('${professor.nome}')"
+            <button onclick="showContactProfessorModal('${professor.nome}')" 
                     class="bg-indigo-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
                 Entrar em Contato
             </button>

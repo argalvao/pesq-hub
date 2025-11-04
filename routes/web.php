@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\OrganizadorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EmailController;
 
@@ -48,29 +49,29 @@ Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(fu
 
 // Rotas de organizador (protegidas por user.level:organizador middleware)
 Route::middleware('user.level:organizador')->prefix('organizador')->name('organizador.')->group(function () {
-    Route::get('/dashboard', [App\Http\Controllers\OrganizadorController::class, 'dashboard'])->name('dashboard');
-    Route::post('/profile', [App\Http\Controllers\OrganizadorController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/dashboard', [OrganizadorController::class, 'dashboard'])->name('dashboard');
+    Route::post('/profile', [OrganizadorController::class, 'updateProfile'])->name('profile.update');
 
     // API routes para Áreas de Pesquisa (GET já existe)
-    Route::get('/areas-pesquisa', [AdminController::class, 'getAreasPesquisa'])->name('areas.index');
-    Route::post('/areas-pesquisa', [AdminController::class, 'storeAreaPesquisa'])->name('areas.store');
-    Route::put('/areas-pesquisa/{id}', [AdminController::class, 'updateAreaPesquisa'])->name('areas.update');
-    Route::delete('/areas-pesquisa/{id}', [AdminController::class, 'destroyAreaPesquisa'])->name('areas.destroy');
+    Route::get('/areas-pesquisa', [OrganizadorController::class, 'getAreasPesquisa'])->name('areas.index');
+    Route::post('/areas-pesquisa', [OrganizadorController::class, 'storeAreaPesquisa'])->name('areas.store');
+    Route::put('/areas-pesquisa/{id}', [OrganizadorController::class, 'updateAreaPesquisa'])->name('areas.update');
+    Route::delete('/areas-pesquisa/{id}', [OrganizadorController::class, 'destroyAreaPesquisa'])->name('areas.destroy');
 
     // API routes para Professores
-    Route::get('/professores', [App\Http\Controllers\OrganizadorController::class, 'getProfessores'])->name('professores.index');
-    Route::post('/professores', [App\Http\Controllers\OrganizadorController::class, 'storeProfessor'])->name('professores.store');
-    Route::put('/professores/{id}', [App\Http\Controllers\OrganizadorController::class, 'updateProfessor'])->name('professores.update');
-    Route::delete('/professores/{id}', [App\Http\Controllers\OrganizadorController::class, 'destroyProfessor'])->name('professores.destroy');
+    Route::get('/professores', [OrganizadorController::class, 'getProfessores'])->name('professores.index');
+    Route::post('/professores', [OrganizadorController::class, 'storeProfessor'])->name('professores.store');
+    Route::put('/professores/{id}', [OrganizadorController::class, 'updateProfessor'])->name('professores.update');
+    Route::delete('/professores/{id}', [OrganizadorController::class, 'destroyProfessor'])->name('professores.destroy');
 
     // API routes para Linhas de Pesquisa
-    Route::get('/linhas-pesquisa', [App\Http\Controllers\OrganizadorController::class, 'getLinhasPesquisa'])->name('linhas.index');
-    Route::post('/linhas-pesquisa', [App\Http\Controllers\OrganizadorController::class, 'storeLinhaPesquisa'])->name('linhas.store');
-    Route::put('/linhas-pesquisa/{id}', [App\Http\Controllers\OrganizadorController::class, 'updateLinhaPesquisa'])->name('linhas.update');
-    Route::delete('/linhas-pesquisa/{id}', [App\Http\Controllers\OrganizadorController::class, 'destroyLinhaPesquisa'])->name('linhas.destroy');
+    Route::get('/linhas-pesquisa', [OrganizadorController::class, 'getLinhasPesquisa'])->name('linhas.index');
+    Route::post('/linhas-pesquisa', [OrganizadorController::class, 'storeLinhaPesquisa'])->name('linhas.store');
+    Route::put('/linhas-pesquisa/{id}', [OrganizadorController::class, 'updateLinhaPesquisa'])->name('linhas.update');
+    Route::delete('/linhas-pesquisa/{id}', [OrganizadorController::class, 'destroyLinhaPesquisa'])->name('linhas.destroy');
 
     // API route para Cursos (necessária para o modal de Professor)
-    Route::get('/cursos', [App\Http\Controllers\OrganizadorController::class, 'getCursos'])->name('cursos.index');
+    Route::get('/cursos', [OrganizadorController::class, 'getCursos'])->name('cursos.index');
 });
 
 // Rotas de estudante (protegidas por user.level:basico middleware)

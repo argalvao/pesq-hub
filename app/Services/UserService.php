@@ -242,7 +242,7 @@ class UserService
         return $user && $user['tipo_permissao'] == self::NIVEL_ADMIN;
     }
 
-    public function canAccessProfessor($user)
+    public function canAccessOrganizador($user)
     {
         return $user && in_array($user['tipo_permissao'], [self::NIVEL_ADMIN, self::NIVEL_ORGANIZADOR]);
     }
