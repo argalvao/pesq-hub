@@ -32,9 +32,15 @@
 
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700">E-mail</label>
-                    <input type="email" id="email" name="email" value="{{ old('email') }}" 
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
-                           required>
+                    <div class="relative">
+                        <input type="email" id="email" name="email" value="{{ old('email') }}" 
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
+                               required>
+                        <div id="email-spinner" class="absolute right-3 top-1/2 transform -translate-y-1/2 hidden">
+                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
+                        </div>
+                    </div>
+                    <div id="email-feedback" class="mt-1 text-sm hidden"></div>
                 </div>
 
                 <div>
@@ -85,4 +91,149 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const emailInput = document.getElementById('email');
+    const emailFeedback = document.getElementById('email-feedback');
+    const emailSpinner = document.getElementById('email-spinner');
+    const submitButton = document.querySelector('button[type="submit"]');
+    
+    let emailCheckTimeout;
+    let isEmailValid = false;
+    
+    function showFeedback(message, isError = false) {
+        emailFeedback.textContent = message;
+        emailFeedback.className = `mt-1 text-sm ${isError ? 'text-red-600' : 'text-green-600'}`;
+        emailFeedback.classList.remove('hidden');
+    }
+    
+    function hideFeedback() {
+        emailFeedback.classList.add('hidden');
+    }
+    
+    function showSpinner() {
+        emailSpinner.classList.remove('hidden');
+    }
+    
+    function hideSpinner() {
+        emailSpinner.classList.add('hidden');
+    }
+    
+    function updateEmailFieldStyle(isError = false) {
+        if (isError) {
+            emailInput.classList.remove('border-gray-300', 'focus:border-indigo-500', 'border-green-500', 'focus:border-green-500');
+            emailInput.classList.add('border-red-500', 'focus:border-red-500');
+        } else if (isEmailValid) {
+            emailInput.classList.remove('border-gray-300', 'focus:border-indigo-500', 'border-red-500', 'focus:border-red-500');
+            emailInput.classList.add('border-green-500', 'focus:border-green-500');
+        } else {
+            emailInput.classList.remove('border-red-500', 'focus:border-red-500', 'border-green-500', 'focus:border-green-500');
+            emailInput.classList.add('border-gray-300', 'focus:border-indigo-500');
+        }
+    }
+    
+    function updateSubmitButton() {
+        if (isEmailValid) {
+            submitButton.disabled = false;
+            submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+            submitButton.disabled = true;
+            submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    }
+    
+    async function checkEmail(email) {
+        // Validação básica de e-mail
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (!email || !emailRegex.test(email)) {
+            if (email && !emailRegex.test(email)) {
+                showFeedback('⚠️ Formato de e-mail inválido', true);
+                isEmailValid = false;
+                updateEmailFieldStyle(true);
+            } else {
+                hideFeedback();
+                isEmailValid = false;
+                updateEmailFieldStyle();
+            }
+            updateSubmitButton();
+            return;
+        }
+        
+        showSpinner();
+        hideFeedback();
+        
+        try {
+            const response = await fetch('{{ route("check.email") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ email: email })
+            });
+            
+            const data = await response.json();
+            
+            hideSpinner();
+            
+            if (data.exists) {
+                showFeedback('❌ Este e-mail já está cadastrado no sistema. Tente fazer login ou use outro e-mail.', true);
+                isEmailValid = false;
+                updateEmailFieldStyle(true);
+            } else {
+                showFeedback('✅ E-mail disponível para cadastro', false);
+                isEmailValid = true;
+                updateEmailFieldStyle(false);
+            }
+            
+        } catch (error) {
+            hideSpinner();
+            showFeedback('⚠️ Erro ao verificar e-mail. Tente novamente.', true);
+            isEmailValid = false;
+            updateEmailFieldStyle(true);
+        }
+        
+        updateSubmitButton();
+    }
+    
+    emailInput.addEventListener('input', function() {
+        const email = this.value.trim();
+        
+        // Limpar timeout anterior
+        clearTimeout(emailCheckTimeout);
+        
+        if (email.length === 0) {
+            hideFeedback();
+            hideSpinner();
+            isEmailValid = false;
+            updateEmailFieldStyle();
+            updateSubmitButton();
+            return;
+        }
+        
+        // Aguardar 500ms após parar de digitar
+        emailCheckTimeout = setTimeout(() => {
+            checkEmail(email);
+        }, 500);
+    });
+    
+    emailInput.addEventListener('blur', function() {
+        const email = this.value.trim();
+        if (email && email.includes('@')) {
+            clearTimeout(emailCheckTimeout);
+            checkEmail(email);
+        }
+    });
+    
+    // Inicializar botão como desabilitado
+    updateSubmitButton();
+    
+    // Verificar se há valor inicial (old input)
+    if (emailInput.value) {
+        checkEmail(emailInput.value);
+    }
+});
+</script>
 @endsection

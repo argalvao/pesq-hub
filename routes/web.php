@@ -18,6 +18,9 @@ Route::get('/register', [AuthController::class, 'showRegister'])->name('register
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Rota para verificação de e-mail (pública)
+Route::post('/check-email', [AuthController::class, 'checkEmail'])->name('check.email');
+
 // Rotas de admin (protegidas por user.level:admin middleware)
 Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
@@ -99,6 +102,11 @@ Route::post('/token/teste', [App\Http\Controllers\TokenConfirmacaoController::cl
 Route::get('/test-tokens', function () {
     return view('test-tokens');
 })->name('test.tokens');
+
+// Página de teste da validação de e-mail
+Route::get('/test-email-validation', function () {
+    return view('test-email-validation');
+})->name('test.email.validation');
 
 // Rotas para cadastro com confirmação por token
 Route::post('/cadastro/solicitar', [App\Http\Controllers\CadastroComConfirmacaoController::class, 'solicitarCadastro'])->name('cadastro.solicitar');
