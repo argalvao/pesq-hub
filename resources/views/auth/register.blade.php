@@ -43,7 +43,7 @@
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
                             required>
                         <option value="">Selecione o tipo</option>
-                        <option value="2" {{ old('nivel_permissao') == '2' ? 'selected' : '' }}>Professor</option>
+                        <option value="2" {{ old('nivel_permissao') == '2' ? 'selected' : '' }}>Organizador</option>
                         <option value="3" {{ old('nivel_permissao') == '3' ? 'selected' : '' }}>Estudante</option>
                     </select>
                 </div>

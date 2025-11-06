@@ -3,7 +3,7 @@
  * Este arquivo mostra como integrar o sistema de e-mail no frontend
  */
 
-// Exemplo 1: Usando a rota específica /contact-professor (recomendado)
+// Exemplo 1: Usando a rota específica /contact-organizador (recomendado)
 async function enviarContatoProfessor(dadosContato) {
     try {
         const response = await fetch('/contact-professor', {
@@ -24,7 +24,7 @@ async function enviarContatoProfessor(dadosContato) {
         });
 
         const resultado = await response.json();
-        
+
         if (resultado.success) {
             console.log('✅ E-mail enviado com sucesso!', resultado);
             // Mostrar notificação de sucesso
@@ -34,7 +34,7 @@ async function enviarContatoProfessor(dadosContato) {
             // Mostrar notificação de erro
             mostrarNotificacao(resultado.message, 'erro');
         }
-        
+
         return resultado;
     } catch (error) {
         console.error('❌ Erro na requisição:', error);
@@ -54,7 +54,7 @@ async function enviarContatoProfessorGenerico(dadosContato) {
             },
             body: JSON.stringify({
                 destinatario: dadosContato.emailProfessor,
-                template: 'contato-com-professor',
+                template: 'contato-com-organizador',
                 assunto: dadosContato.assunto || `Contato de ${dadosContato.nomeEstudante} via PesqHub UEFS`,
                 remetente: dadosContato.emailEstudante,
                 nome_remetente: `${dadosContato.nomeEstudante} - PesqHub UEFS`,
@@ -80,10 +80,10 @@ async function enviarContatoProfessorGenerico(dadosContato) {
 function configurarModalContato() {
     const modalContato = document.getElementById('modalContato');
     const formContato = document.getElementById('formContato');
-    
+
     formContato.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         // Coletar dados do formulário
         const dadosContato = {
             emailProfessor: document.getElementById('emailProfessor').value,
@@ -94,19 +94,19 @@ function configurarModalContato() {
             cursoEstudante: document.getElementById('cursoEstudante').value,
             assunto: document.getElementById('assunto').value
         };
-        
+
         // Mostrar loading
         const btnEnviar = document.getElementById('btnEnviar');
         btnEnviar.textContent = 'Enviando...';
         btnEnviar.disabled = true;
-        
+
         // Enviar e-mail
         const resultado = await enviarContatoProfessor(dadosContato);
-        
+
         // Restaurar botão
         btnEnviar.textContent = 'Enviar Mensagem';
         btnEnviar.disabled = false;
-        
+
         if (resultado.success) {
             // Fechar modal e limpar formulário
             modalContato.style.display = 'none';
@@ -127,11 +127,11 @@ function mostrarNotificacao(mensagem, tipo) {
 
 // Exemplo de estrutura de dados esperada
 const exemploContato = {
-    emailProfessor: 'professor@uefs.br',
+    emailProfessor: 'organizador@uefs.br',
     nomeProfessor: 'Dr. João Silva',
     nomeEstudante: 'Maria Santos',
     emailEstudante: 'maria.santos@estudante.uefs.br',
-    mensagem: 'Olá professor, gostaria de saber mais sobre suas pesquisas na área de...',
+    mensagem: 'Olá organizador, gostaria de saber mais sobre suas pesquisas na área de...',
     cursoEstudante: 'Engenharia de Computação', // opcional
     assunto: 'Interesse em pesquisa' // opcional
 };
