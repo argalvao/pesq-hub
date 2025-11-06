@@ -10,7 +10,6 @@ class OrganizadorController extends Controller
 {
     protected $databaseService;
 
-    // Assumindo que você já injeta o DatabaseService
     public function __construct(DatabaseService $databaseService)
     {
         $this->databaseService = $databaseService;
@@ -18,18 +17,14 @@ class OrganizadorController extends Controller
 
     public function dashboard()
     {
-        // Esta view (ex: 'organizador.dashboard') DEVE existir
-        // e é onde você colocará o componente na Etapa 3.
+
         return view('organizador.dashboard');
     }
-
-    // =============== PROFESSORES ===============
-    // (Idêntico ao AdminController)
 
     public function getProfessores()
     {
         try {
-            $professores = $this->databaseService->getProfessores(); //
+            $professores = $this->databaseService->getProfessores(); 
             return response()->json(['data' => $professores, 'success' => true]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
@@ -51,7 +46,6 @@ class OrganizadorController extends Controller
         ]);
 
         try {
-            // Adiciona o 'criado_por' com o ID do organizador logado
             $data = $request->all();
             $data['criado_por'] = auth()->id();
 
@@ -77,7 +71,7 @@ class OrganizadorController extends Controller
         ]);
 
         try {
-            $professor = $this->databaseService->updateProfessor($id, $request->all()); //
+            $professor = $this->databaseService->updateProfessor($id, $request->all()); 
             return response()->json(['data' => $professor, 'success' => true]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
@@ -94,13 +88,10 @@ class OrganizadorController extends Controller
         }
     }
 
-    // =============== LINHAS DE PESQUISA ===============
-    // (Idêntico ao AdminController)
-
     public function getLinhasPesquisa()
     {
         try {
-            $linhas = $this->databaseService->getLinhasPesquisa(); //
+            $linhas = $this->databaseService->getLinhasPesquisa(); 
             return response()->json(['data' => $linhas, 'success' => true]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
@@ -116,11 +107,10 @@ class OrganizadorController extends Controller
         ]);
 
         try {
-            // Adiciona o 'criado_por' com o ID do organizador logado
             $data = $request->all();
             $data['criado_por'] = auth()->id();
 
-            $linha = $this->databaseService->createLinhaPesquisa($data); //
+            $linha = $this->databaseService->createLinhaPesquisa($data); 
             return response()->json(['data' => $linha, 'success' => true]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
@@ -136,7 +126,7 @@ class OrganizadorController extends Controller
         ]);
 
         try {
-            $linha = $this->databaseService->updateLinhaPesquisa($id, $request->all()); //
+            $linha = $this->databaseService->updateLinhaPesquisa($id, $request->all()); 
             return response()->json(['data' => $linha, 'success' => true]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
@@ -153,13 +143,11 @@ class OrganizadorController extends Controller
         }
     }
 
-    // =============== ÁREAS DE PESQUISA ===============
-    // (Idêntico ao AdminController)
 
     public function getAreasPesquisa()
     {
         try {
-            $areas = $this->databaseService->getAreasPesquisa(); //
+            $areas = $this->databaseService->getAreasPesquisa(); 
             return response()->json(['data' => $areas, 'success' => true]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
@@ -174,7 +162,6 @@ class OrganizadorController extends Controller
         ]);
 
         try {
-            // Adiciona o 'criado_por' com o ID do organizador logado
             $data = $request->all();
             $data['criado_por'] = auth()->id();
 
@@ -206,17 +193,14 @@ class OrganizadorController extends Controller
             $this->databaseService->deleteAreaPesquisa($id); //
             return response()->json(['success' => true, 'message' => 'Área de pesquisa excluída com sucesso']);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage(), 'success' => false], 409); // 409 Conflict
+            return response()->json(['error' => $e->getMessage(), 'success' => false], 409);
         }
     }
-
-    // =============== CURSOS ===============
-    // (Necessário para o modal de Professor)
 
     public function getCursos()
     {
         try {
-            $cursos = $this->databaseService->getCursos(); //
+            $cursos = $this->databaseService->getCursos(); 
             return response()->json(['data' => $cursos, 'success' => true]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage(), 'success' => false], 500);

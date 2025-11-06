@@ -4,7 +4,6 @@
 
 @section('content')
 <div style="padding: 30px; background-color: #ffffff; border-radius: 10px; margin: 20px 0;">
-    <!-- Header -->
     <div style="text-align: center; margin-bottom: 30px;">
         <h1 style="color: #4F46E5; font-size: 28px; margin: 0; font-weight: bold;">
             🔐 Confirmação de Cadastro
@@ -14,7 +13,6 @@
         </p>
     </div>
 
-    <!-- Saudação -->
     <div style="margin-bottom: 25px;">
         <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0;">
             Olá <strong>{{ $nome_usuario }}</strong>,
@@ -24,7 +22,6 @@
         </p>
     </div>
 
-    <!-- Token -->
     <div style="text-align: center; margin: 30px 0;">
         <div style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 20px; border-radius: 15px; display: inline-block; min-width: 200px;">
             <p style="margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9;">
@@ -36,7 +33,6 @@
         </div>
     </div>
 
-    <!-- Instruções -->
     <div style="background-color: #F3F4F6; padding: 20px; border-radius: 10px; margin: 25px 0;">
         <h3 style="color: #374151; font-size: 18px; margin: 0 0 15px 0; font-weight: 600;">
             📋 Como usar o código:
@@ -49,14 +45,12 @@
         </ol>
     </div>
 
-    <!-- Informações importantes -->
     <div style="background-color: #FEF3C7; border: 2px solid #F59E0B; padding: 15px; border-radius: 8px; margin: 25px 0;">
         <p style="color: #92400E; font-size: 14px; margin: 0; font-weight: 500;">
             ⚠️ <strong>Importante:</strong> Este código é válido por apenas <strong>5 minutos</strong> e só pode ser usado uma vez.
         </p>
     </div>
 
-    <!-- Dados do cadastro -->
     <div style="margin: 25px 0;">
         <h3 style="color: #374151; font-size: 16px; margin: 0 0 10px 0; font-weight: 600;">
             📊 Dados do seu cadastro:
@@ -71,7 +65,6 @@
     </div>
 </div>
 
-<!-- Footer informativo -->
 <div style="text-align: center; margin-top: 30px; padding: 20px; background-color: #F9FAFB; border-radius: 10px;">
     <p style="color: #9CA3AF; font-size: 12px; margin: 0; line-height: 1.5;">
         Se você não solicitou este cadastro, pode ignorar este e-mail com segurança.<br>

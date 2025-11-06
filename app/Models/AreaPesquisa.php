@@ -11,34 +11,22 @@ class AreaPesquisa extends Model
 
     protected $table = 'area_pesquisa';
     
-    // Desabilitar timestamps automáticos (created_at, updated_at)
     public $timestamps = false;
-
-    // Campos que podem ser preenchidos em massa
     protected $fillable = [
         'nome',
         'descricao',
         'criado_por'
     ];
 
-    // Cast de tipos
     protected $casts = [
         'id' => 'string'
     ];
 
-    // Relacionamentos
-    
-    /**
-     * Uma área de pesquisa tem várias linhas de pesquisa
-     */
     public function linhasPesquisa()
     {
         return $this->hasMany(LinhaPesquisa::class, 'id_area_pesquisa');
     }
 
-    /**
-     * Uma área de pesquisa pode ter vários professores interessados
-     */
     public function professores()
     {
         return $this->belongsToMany(
