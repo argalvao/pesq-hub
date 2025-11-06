@@ -21,19 +21,13 @@ class Curso extends Model
         'id' => 'string'
     ];
 
-    // Relacionamentos
-    
-    /**
-     * Um curso tem vários professores
-     */
+  
     public function professores()
     {
         return $this->hasMany(Professor::class, 'id_curso');
     }
 
-    /**
-     * Um curso tem vários usuários
-     */
+ 
     public function usuarios()
     {
         return $this->hasMany(Usuario::class, 'id_curso');

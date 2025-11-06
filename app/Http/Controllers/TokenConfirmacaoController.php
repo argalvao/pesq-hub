@@ -18,8 +18,6 @@ class TokenConfirmacaoController extends Controller
     }
 
     /**
-     * Enviar token de confirmação por e-mail
-     *
      * @param Request $request
      * @return JsonResponse
      */
@@ -44,21 +42,19 @@ class TokenConfirmacaoController extends Controller
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ Dados inválidos',
+                'message' => 'Dados inválidos',
                 'errors' => $e->errors()
             ], 422);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ Erro interno: ' . $e->getMessage()
+                'message' => ' Erro interno: ' . $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Verificar token de confirmação
-     *
      * @param Request $request
      * @return JsonResponse
      */
@@ -81,20 +77,19 @@ class TokenConfirmacaoController extends Controller
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ Dados inválidos para verificação',
+                'message' => ' Dados inválidos para verificação',
                 'errors' => $e->errors()
             ], 422);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ Erro interno: ' . $e->getMessage()
+                'message' => ' Erro interno: ' . $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Consultar status do token
      *
      * @param Request $request
      * @return JsonResponse
@@ -116,20 +111,19 @@ class TokenConfirmacaoController extends Controller
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ E-mail inválido',
+                'message' => ' E-mail inválido',
                 'errors' => $e->errors()
             ], 422);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ Erro interno: ' . $e->getMessage()
+                'message' => ' Erro interno: ' . $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Cancelar token (remover do cache)
      *
      * @param Request $request
      * @return JsonResponse
@@ -145,38 +139,36 @@ class TokenConfirmacaoController extends Controller
             
             return response()->json([
                 'success' => true,
-                'message' => $removido ? '✅ Token cancelado com sucesso' : 'ℹ️ Nenhum token ativo encontrado',
+                'message' => $removido ? ' Token cancelado com sucesso' : 'Nenhum token ativo encontrado',
                 'removido' => $removido
             ], 200);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ E-mail inválido',
+                'message' => ' E-mail inválido',
                 'errors' => $e->errors()
             ], 422);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ Erro interno: ' . $e->getMessage()
+                'message' => ' Erro interno: ' . $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Testar envio de token (apenas para desenvolvimento)
      *
      * @param Request $request
      * @return JsonResponse
      */
     public function testeEnvio(Request $request): JsonResponse
     {
-        // Verificar se estamos em ambiente de desenvolvimento
         if (!app()->environment(['local', 'testing'])) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ Endpoint disponível apenas em ambiente de desenvolvimento'
+                'message' => ' Endpoint disponível apenas em ambiente de desenvolvimento'
             ], 403);
         }
 
@@ -187,7 +179,6 @@ class TokenConfirmacaoController extends Controller
 
             $resultado = $this->tokenService->enviarTokenConfirmacao($email, $nome, $tipo);
 
-            // Incluir informações extras para debug em ambiente de desenvolvimento
             if ($resultado['success']) {
                 $consultaToken = $this->tokenService->consultarToken($email);
                 $resultado['debug_info'] = $consultaToken;
@@ -199,7 +190,7 @@ class TokenConfirmacaoController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ Erro no teste: ' . $e->getMessage()
+                'message' => 'Erro no teste: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -8,7 +8,7 @@ use App\Services\EmailService;
 class TokenConfirmacaoService
 {
     protected EmailService $emailService;
-    protected int $tempoExpiracao = 300; // 5 minutos em segundos
+    protected int $tempoExpiracao = 300; 
 
     public function __construct(EmailService $emailService)
     {
@@ -16,20 +16,17 @@ class TokenConfirmacaoService
     }
 
     /**
-     * Gerar e enviar token de confirmação por e-mail
      *
-     * @param string $email E-mail do usuário
-     * @param string $nome Nome do usuário
-     * @param string|null $tipo Tipo do usuário (admin, professor, estudante)
+     * @param string $email 
+     * @param string $nome 
+     * @param string|null $tipo 
      * @return array
      */
     public function enviarTokenConfirmacao(string $email, string $nome, ?string $tipo = null): array
     {
         try {
-            // Gerar token de 6 dígitos
             $token = $this->emailService->gerarToken();
             
-            // Salvar token no cache por 5 minutos
             $chaveCache = $this->gerarChaveCache($email);
             $dadosToken = [
                 'token' => $token,
@@ -42,19 +39,17 @@ class TokenConfirmacaoService
             
             Cache::put($chaveCache, $dadosToken, $this->tempoExpiracao);
             
-            // Enviar e-mail
             $resultadoEmail = $this->emailService->enviarConfirmacaoCadastro($email, $nome, $token, $tipo);
             
             if ($resultadoEmail['success']) {
                 return [
                     'success' => true,
-                    'message' => '✅ Token de confirmação enviado com sucesso!',
+                    'message' => ' Token de confirmação enviado com sucesso!',
                     'email' => $email,
                     'expira_em' => $this->tempoExpiracao,
                     'timestamp' => time()
                 ];
             } else {
-                // Remover token do cache se o e-mail falhou
                 Cache::forget($chaveCache);
                 return $resultadoEmail;
             }
@@ -62,17 +57,16 @@ class TokenConfirmacaoService
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => '❌ Erro ao enviar token: ' . $e->getMessage(),
+                'message' => ' Erro ao enviar token: ' . $e->getMessage(),
                 'timestamp' => time()
             ];
         }
     }
 
     /**
-     * Verificar token de confirmação
      *
-     * @param string $email E-mail do usuário
-     * @param string $token Token fornecido
+     * @param string $email 
+     * @param string $token 
      * @return array
      */
     public function verificarToken(string $email, string $token): array
@@ -84,44 +78,39 @@ class TokenConfirmacaoService
             if (!$dadosToken) {
                 return [
                     'success' => false,
-                    'message' => '❌ Token expirado ou inválido',
+                    'message' => 'Token expirado ou inválido',
                     'codigo' => 'TOKEN_EXPIRADO'
                 ];
             }
             
-            // Incrementar tentativas
             $dadosToken['tentativas']++;
             
-            // Verificar limite de tentativas (máximo 3)
             if ($dadosToken['tentativas'] > 3) {
                 Cache::forget($chaveCache);
                 return [
                     'success' => false,
-                    'message' => '❌ Muitas tentativas incorretas. Solicite um novo token.',
+                    'message' => 'Muitas tentativas incorretas. Solicite um novo token.',
                     'codigo' => 'LIMITE_TENTATIVAS'
                 ];
             }
             
-            // Verificar se o token está correto
             if ($dadosToken['token'] !== $token) {
-                // Salvar tentativas atualizadas
                 Cache::put($chaveCache, $dadosToken, $this->tempoExpiracao);
                 
                 $tentativasRestantes = 3 - $dadosToken['tentativas'];
                 return [
                     'success' => false,
-                    'message' => "❌ Token incorreto. Tentativas restantes: {$tentativasRestantes}",
+                    'message' => " Token incorreto. Tentativas restantes: {$tentativasRestantes}",
                     'codigo' => 'TOKEN_INCORRETO',
                     'tentativas_restantes' => $tentativasRestantes
                 ];
             }
             
-            // Token correto - remover do cache
             Cache::forget($chaveCache);
             
             return [
                 'success' => true,
-                'message' => '✅ Token confirmado com sucesso!',
+                'message' => 'Token confirmado com sucesso!',
                 'email' => $dadosToken['email'],
                 'nome' => $dadosToken['nome'],
                 'tipo' => $dadosToken['tipo'],
@@ -131,15 +120,13 @@ class TokenConfirmacaoService
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => '❌ Erro ao verificar token: ' . $e->getMessage(),
+                'message' => ' Erro ao verificar token: ' . $e->getMessage(),
                 'codigo' => 'ERRO_INTERNO'
             ];
         }
     }
 
     /**
-     * Verificar se existe token válido para um e-mail
-     *
      * @param string $email
      * @return array
      */
@@ -169,7 +156,6 @@ class TokenConfirmacaoService
     }
 
     /**
-     * Cancelar token (remover do cache)
      *
      * @param string $email
      * @return bool
@@ -181,7 +167,6 @@ class TokenConfirmacaoService
     }
 
     /**
-     * Gerar chave única para o cache
      *
      * @param string $email
      * @return string
@@ -192,7 +177,6 @@ class TokenConfirmacaoService
     }
 
     /**
-     * Formatar tempo em formato legível
      *
      * @param int $segundos
      * @return string
@@ -214,15 +198,11 @@ class TokenConfirmacaoService
     }
 
     /**
-     * Limpar todos os tokens expirados (método utilitário)
      *
-     * @return int Número de tokens removidos
+     * @return int 
      */
     public function limparTokensExpirados(): int
     {
-        // Como estamos usando Cache::put com TTL, os tokens expirados
-        // são automaticamente removidos pelo Laravel
-        // Este método é mantido para compatibilidade futura
         return 0;
     }
 }

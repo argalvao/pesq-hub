@@ -1,5 +1,5 @@
 @props([
-    'basePath' => '/admin' // Define '/admin' como padrão
+    'basePath' => '/admin'
 ])
 
 <div class="admin-panel-component bg-white p-6 rounded-lg shadow-sm">
@@ -32,23 +32,20 @@
     </div>
 </div>
 
-{{-- Este script é isolado e só funciona para este componente --}}
+
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Usamos uma classe única para o painel para evitar conflitos
             const panelElement = document.querySelector('.admin-panel-component');
 
-            // Se o painel não estiver na página, o script não faz nada
             if (!panelElement) return;
 
             const AreaPanel = {
-                basePath: @json($basePath), // Pega o basePath do Blade
+                basePath: @json($basePath), 
                 data: {
                     areasPesquisa: []
                 },
 
-                // Referências aos elementos da DOM dentro deste painel
                 elements: {
                     tbody: panelElement.querySelector('.areas-tbody'),
                     addBtn: panelElement.querySelector('.add-area-btn')
@@ -73,7 +70,6 @@
 
                 async loadAreasPesquisa() {
                     try {
-                        // USA O BASEPATH DINÂMICO!
                         const response = await fetch(`${this.basePath}/areas-pesquisa`);
                         const result = await response.json();
                         if (result.success) {
@@ -137,7 +133,6 @@
                         </div>
                     </form>
                 `;
-                    // Assumindo que App.showGenericModal() está disponível globalmente
                     App.showGenericModal(content);
                 },
 
@@ -172,7 +167,6 @@
                             await this.loadAreasPesquisa();
                             this.showSuccess(isEditing ? 'Área atualizada!' : 'Área criada!');
 
-                            // Opcional: Dispara um evento para que outros painéis (como o de Linhas) possam recarregar
                             document.dispatchEvent(new CustomEvent('areas-updated'));
                         } else {
                             this.showError(result.error || 'Erro ao salvar');
@@ -200,7 +194,7 @@
                         if (result.success) {
                             await this.loadAreasPesquisa();
                             this.showSuccess('Área de pesquisa excluída!');
-                            // Opcional: Dispara evento
+
                             document.dispatchEvent(new CustomEvent('areas-updated'));
                         } else {
                             this.showError(result.error || 'Erro ao excluir');
@@ -210,20 +204,16 @@
                     }
                 },
 
-                // Funções de helper (elas podem ser movidas para um App.js global)
                 showSuccess(message) { alert(message); },
                 showError(message) { alert('Erro: ' + message); }
             };
 
-            // Disponibiliza o AreaPanel globalmente para o onsubmit do formulário
+
             window.AreaPanel = AreaPanel;
             AreaPanel.init();
 
-            // Opcional: Se o painel de Linhas de Pesquisa (AdminPanel) existir,
-            // faça com que ele ouça o evento de atualização das áreas.
             if (window.AdminPanel) {
                 document.addEventListener('areas-updated', () => {
-                    // Recarrega as áreas no painel principal, se ele existir
                     if (typeof window.AdminPanel.loadAreasPesquisa === 'function') {
                         window.AdminPanel.loadAreasPesquisa();
                     }
