@@ -66,6 +66,14 @@ class UserService
         return collect($users)->firstWhere('email', $email);
     }
 
+    /**
+     * Alias para findUserByEmail (usado no CadastroComConfirmacaoController)
+     */
+    public function buscarPorEmail($email)
+    {
+        return $this->findUserByEmail($email);
+    }
+
     public function findUserById($id)
     {
         $users = $this->getUsers();
@@ -130,6 +138,14 @@ class UserService
             Log::error('Erro ao criar usuário: ' . $e->getMessage());
             throw $e;
         }
+    }
+
+    /**
+     * Alias para createUser (usado no CadastroComConfirmacaoController)
+     */
+    public function criar($data)
+    {
+        return $this->createUser($data);
     }
 
     public function updateUser($id, $data)

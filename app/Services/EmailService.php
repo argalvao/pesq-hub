@@ -192,6 +192,38 @@ class EmailService
     }
     
     /**
+     * Enviar token de confirmação de cadastro
+     *
+     * @param string $destinatario
+     * @param string $nomeUsuario
+     * @param string $token
+     * @return bool
+     */
+    public function enviarTokenConfirmacao(
+        string $destinatario,
+        string $nomeUsuario,
+        string $token
+    ): bool {
+        try {
+            $resultado = $this->enviarEmail(
+                $destinatario,
+                'confirmacao-cadastro',
+                [
+                    'nome' => $nomeUsuario,
+                    'token' => $token,
+                    'email' => $destinatario
+                ],
+                'Confirme seu cadastro no PesqHub'
+            );
+
+            return $resultado['success'];
+        } catch (Exception $e) {
+            \Log::error("Erro ao enviar token de confirmação: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
      * Listar templates disponíveis
      *
      * @return array

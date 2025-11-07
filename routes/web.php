@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\CadastroComConfirmacaoController;
 
 // Rotas públicas
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -16,6 +17,13 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Rotas de cadastro com confirmação por token
+Route::post('/cadastro/solicitar', [CadastroComConfirmacaoController::class, 'solicitarCadastro'])->name('cadastro.solicitar');
+Route::post('/cadastro/confirmar', [CadastroComConfirmacaoController::class, 'confirmarCadastro'])->name('cadastro.confirmar');
+Route::post('/cadastro/reenviar-token', [CadastroComConfirmacaoController::class, 'reenviarToken'])->name('cadastro.reenviar');
+Route::delete('/cadastro/cancelar', [CadastroComConfirmacaoController::class, 'cancelarCadastro'])->name('cadastro.cancelar');
+Route::get('/cadastro/status', [CadastroComConfirmacaoController::class, 'consultarStatus'])->name('cadastro.status');
 
 // Rotas de admin (protegidas por user.level:admin middleware)
 Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(function () {
