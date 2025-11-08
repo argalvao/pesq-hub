@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use App\Services\DatabaseService;
 use App\Services\EmailService;
 
@@ -82,6 +83,14 @@ class PasswordResetController extends Controller
      */
     public function updatePassword(Request $request)
     {
+        Log::info('updatePassword: Headers recebidos', [
+            'content-type' => $request->header('content-type'),
+            'accept' => $request->header('accept'),
+            'method' => $request->method(),
+            'user-agent' => $request->header('user-agent')
+        ]);
+        Log::info('updatePassword iniciado', ['request' => $request->all()]);
+        
         $request->validate([
             'email' => 'required|email',
             'token' => 'required|string|size:6',
@@ -93,45 +102,99 @@ class PasswordResetController extends Controller
             $token = $request->token;
             $newPassword = $request->password;
 
+            Log::info('Dados extraídos', ['email' => $email, 'token' => $token]);
+
             // Verificar token no cache
             $cacheKey = 'password_reset_' . md5($email);
             $resetData = Cache::get($cacheKey);
 
+            Log::info('Cache lido', ['cacheKey' => $cacheKey, 'resetData' => $resetData]);
+
             if (!$resetData) {
+                Log::error('Cache não encontrado');
+                if ($request->is('api/*') || $request->expectsJson()) {
+                    return response()->json(['success' => false, 'message' => 'Token expirado ou inválido. Solicite um novo token.'], 400);
+                }
                 return back()->withInput()->with('error', 'Token expirado ou inválido. Solicite um novo token.');
             }
 
             // Verificar tentativas
+            Log::info('Verificando tentativas', ['attempts' => $resetData['attempts'], 'type' => gettype($resetData['attempts'])]);
             if ($resetData['attempts'] >= 3) {
                 Cache::forget($cacheKey);
+                Log::error('Muitas tentativas');
+                
+                if ($request->is('api/*') || $request->expectsJson()) {
+                    return response()->json(['success' => false, 'message' => 'Muitas tentativas inválidas. Solicite um novo token.'], 400);
+                }
                 return back()->withInput()->with('error', 'Muitas tentativas inválidas. Solicite um novo token.');
             }
 
             // Verificar se o token está correto
+            Log::info('Comparando tokens', ['esperado' => $resetData['token'], 'recebido' => $token]);
             if ($resetData['token'] !== $token) {
                 $resetData['attempts']++;
                 Cache::put($cacheKey, $resetData, 900);
+                Log::error('Token inválido, incrementando attempts', ['novo_attempts' => $resetData['attempts']]);
                 
-                return back()->withInput()->with('error', 'Token inválido. Tentativas restantes: ' . (3 - $resetData['attempts']));
+                $tentativasRestantes = 3 - $resetData['attempts'];
+                if ($request->is('api/*') || $request->expectsJson()) {
+                    return response()->json(['success' => false, 'message' => "Token inválido. Tentativas restantes: {$tentativasRestantes}"], 400);
+                }
+                return back()->withInput()->with('error', "Token inválido. Tentativas restantes: {$tentativasRestantes}");
             }
+
+            Log::info('Token válido, buscando usuário');
 
             // Verificar se o usuário ainda existe
             $user = $this->databaseService->getUserByEmail($email);
             if (!$user) {
+                Log::error('Usuário não encontrado');
+                if ($request->is('api/*') || $request->expectsJson()) {
+                    return response()->json(['success' => false, 'message' => 'Usuário não encontrado.'], 404);
+                }
                 return back()->withInput()->with('error', 'Usuário não encontrado.');
             }
+
+            Log::info('Atualizando senha do usuário', ['user_id' => $user['id']]);
 
             // Atualizar senha
             $this->databaseService->updateUser($user['id'], [
                 'senha' => $newPassword
             ]);
 
+            Log::info('Senha atualizada com sucesso');
+
             // Remover token do cache
             Cache::forget($cacheKey);
 
+            Log::info('Verificando expectsJson', ['expectsJson' => $request->expectsJson(), 'accept_header' => $request->header('accept')]);
+
+            // Para rotas API, sempre retornar JSON
+            if ($request->is('api/*') || $request->expectsJson()) {
+                $response = response()->json(['success' => true, 'message' => 'Senha redefinida com sucesso! Você pode fazer login com a nova senha.']);
+                Log::info('Retornando resposta JSON', ['response' => $response->getContent()]);
+                return $response;
+            }
+            Log::info('Retornando redirect porque não é API nem expects JSON');
             return redirect()->route('login')->with('success', 'Senha redefinida com sucesso! Faça login com sua nova senha.');
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erro de validação', ['errors' => $e->errors()]);
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Dados inválidos.', 'errors' => $e->errors()], 422);
+            }
+            throw $e;
+            
         } catch (\Exception $e) {
+            Log::error("Erro geral no updatePassword", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Erro ao redefinir senha. Tente novamente.'], 500);
+            }
             return back()->withInput()->with('error', 'Erro ao redefinir senha. Tente novamente.');
         }
     }
@@ -143,7 +206,6 @@ class PasswordResetController extends Controller
     {
         try {
             $subject = 'PesqHub - Recuperação de Senha';
-            $resetUrl = route('password.reset') . '?email=' . urlencode($email);
             
             $message = "
                 <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
@@ -158,21 +220,15 @@ class PasswordResetController extends Controller
                         <p style='color: #6B7280; margin: 10px 0 0 0;'>Token de 6 dígitos</p>
                     </div>
                     
-                    <p>Ou clique no botão abaixo para ir diretamente à tela de redefinição:</p>
-                    
-                    <div style='text-align: center; margin: 30px 0;'>
-                        <a href='{$resetUrl}' 
-                           style='background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;'>
-                            Redefinir Senha
-                        </a>
-                    </div>
+                    <p>Acesse o sistema PesqHub e use este token na tela de recuperação de senha.</p>
                     
                     <div style='background-color: #FEF2F2; border: 1px solid #FECACA; border-radius: 6px; padding: 15px; margin: 20px 0;'>
                         <p style='color: #DC2626; margin: 0; font-size: 14px;'>
                             <strong>⚠️ Importante:</strong><br>
                             • Este token expira em 15 minutos<br>
                             • Você tem 3 tentativas para usar o token<br>
-                            • Se você não solicitou esta recuperação, ignore este e-mail
+                            • Se você não solicitou esta recuperação, ignore este e-mail<br>
+                            • Use este token no sistema PesqHub para redefinir sua senha
                         </p>
                     </div>
                     
@@ -180,8 +236,7 @@ class PasswordResetController extends Controller
                     
                     <p style='color: #6B7280; font-size: 12px; text-align: center;'>
                         Este e-mail foi enviado pelo sistema PesqHub.<br>
-                        Se você não conseguir clicar no botão, copie e cole este link no seu navegador:<br>
-                        <a href='{$resetUrl}' style='color: #4F46E5;'>{$resetUrl}</a>
+                        Acesse <a href=\"http://localhost:8001\" style=\"color: #4F46E5;\">http://localhost:8001</a> e clique em \"Login\" para usar o token de recuperação.
                     </p>
                 </div>
             ";
@@ -189,6 +244,10 @@ class PasswordResetController extends Controller
             return $this->emailService->sendEmail($email, $subject, $message);
 
         } catch (\Exception $e) {
+            Log::error('Erro ao enviar email de reset de senha', [
+                'email' => $email,
+                'error' => $e->getMessage()
+            ]);
             return false;
         }
     }

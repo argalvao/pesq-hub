@@ -31,6 +31,14 @@ services:
       - SESSION_DRIVER=database
       - CACHE_STORE=database
       - QUEUE_CONNECTION=database
+      - MAIL_MAILER=smtp
+      - MAIL_HOST=smtp-relay.brevo.com
+      - MAIL_PORT=587
+      - MAIL_USERNAME=99a0fd001@smtp-brevo.com
+      - MAIL_PASSWORD=m8spK3nOJ6arTdIP
+      - MAIL_ENCRYPTION=tls
+      - MAIL_FROM_ADDRESS=pesqhub@gmail.com
+      - MAIL_FROM_NAME=PesqHub - UEFS
       - GOOGLE_CLIENT_ID=955527164761-1hg260j8v3bm9cge133hpd8q0vmtbiv0.apps.googleusercontent.com
       - GOOGLE_CLIENT_SECRET=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
       - GOOGLE_REDIRECT_URI=http://localhost:8001/google/callback

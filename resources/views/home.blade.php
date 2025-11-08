@@ -353,11 +353,11 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.textContent = 'Enviando...';
             
             try {
-                const response = await fetch('/password/send-token', {
+                const response = await fetch('/api/password/send-token', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({ email: email })
                 });
@@ -423,48 +423,77 @@ document.addEventListener('DOMContentLoaded', () => {
         async handlePasswordReset(event) {
             event.preventDefault();
             
+            console.log('handlePasswordReset iniciado');
+            
             const email = document.getElementById('reset-email').value;
             const token = document.getElementById('reset-token').value;
             const password = document.getElementById('reset-password').value;
             const passwordConfirmation = document.getElementById('reset-password-confirmation').value;
             const submitBtn = event.target.querySelector('button[type="submit"]');
             
+            console.log('Dados coletados:', { email, token, password: '***', passwordConfirmation: '***' });
+            
             // Validações frontend
             if (token.length !== 6) {
+                console.log('Token inválido - comprimento:', token.length);
                 alert('O código deve ter 6 dígitos.');
                 return;
             }
             
             if (password !== passwordConfirmation) {
+                console.log('Senhas não conferem');
                 alert('As senhas não conferem.');
                 return;
             }
             
             if (password.length < 6) {
+                console.log('Senha muito curta:', password.length);
                 alert('A senha deve ter pelo menos 6 caracteres.');
                 return;
             }
+            
+            console.log('Validações OK, enviando requisição...');
             
             // Desabilitar botão e mostrar loading
             submitBtn.disabled = true;
             submitBtn.textContent = 'Redefinindo...';
             
             try {
-                const response = await fetch('/password/update', {
+                const requestData = {
+                    email: email,
+                    token: token,
+                    password: password,
+                    password_confirmation: passwordConfirmation
+                };
+                
+                console.log('Enviando para:', '/api/password/update');
+                console.log('Request data:', { ...requestData, password: '***', password_confirmation: '***' });
+                
+                const response = await fetch('/api/password/update', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'Accept': 'application/json'
                     },
-                    body: JSON.stringify({
-                        email: email,
-                        token: token,
-                        password: password,
-                        password_confirmation: passwordConfirmation
-                    })
+                    body: JSON.stringify(requestData)
                 });
                 
-                const result = await response.json();
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+                
+                // Verificar se é JSON antes de fazer parse
+                const contentType = response.headers.get('content-type');
+                console.log('Content-Type:', contentType);
+                
+                let result;
+                if (contentType && contentType.includes('application/json')) {
+                    result = await response.json();
+                    console.log('Response JSON:', result);
+                } else {
+                    const text = await response.text();
+                    console.log('Response TEXT (não é JSON):', text);
+                    throw new Error('Resposta não é JSON válida. Server retornou: ' + text.substring(0, 200));
+                }
                 
                 if (response.ok) {
                     alert('Senha redefinida com sucesso! Você pode fazer login com a nova senha.');
@@ -474,8 +503,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert(result.message || 'Erro ao redefinir senha. Verifique os dados e tente novamente.');
                 }
             } catch (error) {
-                console.error('Erro:', error);
-                alert('Erro de conexão. Tente novamente.');
+                console.error('Erro detalhado:', error);
+                console.error('Stack trace:', error.stack);
+                console.error('Response status:', error.response?.status);
+                console.error('Response text:', error.response?.text);
+                alert('Erro de conexão. Tente novamente. Verifique o console para detalhes.');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Redefinir Senha';

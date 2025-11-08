@@ -99,14 +99,6 @@ Route::post('/token/verificar', [App\Http\Controllers\TokenConfirmacaoController
 Route::get('/token/consultar', [App\Http\Controllers\TokenConfirmacaoController::class, 'consultarToken'])->name('token.consultar');
 Route::delete('/token/cancelar', [App\Http\Controllers\TokenConfirmacaoController::class, 'cancelarToken'])->name('token.cancelar');
 
-// Rota de teste para desenvolvimento
-Route::post('/token/teste', [App\Http\Controllers\TokenConfirmacaoController::class, 'testeEnvio'])->name('token.teste');
-
-// Página de demonstração do sistema de tokens
-Route::get('/test-tokens', function () {
-    return view('test-tokens');
-})->name('test.tokens');
-
 // Rotas para cadastro com confirmação por token
 Route::post('/cadastro/solicitar', [App\Http\Controllers\CadastroComConfirmacaoController::class, 'solicitarCadastro'])->name('cadastro.solicitar');
 Route::post('/cadastro/confirmar', [App\Http\Controllers\CadastroComConfirmacaoController::class, 'confirmarCadastro'])->name('cadastro.confirmar');

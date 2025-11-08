@@ -702,7 +702,10 @@ class DatabaseService
             return $this->getUserById($user->id);
 
         } catch (\Exception $e) {
-            Log::error('Erro ao atualizar usuário: ' . $e->getMessage());
+            Log::error('Erro ao atualizar usuário', [
+                'id' => $id,
+                'error' => $e->getMessage()
+            ]);
             throw $e;
         }
     }
