@@ -34,12 +34,10 @@ Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(fu
     Route::put('/linhas-pesquisa/{id}', [AdminController::class, 'updateLinhaPesquisa'])->name('linhas.update');
     Route::delete('/linhas-pesquisa/{id}', [AdminController::class, 'destroyLinhaPesquisa'])->name('linhas.destroy');
 
-    // === NOVAS ROTAS PARA O DASHBOARD ===
     // Rotas para carregar dados para os modais
     Route::get('/cursos', [AdminController::class, 'getCursos'])->name('cursos.index');
     Route::get('/areas-pesquisa', [AdminController::class, 'getAreasPesquisa'])->name('areas.index');
     Route::get('/usuarios', [AdminController::class, 'getUsuarios'])->name('usuarios.index');
-    // =====================================
 
     // API routes para gerenciamento de usuários
     Route::put('/usuarios/desativar/{id}', [AdminController::class, 'desativarUsuario'])->name('usuarios.update');
@@ -50,7 +48,13 @@ Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(fu
 // Rotas de organizador (protegidas por user.level:organizador middleware)
 Route::middleware('user.level:organizador')->prefix('organizador')->name('organizador.')->group(function () {
     Route::get('/dashboard', [OrganizadorController::class, 'dashboard'])->name('dashboard');
-    Route::post('/profile', [OrganizadorController::class, 'updateProfile'])->name('profile.update');
+    
+    // Rotas de perfil do organizador
+    Route::get('/profile', [OrganizadorController::class, 'profile'])->name('profile');
+    Route::put('/profile', [OrganizadorController::class, 'updateProfileForm'])->name('profile.update');
+    
+    // Mantidas rotas antigas para compatibilidade
+    Route::post('/profile', [OrganizadorController::class, 'updateProfile'])->name('profile.update.legacy');
     Route::put('/profile/edit', [OrganizadorController::class, 'editarPerfil'])->name('profile.edit');
 
     // API routes para Áreas de Pesquisa (GET já existe)

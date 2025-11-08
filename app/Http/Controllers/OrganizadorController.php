@@ -88,6 +88,71 @@ class OrganizadorController extends Controller
         return view('organizador.dashboard');
     }
 
+    /**
+     * Exibe o formulário de edição de perfil do organizador
+     */
+    public function profile()
+    {
+        $user = Session::get('user');
+        
+        try {
+            // Buscar dados completos do organizador
+            $professorCompleto = $this->databaseService->getProfessorById($user['id']);
+            $cursos = $this->databaseService->getCursos();
+            $areas = $this->databaseService->getAreasPesquisa();
+            $linhas = $this->databaseService->getLinhasPesquisa();
+            
+            return view('organizador.profile', compact('professorCompleto', 'cursos', 'areas', 'linhas'));
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erro ao carregar perfil: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Atualiza o perfil do organizador
+     */
+    public function updateProfileForm(Request $request)
+    {
+        $user = Session::get('user');
+        
+        $request->validate([
+            'nome' => 'required|string|max:255',
+            'email' => ['required', 'email', Rule::unique('professor')->ignore($user['id'])],
+            'telefone' => 'nullable|string|max:20',
+            'id_curso' => 'required|string|exists:curso,id',
+            'departamento' => 'nullable|string|max:255',
+            'areas_interesse_ids' => 'nullable|array',
+            'areas_interesse_ids.*' => 'string|exists:area_pesquisa,id',
+            'linhas_pesquisa_ids' => 'nullable|array',
+            'linhas_pesquisa_ids.*' => 'string|exists:linha_pesquisa,id'
+        ]);
+
+        try {
+            $data = $request->only([
+                'nome', 
+                'email', 
+                'telefone', 
+                'id_curso', 
+                'departamento',
+                'areas_interesse_ids',
+                'linhas_pesquisa_ids'
+            ]);
+
+            $updatedProfessor = $this->databaseService->updateProfessor($user['id'], $data);
+            
+            // Atualizar sessão
+            Session::put('user', array_merge($user, [
+                'nome' => $updatedProfessor['nome'],
+                'email' => $updatedProfessor['email']
+            ]));
+            
+            return redirect()->route('organizador.profile')->with('success', 'Perfil atualizado com sucesso!');
+            
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Erro ao atualizar perfil: ' . $e->getMessage());
+        }
+    }
+
     // =============== PROFESSORES ===============
     // (Idêntico ao AdminController)
 

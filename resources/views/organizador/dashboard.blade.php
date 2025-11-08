@@ -4,7 +4,15 @@
 
 @section('content')
     <div class="container mx-auto px-4 lg:px-6 py-8">
-        <h1 class="text-3xl font-bold mb-6">Painel do organizador</h1>
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">Painel do organizador</h1>
+            <a href="{{ route('organizador.profile') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Editar Perfil
+            </a>
+        </div>
 
         @if(isset($error))
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
