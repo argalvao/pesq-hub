@@ -73,6 +73,27 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
+    public function checkEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        try {
+            $existingUser = $this->databaseService->getUserByEmail($request->email);
+            
+            return response()->json([
+                'exists' => $existingUser !== null,
+                'message' => $existingUser ? 'E-mail já cadastrado no sistema' : 'E-mail disponível'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'exists' => false,
+                'message' => 'Erro ao verificar e-mail'
+            ], 500);
+        }
+    }
+
     public function register(Request $request)
     {
         $request->validate([
@@ -83,6 +104,14 @@ class AuthController extends Controller
         ]);
 
         try {
+            // Verificar se o e-mail já existe antes de tentar criar
+            $existingUser = $this->databaseService->getUserByEmail($request->email);
+            if ($existingUser) {
+                return back()->withErrors([
+                    'email' => 'Este e-mail já está cadastrado no sistema.'
+                ])->withInput();
+            }
+
             $user = $this->databaseService->createUser([
                 'nome' => $request->name,
                 'email' => $request->email,
