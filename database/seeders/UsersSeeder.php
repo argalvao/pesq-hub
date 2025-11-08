@@ -16,54 +16,74 @@ class UsersSeeder extends Seeder
     {
         $users = [
             [
-                'name' => 'Administrador',
+                'nome' => 'Administrador',
                 'email' => 'admin@pesqhub.com',
-                'password' => Hash::make('admin123')
+                'senha' => Hash::make('admin123'),
+                'ativo' => true,
+                'tipo_permissao' => 'SUPER'
             ],
             [
-                'name' => 'Dr. João Silva',
+                'nome' => 'Dr. João Silva',
                 'email' => 'joao.silva@univ.edu',
-                'password' => Hash::make('professor123')
+                'senha' => Hash::make('professor123'),
+                'ativo' => true,
+                'tipo_permissao' => 'DA'
             ],
             [
-                'name' => 'Dra. Maria Santos',
+                'nome' => 'Dra. Maria Santos',
                 'email' => 'maria.santos@univ.edu',
-                'password' => Hash::make('professor123')
+                'senha' => Hash::make('professor123'),
+                'ativo' => true,
+                'tipo_permissao' => 'DA'
             ],
             [
-                'name' => 'Ana Estudante',
+                'nome' => 'Ana Estudante',
                 'email' => 'ana.estudante@gmail.com',
-                'password' => Hash::make('estudante123')
+                'senha' => Hash::make('estudante123'),
+                'ativo' => true,
+                'tipo_permissao' => 'BASICO'
             ],
             [
-                'name' => 'Carlos Estudante',
+                'nome' => 'Carlos Estudante',
                 'email' => 'carlos.estudante@gmail.com',
-                'password' => Hash::make('estudante123')
+                'senha' => Hash::make('estudante123'),
+                'ativo' => true,
+                'tipo_permissao' => 'BASICO'
             ],
             [
-                'name' => 'Diego Rocha',
+                'nome' => 'Diego Rocha',
                 'email' => 'diego93rocha@gmail.com',
-                'password' => Hash::make('professor123')
+                'senha' => Hash::make('professor123'),
+                'ativo' => true,
+                'tipo_permissao' => 'DA'
             ],
             [
-                'name' => 'Dermeval Neves',
+                'nome' => 'Dermeval Neves',
                 'email' => 'dermevalneves@gmail.com',
-                'password' => Hash::make('professor123')
+                'senha' => Hash::make('professor123'),
+                'ativo' => true,
+                'tipo_permissao' => 'DA'
             ],
             [
-                'name' => 'Vinícius Fernandes',
+                'nome' => 'Vinícius Fernandes',
                 'email' => 'vinyfernandes10@hotmail.com',
-                'password' => Hash::make('professor123')
+                'senha' => Hash::make('professor123'),
+                'ativo' => true,
+                'tipo_permissao' => 'DA'
             ],
             [
-                'name' => 'Vasco da Gama',
+                'nome' => 'Vasco da Gama',
                 'email' => 'vasco@hotmail.com',
-                'password' => Hash::make('professor123')
+                'senha' => Hash::make('professor123'),
+                'ativo' => true,
+                'tipo_permissao' => 'DA'
             ],
             [
-                'name' => 'Estudante Teste',
+                'nome' => 'Estudante Teste',
                 'email' => 'estudante@hotmail.com',
-                'password' => Hash::make('estudante123')
+                'senha' => Hash::make('estudante123'),
+                'ativo' => true,
+                'tipo_permissao' => 'BASICO'
             ]
         ];
 
@@ -71,8 +91,10 @@ class UsersSeeder extends Seeder
             Usuario::firstOrCreate(
                 ['email' => $userData['email']],
                 [
-                    'name' => $userData['name'],
-                    'password' => $userData['password']
+                    'nome' => $userData['nome'],
+                    'senha' => $userData['senha'],
+                    'ativo' => $userData['ativo'],
+                    'tipo_permissao' => $userData['tipo_permissao']
                 ]
             );
         }
