@@ -55,10 +55,15 @@
     <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-40">
         <nav class="container mx-auto px-4 lg:px-6 py-4 flex justify-between items-center">
-            <a href="{{ route('home') }}" class="flex items-center space-x-2">
-                <span class="bg-indigo-700 text-white font-bold text-xl rounded-md p-2">P</span>
-                <span class="text-2xl font-bold text-indigo-800">PesqHub</span>
-            </a>
+            <div class="flex items-center space-x-8">
+                <a href="{{ route('home') }}" class="flex items-center space-x-2">
+                    <span class="bg-indigo-700 text-white font-bold text-xl rounded-md p-2">P</span>
+                    <span class="text-2xl font-bold text-indigo-800">PesqHub</span>
+                </a>
+                <a href="{{ route('sobre') }}" class="text-gray-700 hover:text-indigo-600 font-medium transition-colors">
+                    Sobre
+                </a>
+            </div>
             <div id="user-actions">
                 @if(Session::has('user'))
                     @php $user = Session::get('user'); @endphp
