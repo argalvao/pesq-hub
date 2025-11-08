@@ -51,6 +51,7 @@ Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(fu
 Route::middleware('user.level:organizador')->prefix('organizador')->name('organizador.')->group(function () {
     Route::get('/dashboard', [OrganizadorController::class, 'dashboard'])->name('dashboard');
     Route::post('/profile', [OrganizadorController::class, 'updateProfile'])->name('profile.update');
+    Route::put('/profile/edit', [OrganizadorController::class, 'editarPerfil'])->name('profile.edit');
 
     // API routes para Áreas de Pesquisa (GET já existe)
     Route::get('/areas-pesquisa', [OrganizadorController::class, 'getAreasPesquisa'])->name('areas.index');

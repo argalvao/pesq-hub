@@ -3,17 +3,82 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Services\DatabaseService; // Importar
-use Illuminate\Validation\Rule; // Importar
+use App\Services\DatabaseService;
+use App\Services\OrganizadorService;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class OrganizadorController extends Controller
 {
     protected $databaseService;
 
     // Assumindo que você já injeta o DatabaseService
+    protected $organizadorService;
+
     public function __construct(DatabaseService $databaseService)
     {
         $this->databaseService = $databaseService;
+        $this->organizadorService = app(OrganizadorService::class);
+    }
+
+    // Método existente mantido como estava
+    public function updateProfile(Request $request)
+    {
+        try {
+            $professor = $this->databaseService->updateProfessorProfile(
+                auth()->id(),
+                $request->all()
+            );
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Perfil atualizado com sucesso',
+                'data' => $professor
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao atualizar perfil: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Novo método para edição de perfil via Google Sheets
+    public function editarPerfil(Request $request)
+    {
+        // Validação básica
+        $request->validate([
+            'nome' => 'required|string|max:255',
+            'email' => 'required|email'
+        ]);
+
+        try {
+            $user = Session::get('user');
+
+            // Atualiza os dados
+            $this->organizadorService->atualizarDados(
+                $user['id'], 
+                $request->only(['nome', 'email'])
+            );
+
+            // Atualiza a sessão
+            Session::put('user', array_merge($user, [
+                'nome' => $request->nome,
+                'email' => $request->email
+            ]));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Perfil atualizado com sucesso'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao atualizar perfil'
+            ], 500);
+        }
     }
 
     public function dashboard()
