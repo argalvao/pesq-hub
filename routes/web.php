@@ -81,6 +81,8 @@ Route::middleware('user.level:organizador')->prefix('organizador')->name('organi
 Route::middleware('user.level:basico')->prefix('basico')->name('basico.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\EstudanteController::class, 'dashboard'])->name('dashboard');
     Route::get('/favorites', [App\Http\Controllers\EstudanteController::class, 'favorites'])->name('favorites');
+    Route::get('/profile', [App\Http\Controllers\EstudanteController::class, 'profile'])->name('profile');
+    Route::put('/profile', [App\Http\Controllers\EstudanteController::class, 'updateProfile'])->name('profile.update');
 });
 
 // Rotas de e-mail

@@ -6,9 +6,14 @@
 <div class="container mx-auto px-4 lg:px-6 py-8">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold">Área do Estudante</h1>
-        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-            Estudante
-        </span>
+        <div class="flex items-center space-x-4">
+            <a href="{{ route('basico.profile') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                📝 Perfil
+            </a>
+            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                Estudante
+            </span>
+        </div>
     </div>
 
     @if(session('success'))
