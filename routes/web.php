@@ -86,6 +86,8 @@ Route::middleware('user.level:organizador')->prefix('organizador')->name('organi
 Route::middleware('user.level:basico')->prefix('basico')->name('basico.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\EstudanteController::class, 'dashboard'])->name('dashboard');
     Route::get('/favorites', [App\Http\Controllers\EstudanteController::class, 'favorites'])->name('favorites');
+    Route::get('/profile', [App\Http\Controllers\EstudanteController::class, 'profile'])->name('profile');
+    Route::put('/profile', [App\Http\Controllers\EstudanteController::class, 'updateProfile'])->name('profile.update');
 });
 
 // Rotas de e-mail
@@ -99,14 +101,6 @@ Route::post('/token/enviar', [App\Http\Controllers\TokenConfirmacaoController::c
 Route::post('/token/verificar', [App\Http\Controllers\TokenConfirmacaoController::class, 'verificarToken'])->name('token.verificar');
 Route::get('/token/consultar', [App\Http\Controllers\TokenConfirmacaoController::class, 'consultarToken'])->name('token.consultar');
 Route::delete('/token/cancelar', [App\Http\Controllers\TokenConfirmacaoController::class, 'cancelarToken'])->name('token.cancelar');
-
-// Rota de teste para desenvolvimento
-Route::post('/token/teste', [App\Http\Controllers\TokenConfirmacaoController::class, 'testeEnvio'])->name('token.teste');
-
-// Página de demonstração do sistema de tokens
-Route::get('/test-tokens', function () {
-    return view('test-tokens');
-})->name('test.tokens');
 
 // Rotas para cadastro com confirmação por token
 Route::post('/cadastro/solicitar', [App\Http\Controllers\CadastroComConfirmacaoController::class, 'solicitarCadastro'])->name('cadastro.solicitar');

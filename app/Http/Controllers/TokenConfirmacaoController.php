@@ -163,44 +163,4 @@ class TokenConfirmacaoController extends Controller
             ], 500);
         }
     }
-
-    /**
-     * Testar envio de token (apenas para desenvolvimento)
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function testeEnvio(Request $request): JsonResponse
-    {
-        // Verificar se estamos em ambiente de desenvolvimento
-        if (!app()->environment(['local', 'testing'])) {
-            return response()->json([
-                'success' => false,
-                'message' => '❌ Endpoint disponível apenas em ambiente de desenvolvimento'
-            ], 403);
-        }
-
-        try {
-            $email = $request->input('email', 'teste@exemplo.com');
-            $nome = $request->input('nome', 'Usuário Teste');
-            $tipo = $request->input('tipo', 'estudante');
-
-            $resultado = $this->tokenService->enviarTokenConfirmacao($email, $nome, $tipo);
-
-            // Incluir informações extras para debug em ambiente de desenvolvimento
-            if ($resultado['success']) {
-                $consultaToken = $this->tokenService->consultarToken($email);
-                $resultado['debug_info'] = $consultaToken;
-            }
-
-            $statusCode = $resultado['success'] ? 200 : 500;
-            return response()->json($resultado, $statusCode);
-
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => '❌ Erro no teste: ' . $e->getMessage()
-            ], 500);
-        }
-    }
 }
