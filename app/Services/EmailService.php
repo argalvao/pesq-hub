@@ -24,7 +24,7 @@ class EmailService
         string $template,
         array $dados = [],
         ?string $assunto = null,
-        string $remetente = 'abel@ecomp.uefs.br',
+        string $remetente = 'pesqhub@gmail.com',
         string $nomeRemetente = 'PesqHub - UEFS'
     ): array {
         try {
@@ -35,15 +35,15 @@ class EmailService
 
             // Construir caminho do template
             $templatePath = 'emails.' . $template;
-            
+
             // Definir assunto se não fornecido
             if (!$assunto) {
                 $assunto = $this->definirAssuntoPorTemplate($template);
             }
-            
+
             // Adicionar assunto aos dados do template
             $dados['assunto'] = $assunto;
-            
+
             // Criar instância de Mailable dinâmica
             $mailable = new class($templatePath, $dados, $remetente, $nomeRemetente, $assunto) extends Mailable {
                 public $templatePath;
@@ -105,6 +105,9 @@ class EmailService
             'teste-sistema' => '🧪 Teste do Sistema de E-mails - PesqHub UEFS',
             'contato-com-professor' => '📧 Contato via PesqHub UEFS',
             'contato-professor' => '📧 Contato via PesqHub UEFS',
+            'confirmacao-cadastro' => '🔐 Confirmação de Cadastro - PesqHub UEFS',
+            'contato-com-organizador' => '📧 Contato via PesqHub UEFS',
+            'contato-organizador' => '📧 Contato via PesqHub UEFS',
             'notificacao' => '🔔 Notificação - PesqHub UEFS',
             'boas-vindas' => '👋 Bem-vindo ao PesqHub UEFS',
         ];
@@ -126,17 +129,62 @@ class EmailService
             'corpo' => 'Este é um e-mail de teste enviado às ' . date('H:i:s') . ' em ' . date('d/m/Y'),
             'mensagem' => 'Teste do sistema de e-mails do PesqHub UEFS'
         ];
-        
+
         $assunto = '🧪 Teste do Sistema - ' . date('H:i:s');
-        
+
         return $this->enviarEmail($destinatario, $template, $dadosTemplate, $assunto);
     }
 
     /**
-     * Enviar e-mail de contato com professor
+     * Enviar e-mail de confirmação de cadastro com token
      *
-     * @param string $emailProfessor E-mail do professor destinatário
-     * @param string $nomeProfessor Nome do professor
+     * @param string $emailUsuario E-mail do usuário
+     * @param string $nomeUsuario Nome do usuário
+     * @param string $token Token de 6 dígitos
+     * @param string|null $tipoUsuario Tipo do usuário (admin, professor, estudante)
+     * @return array
+     */
+    public function enviarConfirmacaoCadastro(
+        string $emailUsuario,
+        string $nomeUsuario,
+        string $token,
+        ?string $tipoUsuario = null
+    ): array {
+        $dadosTemplate = [
+            'nome_usuario' => $nomeUsuario,
+            'email_usuario' => $emailUsuario,
+            'token' => $token,
+            'tipo_usuario' => $tipoUsuario
+        ];
+
+        $assunto = '🔐 Confirmação de Cadastro - PesqHub UEFS';
+        
+        return $this->enviarEmail(
+            $emailUsuario,
+            'confirmacao-cadastro',
+            $dadosTemplate,
+            $assunto,
+            'pesqhub@gmail.com',
+            'PesqHub UEFS - Sistema de Cadastros'
+        );
+    }
+
+    /**
+     * Gerar token numérico de 6 dígitos
+     *
+     * @return string
+     */
+    public function gerarToken(): string
+    {
+        return str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Enviar e-mail de contato com professor
+     * Enviar e-mail de contato com organizador
+     *
+     * @param string $emailProfessor E-mail do organizador destinatário
+     * @param string $nomeProfessor Nome do organizador
      * @param string $nomeEstudante Nome do estudante remetente
      * @param string $emailEstudante E-mail do estudante remetente
      * @param string $mensagem Mensagem do estudante
@@ -171,14 +219,14 @@ class EmailService
 
         return $this->enviarEmail(
             $emailProfessor,
-            'contato-com-professor',
+            'contato-com-organizador',
             $dadosTemplate,
             $assunto,
-            'abel@ecomp.uefs.br', // Sempre usar o e-mail oficial
+            'pesqhub@gmail.com', // Sempre usar o e-mail oficial
             'PesqHub UEFS - Sistema de Contatos' // Nome do remetente oficial
         );
     }
-    
+
     /**
      * Verificar se um template existe
      *
@@ -190,7 +238,7 @@ class EmailService
         $templatePath = resource_path('views/emails/' . $template . '.blade.php');
         return file_exists($templatePath);
     }
-    
+
     /**
      * Enviar token de confirmação de cadastro
      *
@@ -231,14 +279,14 @@ class EmailService
     public function listarTemplates(): array
     {
         $emailsPath = resource_path('views/emails');
-        
+
         if (!is_dir($emailsPath)) {
             return [];
         }
-        
+
         $templates = [];
         $files = scandir($emailsPath);
-        
+
         foreach ($files as $file) {
             if (pathinfo($file, PATHINFO_EXTENSION) === 'php' && strpos($file, '.blade.php') !== false) {
                 $templateName = str_replace('.blade.php', '', $file);
@@ -247,7 +295,7 @@ class EmailService
                 }
             }
         }
-        
+
         return $templates;
     }
 }

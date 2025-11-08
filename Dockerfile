@@ -8,9 +8,9 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    libpq-dev \
     zip \
     unzip \
+    libpq-dev \
     sqlite3 \
     libsqlite3-dev \
     postgresql-client \

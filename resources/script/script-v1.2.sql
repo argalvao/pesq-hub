@@ -35,7 +35,7 @@ INSERT INTO linha_pesquisa (id, nome, descricao, id_area_pesquisa) VALUES
 
 --------------------------------------------------------------------------------
 -- PASSO 3: Inserir os PROFESSORES
--- Inserimos os dados de cada professor. Note que limpamos os telefones manualmente.
+-- Inserimos os dados de cada organizador. Note que limpamos os telefones manualmente.
 --------------------------------------------------------------------------------
 
 INSERT INTO professor (id, nome, email, telefone, curso) VALUES
@@ -51,8 +51,8 @@ INSERT INTO professor (id, nome, email, telefone, curso) VALUES
 
 --------------------------------------------------------------------------------
 -- PASSO 4: CONECTAR Professores com suas ÁREAS DE INTERESSE
--- Esta é a parte mais repetitiva. Para cada interesse de cada professor,
--- criamos uma linha que conecta o ID do professor com o ID da área.
+-- Esta é a parte mais repetitiva. Para cada interesse de cada organizador,
+-- criamos uma linha que conecta o ID do organizador com o ID da área.
 --------------------------------------------------------------------------------
 
 -- Interesses do Dr. João Silva

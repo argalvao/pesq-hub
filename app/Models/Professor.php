@@ -4,55 +4,65 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Professor extends Model
 {
     use HasFactory;
+    use HasUuids;
 
-    protected $table = 'professores';
+    protected $table = 'professor';
+
+    public $timestamps = false;
 
     protected $fillable = [
-        'user_id',
+        'id',
         'nome',
         'email',
         'telefone',
-        'curso',
-        'areas_interesse'
+        'id_curso',
+        'departamento',
+        'criado_por'
     ];
 
+    protected $casts = [
+        'id' => 'string',
+        'id_curso' => 'string'
+    ];
+
+    // Relacionamentos
+
     /**
-     * Relacionamento com User
+     * Um professor pertence a um curso
      */
-    public function user()
+    public function curso()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Curso::class, 'id_curso');
     }
 
     /**
-     * Relacionamento many-to-many com LinhaPesquisa
+     * Um professor tem várias linhas de pesquisa (many-to-many)
      */
     public function linhasPesquisa()
     {
-        return $this->belongsToMany(LinhaPesquisa::class, 'professor_linha_pesquisa');
+        return $this->belongsToMany(
+            LinhaPesquisa::class,
+            'professor_has_linha_pesquisa',
+            'id_professor',
+            'id_linha_pesquisa'
+        );
     }
 
     /**
-     * Accessor para áreas de interesse como array
+     * Um professor tem várias áreas de interesse (many-to-many)
      */
-    public function getAreasInteresseArrayAttribute()
+    public function areasInteresse()
     {
-        return $this->areas_interesse ? explode(',', $this->areas_interesse) : [];
-    }
-
-    /**
-     * Mutator para áreas de interesse
-     */
-    public function setAreasInteresseAttribute($value)
-    {
-        if (is_array($value)) {
-            $this->attributes['areas_interesse'] = implode(',', $value);
-        } else {
-            $this->attributes['areas_interesse'] = $value;
-        }
+        return $this->belongsToMany(
+            AreaPesquisa::class,
+            'professor_has_area_interesse',
+            'id_professor',
+            'area_pesquisa'
+        );
     }
 }

@@ -9,11 +9,11 @@ use Google\Service\Sheets\ValueRange;
 class UserService
 {
     protected $googleSheetsService;
-    
+
     // Níveis de permissão
-    const NIVEL_ADMIN = 1;
-    const NIVEL_PROFESSOR = 2;
-    const NIVEL_ESTUDANTE = 3;
+    const NIVEL_ADMIN = 'SUPER';
+    const NIVEL_ORGANIZADOR = 'DA';
+    const NIVEL_BASICO = 'BASICO';
 
     public function __construct(GoogleSheetsService $googleSheetsService)
     {
@@ -26,7 +26,7 @@ class UserService
             try {
                 $range = 'usuarios!A:G'; // A=ID, B=Nome, C=Email, D=Senha, E=Nivel, F=Ativo, G=DataCriacao
                 $response = $this->googleSheetsService->service->spreadsheets_values->get(
-                    $this->googleSheetsService->getSpreadsheetId(), 
+                    $this->googleSheetsService->getSpreadsheetId(),
                     $range
                 );
                 $values = $response->getValues();
@@ -83,7 +83,7 @@ class UserService
     public function validateCredentials($email, $password)
     {
         $user = $this->findUserByEmail($email);
-        
+
         if (!$user || !$user['ativo']) {
             return false;
         }
@@ -107,7 +107,7 @@ class UserService
                 $data['name'],
                 $data['email'],
                 password_hash($data['password'], PASSWORD_DEFAULT),
-                $data['nivel_permissao'] ?? self::NIVEL_ESTUDANTE,
+                $data['nivel_permissao'] ?? self::NIVEL_BASICO,
                 $data['ativo'] ?? 1,
                 date('Y-m-d H:i:s')
             ];
@@ -115,22 +115,22 @@ class UserService
             $range = 'usuarios!A:G';
             $values = [$row];
             $body = new ValueRange(['values' => $values]);
-            
+
             $params = ['valueInputOption' => 'USER_ENTERED'];
             $this->googleSheetsService->service->spreadsheets_values->append(
-                $this->googleSheetsService->getSpreadsheetId(), 
-                $range, 
-                $body, 
+                $this->googleSheetsService->getSpreadsheetId(),
+                $range,
+                $body,
                 $params
             );
 
             Cache::forget('usuarios');
-            
+
             return [
                 'id' => $newId,
                 'name' => $data['name'],
                 'email' => $data['email'],
-                'nivel_permissao' => $data['nivel_permissao'] ?? self::NIVEL_ESTUDANTE,
+                'nivel_permissao' => $data['nivel_permissao'] ?? self::NIVEL_BASICO,
                 'ativo' => $data['ativo'] ?? 1,
                 'created_at' => date('Y-m-d H:i:s')
             ];
@@ -153,7 +153,7 @@ class UserService
         try {
             $users = $this->getUsers();
             $index = array_search($id, array_column($users, 'id'));
-            
+
             if ($index === false) {
                 throw new \Exception('Usuário não encontrado');
             }
@@ -168,7 +168,7 @@ class UserService
             $range = "usuarios!A{$rowNumber}:G{$rowNumber}";
 
             $currentUser = $users[$index];
-            
+
             $row = [
                 $id,
                 $data['name'] ?? $currentUser['name'],
@@ -182,16 +182,16 @@ class UserService
             $values = [$row];
             $body = new ValueRange(['values' => $values]);
             $params = ['valueInputOption' => 'USER_ENTERED'];
-            
+
             $this->googleSheetsService->service->spreadsheets_values->update(
-                $this->googleSheetsService->getSpreadsheetId(), 
-                $range, 
-                $body, 
+                $this->googleSheetsService->getSpreadsheetId(),
+                $range,
+                $body,
                 $params
             );
 
             Cache::forget('usuarios');
-            
+
             return [
                 'id' => $id,
                 'name' => $data['name'] ?? $currentUser['name'],
@@ -211,27 +211,27 @@ class UserService
         try {
             $users = $this->getUsers();
             $index = array_search($id, array_column($users, 'id'));
-            
+
             if ($index === false) {
                 throw new \Exception('Usuário não encontrado');
             }
 
             $rowNumber = $index + 2; // +1 for header, +1 for 0-based index
-            
+
             // Clear the row
             $range = "usuarios!A{$rowNumber}:G{$rowNumber}";
             $body = new ValueRange(['values' => [['']]]);
             $params = ['valueInputOption' => 'USER_ENTERED'];
-            
+
             $this->googleSheetsService->service->spreadsheets_values->update(
-                $this->googleSheetsService->getSpreadsheetId(), 
-                $range, 
-                $body, 
+                $this->googleSheetsService->getSpreadsheetId(),
+                $range,
+                $body,
                 $params
             );
 
             Cache::forget('usuarios');
-            
+
             return true;
         } catch (\Exception $e) {
             Log::error('Erro ao deletar usuário: ' . $e->getMessage());
@@ -244,9 +244,9 @@ class UserService
         switch ($nivel) {
             case self::NIVEL_ADMIN:
                 return 'Administrador';
-            case self::NIVEL_PROFESSOR:
-                return 'Professor';
-            case self::NIVEL_ESTUDANTE:
+            case self::NIVEL_ORGANIZADOR:
+                return 'Organizador';
+            case self::NIVEL_BASICO:
                 return 'Estudante';
             default:
                 return 'Desconhecido';
@@ -255,16 +255,16 @@ class UserService
 
     public function canAccessAdmin($user)
     {
-        return $user && $user['nivel_permissao'] == self::NIVEL_ADMIN;
+        return $user && $user['tipo_permissao'] == self::NIVEL_ADMIN;
     }
 
-    public function canAccessProfessor($user)
+    public function canAccessOrganizador($user)
     {
-        return $user && in_array($user['nivel_permissao'], [self::NIVEL_ADMIN, self::NIVEL_PROFESSOR]);
+        return $user && in_array($user['tipo_permissao'], [self::NIVEL_ADMIN, self::NIVEL_ORGANIZADOR]);
     }
 
     public function canAccessEstudante($user)
     {
-        return $user && in_array($user['nivel_permissao'], [self::NIVEL_ADMIN, self::NIVEL_PROFESSOR, self::NIVEL_ESTUDANTE]);
+        return $user && in_array($user['tipo_permissao'], [self::NIVEL_ADMIN, self::NIVEL_ORGANIZADOR, self::NIVEL_BASICO]);
     }
 }

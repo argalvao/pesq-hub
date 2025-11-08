@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   app:
@@ -10,6 +9,7 @@ services:
       - "8001:80"
     volumes:
       - .:/var/www/html
+      - /var/www/html/vendor
       - ./storage/app/credenciais.json:/var/www/html/storage/app/credenciais.json:ro
       # Excluir diretórios que precisam de permissões específicas
       - /var/www/html/storage/framework
