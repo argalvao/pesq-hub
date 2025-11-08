@@ -9,7 +9,6 @@ services:
       - "8001:80"
     volumes:
       - .:/var/www/html
-      - /var/www/html/vendor
       - ./storage/app/credenciais.json:/var/www/html/storage/app/credenciais.json:ro
       # Excluir diretórios que precisam de permissões específicas
       - /var/www/html/storage/framework
@@ -38,6 +37,14 @@ services:
       - GOOGLE_REDIRECT_URI=http://localhost:8001/google/callback
       - GOOGLE_APPLICATION_CREDENTIALS=credenciais.json
       - GOOGLE_SHEET_ID=15jSuekgRohhMeDE6uzyne_2jDb-V0lZkg5yiEkWsv80
+      - MAIL_MAILER=smtp
+      - MAIL_HOST=smtp-relay.brevo.com
+      - MAIL_PORT=587
+      - MAIL_USERNAME=99a0fd001@smtp-brevo.com
+      - MAIL_PASSWORD=m8spK3nOJ6arTdIP
+      - MAIL_ENCRYPTION=tls
+      - MAIL_FROM_ADDRESS=abel@ecomp.uefs.br
+      - MAIL_FROM_NAME=PesqHub - UEFS
     restart: unless-stopped
     networks:
       - pesq-hub-network

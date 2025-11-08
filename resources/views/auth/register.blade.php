@@ -36,7 +36,7 @@
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
                                 required>
                             <option value="">Selecione o tipo</option>
-                            <option value="2">Professor/Orientador</option>
+                            <option value="2">Organizador</option>
                             <option value="3">Estudante</option>
                         </select>
                     </div>

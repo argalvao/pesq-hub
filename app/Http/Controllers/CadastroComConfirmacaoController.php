@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\TokenConfirmacaoService;
 use App\Services\EmailService;
-use App\Services\UserService;
+use App\Services\DatabaseUserService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -18,7 +18,7 @@ class CadastroComConfirmacaoController extends Controller
     public function __construct(
         TokenConfirmacaoService $tokenService,
         EmailService $emailService,
-        UserService $userService
+        DatabaseUserService $userService
     ) {
         $this->tokenService = $tokenService;
         $this->emailService = $emailService;
@@ -74,7 +74,7 @@ class CadastroComConfirmacaoController extends Controller
             $dadosUsuario = [
                 'name' => $dados['name'],
                 'email' => $dados['email'],
-                'password' => bcrypt($dados['password']),
+                'password' => $dados['password'], // Não hashear aqui - o DatabaseUserService já faz isso
                 'nivel_permissao' => $dados['nivel_permissao']
             ];
 

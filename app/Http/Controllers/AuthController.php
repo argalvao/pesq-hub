@@ -7,15 +7,16 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use App\Services\DatabaseService;
+use App\Services\DatabaseUserService;
+use App\Models\User;
 
 class AuthController extends Controller
 {
-    protected $databaseService;
+    protected $userService;
 
-    public function __construct(DatabaseService $databaseService)
+    public function __construct(DatabaseUserService $userService)
     {
-        $this->databaseService = $databaseService;
+        $this->userService = $userService;
     }
 
     public function showLogin()
@@ -34,9 +35,9 @@ class AuthController extends Controller
         ]);
 
         try {
-            $user = $this->databaseService->getUserByEmail($request->email);
+            $user = $this->userService->findUserByEmail($request->email);
 
-            if ($user && Hash::check($request->password, $user['senha'])) {
+            if ($user && Hash::check($request->password, $user['password'])) {
                 if (!$user['ativo']) {
                     return back()->withErrors([
                         'email' => 'Sua conta está desativada. Entre em contato com o administrador.'
@@ -49,6 +50,7 @@ class AuthController extends Controller
                 return $this->redirectBasedOnLevel($user);
             }
         } catch (\Exception $e) {
+            Log::error('Erro no login: ' . $e->getMessage());
             return back()->withErrors([
                 'email' => 'Erro ao validar credenciais. Tente novamente.'
             ]);
@@ -80,7 +82,7 @@ class AuthController extends Controller
         ]);
 
         try {
-            $existingUser = $this->databaseService->getUserByEmail($request->email);
+            $existingUser = $this->userService->findUserByEmail($request->email);
             
             return response()->json([
                 'exists' => $existingUser !== null,
@@ -105,20 +107,19 @@ class AuthController extends Controller
 
         try {
             // Verificar se o e-mail já existe antes de tentar criar
-            $existingUser = $this->databaseService->getUserByEmail($request->email);
+            $existingUser = $this->userService->findUserByEmail($request->email);
             if ($existingUser) {
                 return back()->withErrors([
                     'email' => 'Este e-mail já está cadastrado no sistema.'
                 ])->withInput();
             }
 
-            $user = $this->databaseService->createUser([
-                'nome' => $request->name,
+            $user = $this->userService->createUser([
+                'name' => $request->name,
                 'email' => $request->email,
-                'senha' => $request->password,
-                'tipo_permissao' => ($request->nivel_permissao == 2? DatabaseService::NIVEL_ORGANIZADOR : DatabaseService::NIVEL_BASICO),
-                'ativo' => !($request->nivel_permissao == 2),
-                'id_curso' => $request->id_curso ?? null
+                'password' => $request->password,
+                'nivel_permissao' => $request->nivel_permissao,
+                'ativo' => !($request->nivel_permissao == 2), // Organizador precisa aprovação
             ]);
 
             Session::put('user', $user);
@@ -126,6 +127,7 @@ class AuthController extends Controller
             return $this->redirectBasedOnLevel($user)->with('success', 'Conta criada com sucesso!');
 
         } catch (\Exception $e) {
+            Log::error('Erro no registro: ' . $e->getMessage());
             return back()->withErrors([
                 'email' => $e->getMessage()
             ])->withInput();
@@ -134,12 +136,12 @@ class AuthController extends Controller
 
     private function redirectBasedOnLevel($user)
     {
-        switch ($user['tipo_permissao']) {
-            case DatabaseService::NIVEL_ADMIN:
+        switch ($user['nivel_permissao']) {
+            case 1: // ADMIN
                 return redirect()->route('admin.dashboard');
-            case DatabaseService::NIVEL_ORGANIZADOR:
+            case 2: // ORGANIZADOR
                 return redirect()->route('organizador.dashboard');
-            case DatabaseService::NIVEL_BASICO:
+            case 3: // BASICO
                 return redirect()->route('basico.dashboard');
             default:
                 return redirect()->route('home');

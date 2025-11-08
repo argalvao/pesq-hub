@@ -63,17 +63,17 @@
                 @if(Session::has('user'))
                     @php $user = Session::get('user'); @endphp
                     <div class="flex items-center space-x-4">
-                        <span class="font-semibold">{{ $user['nome'] }}</span>
+                        <span class="font-semibold">{{ $user['name'] ?? $user['email'] }}</span>
                         <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">
-                                {{ app(App\Services\UserService::class)->getNivelPermissaoTexto($user['tipo_permissao']) }}
+                                {{ app(App\Services\UserService::class)->getNivelPermissaoTexto($user['nivel_permissao']) }}
                             </span>
-                        @if($user['tipo_permissao'] == DatabaseService::NIVEL_ADMIN)
+                        @if($user['nivel_permissao'] == 1)
                             <a href="{{ route('admin.dashboard') }}"
                                class="font-semibold text-indigo-600 hover:underline">Dashboard</a>
-                        @elseif($user['tipo_permissao'] == DatabaseService::NIVEL_ORGANIZADOR)
+                        @elseif($user['nivel_permissao'] == 2)
                             <a href="{{ route('organizador.dashboard') }}"
                                class="font-semibold text-indigo-600 hover:underline">Painel Organizador</a>
-                        @elseif($user['tipo_permissao'] == DatabaseService::NIVEL_BASICO)
+                        @elseif($user['nivel_permissao'] == 3)
                             <a href="{{ route('basico.dashboard') }}"
                                class="font-semibold text-indigo-600 hover:underline">Minha Área</a>
                         @endif

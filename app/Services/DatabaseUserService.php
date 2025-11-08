@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 
-class UserService
+class DatabaseUserService
 {
     // Níveis de permissão
     const NIVEL_ADMIN = 1;
@@ -27,7 +27,15 @@ class UserService
     {
         try {
             $user = User::where('email', $email)->first();
-            return $user ? $user->toArray() : null;
+            if (!$user) {
+                return null;
+            }
+            
+            // Incluir password que está oculto no Model
+            $userData = $user->toArray();
+            $userData['password'] = $user->password;
+            
+            return $userData;
         } catch (\Exception $e) {
             Log::error('Erro ao buscar usuário por email: ' . $e->getMessage());
             throw $e;
@@ -46,7 +54,15 @@ class UserService
     {
         try {
             $user = User::find($id);
-            return $user ? $user->toArray() : null;
+            if (!$user) {
+                return null;
+            }
+            
+            // Incluir password que está oculto no Model
+            $userData = $user->toArray();
+            $userData['password'] = $user->password;
+            
+            return $userData;
         } catch (\Exception $e) {
             Log::error('Erro ao buscar usuário por ID: ' . $e->getMessage());
             throw $e;
@@ -77,7 +93,7 @@ class UserService
                 throw new \Exception('Email já está em uso');
             }
 
-            // Se a senha não estiver hasheada, hashear
+            // Se a senha já estiver hasheada (bcrypt), não hashear novamente
             if (isset($data['password']) && !str_starts_with($data['password'], '$2y$')) {
                 $data['password'] = Hash::make($data['password']);
             }
@@ -90,7 +106,7 @@ class UserService
                 'ativo' => $data['ativo'] ?? true,
             ]);
 
-            Log::info('Usuário criado com sucesso: ' . $user->email);
+            Log::info('Usuário criado com sucesso no banco: ' . $user->email);
 
             return $user->toArray();
         } catch (\Exception $e) {

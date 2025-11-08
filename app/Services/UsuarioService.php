@@ -34,16 +34,16 @@ class UsuarioService {
 
     public function canAccessAdmin($user)
     {
-        return $user && $user['tipo_permissao'] == self::NIVEL_ADMIN;
+        return $user && ($user['nivel_permissao'] ?? null) == self::NIVEL_ADMIN;
     }
 
     public function canAccessOrganizador($user)
     {
-        return $user && in_array($user['tipo_permissao'], [self::NIVEL_ADMIN, self::NIVEL_ORGANIZADOR]);
+        return $user && in_array(($user['nivel_permissao'] ?? null), [self::NIVEL_ADMIN, self::NIVEL_ORGANIZADOR]);
     }
 
     public function canAccessBasico($user)
     {
-        return $user && in_array($user['tipo_permissao'], [self::NIVEL_ADMIN, self::NIVEL_ORGANIZADOR, self::NIVEL_BASICO]);
+        return $user && in_array(($user['nivel_permissao'] ?? null), [self::NIVEL_ADMIN, self::NIVEL_ORGANIZADOR, self::NIVEL_BASICO]);
     }
 }
