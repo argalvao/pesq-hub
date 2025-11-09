@@ -57,7 +57,54 @@ O **PesqHub** é um sistema web inovador desenvolvido na **UEFS - Universidade E
 ### **Integrações**
 - **Google Sheets** - Armazenamento e sincronização de dados
 
-## 📋 Pré-requisitos
+## � Documentação Técnica
+
+Para informações detalhadas sobre arquitetura, desenvolvimento e especificações técnicas, consulte nossa **documentação completa**:
+
+### 📖 [**DOCUMENTAÇÃO TÉCNICA COMPLETA**](DOCUMENTACAO.md)
+
+A documentação técnica inclui:
+
+#### 📊 **Engenharia de Software**
+- **📋 Documento de Requisitos** - Requisitos funcionais e não funcionais
+- **🎯 Especificação Funcional** - Casos de uso e regras de negócio
+- **🏗️ Arquitetura e Design** - Padrões, diagramas e estrutura
+- **🧪 Plano de Testes** - Estratégias e cenários de teste
+
+#### 🛠️ **Documentação Técnica**
+- **🎯 Visão Geral** - Objetivos e funcionalidades
+- **🏗️ Arquitetura** - Estrutura em camadas e módulos
+- **🔄 Fluxos de Dados** - Jornadas dos usuários
+- **📡 API REST** - Documentação OpenAPI/Swagger
+- **🔧 Serviços** - PHPDoc dos principais serviços
+- **🗄️ Banco de Dados** - Schema e relacionamentos
+
+#### 🚀 **Desenvolvimento**
+- **⚙️ Instalação** - Setup completo do ambiente
+- **🔧 Configuração** - Variáveis e dependências
+- **🐛 Troubleshooting** - Resolução de problemas comuns
+- **🤝 Contribuição** - Guias para desenvolvedores
+
+### 🎯 **Para Desenvolvedores**
+
+Se você é um **novo desenvolvedor** no projeto, recomendamos começar por:
+
+1. **[Visão Geral do Sistema](DOCUMENTACAO.md#visão-geral-do-sistema)** - Entenda o propósito
+2. **[Requisitos Funcionais](DOCUMENTACAO.md#requisitos-funcionais)** - Conheça as funcionalidades
+3. **[Arquitetura](DOCUMENTACAO.md#arquitetura-do-sistema)** - Compreenda a estrutura
+4. **[Instalação](DOCUMENTACAO.md#instalação-e-configuração)** - Configure o ambiente
+
+### 📋 **Para Gestores de Projeto**
+
+Para **acompanhamento de projeto**, consulte:
+
+1. **[Documento de Requisitos](DOCUMENTACAO.md#documento-de-requisitos)** - Status das funcionalidades
+2. **[Plano de Testes](DOCUMENTACAO.md#plano-de-testes)** - Qualidade e cobertura
+3. **[Especificações Técnicas](DOCUMENTACAO.md#especificação-funcional)** - Detalhes de implementação
+
+---
+
+## �📋 Pré-requisitos
 
 - **Docker** 20.10+ e **Docker Compose** 2.0+
 - **Git** para clonagem do repositório
