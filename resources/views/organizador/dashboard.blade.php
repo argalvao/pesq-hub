@@ -378,9 +378,23 @@
                         `<option value="${curso.id}" ${professor.id_curso === curso.id ? 'selected' : ''}>${curso.nome}</option>`
                     ).join('');
 
-                    const areasOptions = this.data.areasPesquisa.map(area =>
-                        `<option value="${area.id}" ${professor.areas_interesse_ids.includes(area.id) ? 'selected' : ''}>${area.nome}</option>`
-                    ).join('');
+                    const areasCheckboxes = this.data.areasPesquisa.map(area => `
+                        <label class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                            <input type="checkbox" name="areas_interesse_ids" value="${area.id}" 
+                                   ${professor.areas_interesse_ids.includes(area.id) ? 'checked' : ''}
+                                   class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm">${area.nome}</span>
+                        </label>
+                    `).join('');
+
+                    const linhasCheckboxes = this.data.linhasPesquisa.map(linha => `
+                        <label class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                            <input type="checkbox" name="linhas_pesquisa_ids" value="${linha.id}" 
+                                   ${professor.linhas_pesquisa_ids.includes(linha.id) ? 'checked' : ''}
+                                   class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm">${linha.nome}</span>
+                        </label>
+                    `).join('');
 
                     const content = `
                 <button onclick="App.hideGenericModal()" class="absolute top-2 right-2 text-2xl text-gray-500 hover:text-gray-800">&times;</button>
@@ -399,17 +413,17 @@
                         <input type="text" name="departamento" placeholder="Departamento" class="w-full px-3 py-2 border rounded-md" value="${professor.departamento || ''}">
 
                         <div>
-                            <label class="text-sm font-medium block mb-1">Áreas de Interesse</label>
-                            <select name="areas_interesse_ids" multiple class="w-full h-32 px-3 py-2 border rounded-md">
-                                ${areasOptions}
-                            </select>
+                            <label class="text-sm font-medium block mb-2">Áreas de Interesse</label>
+                            <div class="border rounded-md p-2 max-h-48 overflow-y-auto bg-gray-50">
+                                ${areasCheckboxes}
+                            </div>
                         </div>
 
                         <div>
-                            <label class="text-sm font-medium block mb-1">Linhas de Pesquisa</label>
-                            <select name="linhas_pesquisa_ids" multiple class="w-full h-32 px-3 py-2 border rounded-md">
-                                ${linhasOptions}
-                            </select>
+                            <label class="text-sm font-medium block mb-2">Linhas de Pesquisa</label>
+                            <div class="border rounded-md p-2 max-h-48 overflow-y-auto bg-gray-50">
+                                ${linhasCheckboxes}
+                            </div>
                         </div>
                     </div>
                     <div class="mt-6 flex justify-end space-x-2">
@@ -476,8 +490,8 @@
                         telefone: form.telefone.value,
                         id_curso: form.id_curso.value,
                         departamento: form.departamento.value,
-                        areas_interesse_ids: Array.from(form.areas_interesse_ids.selectedOptions).map(opt => opt.value),
-                        linhas_pesquisa_ids: Array.from(form.linhas_pesquisa_ids.selectedOptions).map(opt => opt.value)
+                        areas_interesse_ids: Array.from(form.querySelectorAll('input[name="areas_interesse_ids"]:checked')).map(cb => cb.value),
+                        linhas_pesquisa_ids: Array.from(form.querySelectorAll('input[name="linhas_pesquisa_ids"]:checked')).map(cb => cb.value)
                     };
 
                     try {
