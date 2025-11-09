@@ -20,7 +20,7 @@
             </div>
         @endif
 
-        {{-- ADICIONADO: 'id="registerForm"' para o script LGPD funcionar --}}
+        {{-- ADICIONADO: 'id="registerForm"' para o script LGPD funcionar sem conflitos--}}
         <form method="POST" action="{{ route('register') }}" id="registerForm">
             @csrf
             <div class="space-y-4">
