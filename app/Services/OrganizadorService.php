@@ -2,66 +2,47 @@
 
 namespace App\Services;
 
-use Revolution\Google\Sheets\Facades\Sheets;
-use Illuminate\Support\Facades\Cache;
+use App\Models\Professor;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Config;
 
 class OrganizadorService 
 {
-    private $spreadsheetId;
-
-    public function __construct()
-    {
-        $this->spreadsheetId = Config::get('google.sheets.post_spreadsheet_id');
-    }
-
     public function atualizarDados($id, array $dados)
     {
         try {
-            // Busca todos os usuários
-            $usuarios = Sheets::spreadsheet($this->spreadsheetId)
-                ->sheet('usuarios')
-                ->get();
+            $professor = Professor::findOrFail($id);
+            
+            DB::beginTransaction();
+            
+            // Atualizar dados do professor
+            $professor->update([
+                'nome' => $dados['nome'] ?? $professor->nome,
+                'email' => $dados['email'] ?? $professor->email,
+                'telefone' => $dados['telefone'] ?? $professor->telefone,
+                'curso' => $dados['curso'] ?? $professor->curso,
+                'areas_interesse' => $dados['areas_interesse'] ?? $professor->areas_interesse
+            ]);
 
-            $headers = $usuarios->shift(); // Remove cabeçalho
-            $rowIndex = null;
-
-            // Encontra o índice do usuário
-            foreach ($usuarios as $index => $row) {
-                if ($row[0] === $id) {
-                    $rowIndex = $index + 2; // +2 pois temos o cabeçalho
-                    break;
-                }
+            // Atualizar linhas de pesquisa se fornecidas
+            if (isset($dados['linhas_pesquisa_ids'])) {
+                $professor->linhasPesquisa()->sync($dados['linhas_pesquisa_ids']);
             }
 
-            if (!$rowIndex) {
-                throw new \Exception('Usuário não encontrado');
+            // Atualizar usuário associado se necessário
+            if ($professor->user) {
+                $professor->user->update([
+                    'name' => $dados['nome'] ?? $professor->user->name,
+                    'email' => $dados['email'] ?? $professor->user->email
+                ]);
             }
 
-            // Prepara os dados
-            $values = [
-                [
-                    $id,
-                    $dados['nome'],
-                    $dados['email'],
-                    '2', // Nível organizador
-                    'S'  // Status ativo
-                ]
-            ];
-
-            // Atualiza a planilha
-            Sheets::spreadsheet($this->spreadsheetId)
-                ->sheet('usuarios')
-                ->range("A{$rowIndex}:E{$rowIndex}")
-                ->update($values);
-
-            // Limpa o cache
-            Cache::forget('usuarios_data');
-
-            return true;
-
+            DB::commit();
+            
+            return $professor->fresh();
+            
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Erro ao atualizar perfil:', [
                 'id' => $id,
                 'erro' => $e->getMessage()

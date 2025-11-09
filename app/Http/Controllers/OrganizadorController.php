@@ -44,42 +44,7 @@ class OrganizadorController extends Controller
         }
     }
 
-    // Novo método para edição de perfil via Google Sheets
-    public function editarPerfil(Request $request)
-    {
-        // Validação básica
-        $request->validate([
-            'nome' => 'required|string|max:255',
-            'email' => 'required|email'
-        ]);
 
-        try {
-            $user = Session::get('user');
-
-            // Atualiza os dados
-            $this->organizadorService->atualizarDados(
-                $user['id'], 
-                $request->only(['nome', 'email'])
-            );
-
-            // Atualiza a sessão
-            Session::put('user', array_merge($user, [
-                'nome' => $request->nome,
-                'email' => $request->email
-            ]));
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Perfil atualizado com sucesso'
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao atualizar perfil'
-            ], 500);
-        }
-    }
 
     public function dashboard()
     {
