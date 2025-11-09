@@ -539,11 +539,11 @@ classDiagram
         +DateTime updated_at
     }
     
-    Usuario ||--|| Curso : pertence_a
-    Professor ||--|| Curso : leciona_em
-    Professor ||--o{ LinhaPesquisa : trabalha_com
-    LinhaPesquisa ||--|| AreaPesquisa : pertence_a
-    Professor ||--o{ AreaPesquisa : interesse_em
+    Usuario ||--|| Curso : "pertence a"
+    Professor ||--|| Curso : "leciona em"
+    Professor ||--o{ LinhaPesquisa : "trabalha com"
+    LinhaPesquisa ||--|| AreaPesquisa : "pertence a"
+    Professor ||--o{ AreaPesquisa : "tem interesse"
 ```
 
 ---
