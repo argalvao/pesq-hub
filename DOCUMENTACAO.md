@@ -488,113 +488,95 @@ Desenvolvimento de uma **plataforma web centralizada** que:
 
 ### Diagrama de Classes Principais
 
-```mermaid
-classDiagram
-    class Usuario {
-        +UUID id
-        +String nome
-        +String email
-        +String senha
-        +String tipo_permissao
-        +Boolean ativo
-        +UUID id_curso
-        +DateTime created_at
-        +DateTime updated_at
-    }
-    
-    class Professor {
-        +UUID id
-        +String nome
-        +String email
-        +String telefone
-        +UUID id_curso
-        +String departamento
-        +UUID criado_por
-        +DateTime created_at
-        +DateTime updated_at
-    }
-    
-    class LinhaPesquisa {
-        +UUID id
-        +String nome
-        +String descricao
-        +UUID id_area_pesquisa
-        +UUID criado_por
-        +DateTime created_at
-        +DateTime updated_at
-    }
-    
-    class AreaPesquisa {
-        +UUID id
-        +String nome
-        +String descricao
-        +DateTime created_at
-        +DateTime updated_at
-    }
-    
-    class Curso {
-        +UUID id
-        +String nome
-        +DateTime created_at
-        +DateTime updated_at
-    }
-    
-    Usuario ||--|| Curso
-    Professor ||--|| Curso
-    Professor }|--|| LinhaPesquisa
-    LinhaPesquisa ||--|| AreaPesquisa
-    Professor }|--|| AreaPesquisa
+#### Estrutura das Entidades
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        ENTIDADES PRINCIPAIS                         │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│     USUARIO     │    │    PROFESSOR    │    │      CURSO      │
+├─────────────────┤    ├─────────────────┤    ├─────────────────┤
+│ • id (UUID)     │    │ • id (UUID)     │    │ • id (UUID)     │
+│ • nome          │    │ • nome          │    │ • nome          │
+│ • email         │    │ • email         │    │ • created_at    │
+│ • senha         │    │ • telefone      │    │ • updated_at    │
+│ • tipo_permissao│    │ • departamento  │    └─────────────────┘
+│ • ativo         │    │ • id_curso (FK) │               ▲
+│ • id_curso (FK) │    │ • criado_por    │               │
+│ • created_at    │    │ • created_at    │               │
+│ • updated_at    │    │ • updated_at    │               │
+└─────────────────┘    └─────────────────┘               │
+         │                       │                       │
+         │                       └───────────────────────┘
+         │                                              
+         └──────────────────────────────────────────────┘
+
+┌─────────────────┐              ┌─────────────────┐
+│ LINHA_PESQUISA  │              │ AREA_PESQUISA  │
+├─────────────────┤              ├─────────────────┤
+│ • id (UUID)     │              │ • id (UUID)     │
+│ • nome          │              │ • nome          │
+│ • descricao     │              │ • descricao     │
+│ • id_area (FK)  │──────────────│ • created_at    │
+│ • criado_por    │              │ • updated_at    │
+│ • created_at    │              └─────────────────┘
+│ • updated_at    │                       ▲
+└─────────────────┘                       │
+         ▲                                 │
+         │                                 │
+         │        ┌─────────────────────────┘
+         │        │
+         │        │
+    ┌────┴────────┴─────┐
+    │   RELACIONAMENTOS   │
+    │    MANY-TO-MANY    │
+    └────────────────────┘
 ```
 
-### Relacionamentos Entre Entidades (Alternativo)
+#### Relacionamentos
 
-```mermaid
-erDiagram
-    USUARIO {
-        uuid id PK
-        string nome
-        string email
-        string senha
-        string tipo_permissao
-        boolean ativo
-        uuid id_curso FK
-    }
-    
-    PROFESSOR {
-        uuid id PK
-        string nome
-        string email
-        string telefone
-        uuid id_curso FK
-        string departamento
-        uuid criado_por FK
-    }
-    
-    LINHA_PESQUISA {
-        uuid id PK
-        string nome
-        string descricao
-        uuid id_area_pesquisa FK
-        uuid criado_por FK
-    }
-    
-    AREA_PESQUISA {
-        uuid id PK
-        string nome
-        string descricao
-    }
-    
-    CURSO {
-        uuid id PK
-        string nome
-    }
-    
-    USUARIO }|--|| CURSO : "pertence_a"
-    PROFESSOR }|--|| CURSO : "leciona_em"
-    PROFESSOR ||--|{ LINHA_PESQUISA : "trabalha_com"
-    LINHA_PESQUISA }|--|| AREA_PESQUISA : "pertence_a"
-    PROFESSOR ||--|{ AREA_PESQUISA : "tem_interesse"
+| Entidade A | Relacionamento | Entidade B | Tipo | Descrição |
+|------------|---------------|------------|------|-----------|
+| **Usuario** | pertence_a | **Curso** | N:1 | Usuário vinculado a um curso |
+| **Professor** | leciona_em | **Curso** | N:1 | Professor pertence a um curso |
+| **Professor** | trabalha_com | **LinhaPesquisa** | N:N | Professor pode ter múltiplas linhas |
+| **LinhaPesquisa** | pertence_a | **AreaPesquisa** | N:1 | Linha vinculada a uma área |
+| **Professor** | tem_interesse | **AreaPesquisa** | N:N | Professor pode ter múltiplas áreas |
+
+#### Tabelas de Relacionamento (Many-to-Many)
+
 ```
+┌─────────────────────────────────┐    ┌─────────────────────────────────┐
+│    professor_linha_pesquisa     │    │    professor_area_interesse     │
+├─────────────────────────────────┤    ├─────────────────────────────────┤
+│ • id_professor (FK)             │    │ • id_professor (FK)             │
+│ • id_linha_pesquisa (FK)        │    │ • area_pesquisa (FK)            │
+│ • PRIMARY KEY (ambos)           │    │ • PRIMARY KEY (ambos)           │
+└─────────────────────────────────┘    └─────────────────────────────────┘
+```
+
+### Fluxo de Dependências
+
+```
+AREA_PESQUISA
+    │
+    ├─→ LINHA_PESQUISA
+    │       │
+    │       └─→ PROFESSOR ←─── CURSO ←─── USUARIO
+    │               │
+    └───────────────┘
+```
+
+### Regras de Integridade
+
+1. **Usuario** deve ter um **Curso** associado
+2. **Professor** deve ter um **Curso** associado  
+3. **LinhaPesquisa** deve ter uma **AreaPesquisa** associada
+4. **AreaPesquisa** não pode ser excluída se tiver **LinhasPesquisa** dependentes
+5. **Professor** não pode ser excluído se tiver relacionamentos ativos
+6. E-mails devem ser únicos em **Usuario** e **Professor**
 
 ---
 
