@@ -539,11 +539,61 @@ classDiagram
         +DateTime updated_at
     }
     
-    Usuario ||--|| Curso : "pertence a"
-    Professor ||--|| Curso : "leciona em"
-    Professor ||--o{ LinhaPesquisa : "trabalha com"
-    LinhaPesquisa ||--|| AreaPesquisa : "pertence a"
-    Professor ||--o{ AreaPesquisa : "tem interesse"
+    Usuario ||--|| Curso
+    Professor ||--|| Curso
+    Professor }|--|| LinhaPesquisa
+    LinhaPesquisa ||--|| AreaPesquisa
+    Professor }|--|| AreaPesquisa
+```
+
+### Relacionamentos Entre Entidades (Alternativo)
+
+```mermaid
+erDiagram
+    USUARIO {
+        uuid id PK
+        string nome
+        string email
+        string senha
+        string tipo_permissao
+        boolean ativo
+        uuid id_curso FK
+    }
+    
+    PROFESSOR {
+        uuid id PK
+        string nome
+        string email
+        string telefone
+        uuid id_curso FK
+        string departamento
+        uuid criado_por FK
+    }
+    
+    LINHA_PESQUISA {
+        uuid id PK
+        string nome
+        string descricao
+        uuid id_area_pesquisa FK
+        uuid criado_por FK
+    }
+    
+    AREA_PESQUISA {
+        uuid id PK
+        string nome
+        string descricao
+    }
+    
+    CURSO {
+        uuid id PK
+        string nome
+    }
+    
+    USUARIO }|--|| CURSO : "pertence_a"
+    PROFESSOR }|--|| CURSO : "leciona_em"
+    PROFESSOR ||--|{ LINHA_PESQUISA : "trabalha_com"
+    LINHA_PESQUISA }|--|| AREA_PESQUISA : "pertence_a"
+    PROFESSOR ||--|{ AREA_PESQUISA : "tem_interesse"
 ```
 
 ---
