@@ -41,6 +41,9 @@ Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(fu
     // Rotas para carregar dados para os modais
     Route::get('/cursos', [AdminController::class, 'getCursos'])->name('cursos.index');
     Route::get('/areas-pesquisa', [AdminController::class, 'getAreasPesquisa'])->name('areas.index');
+    Route::post('/areas-pesquisa', [AdminController::class, 'storeAreaPesquisa'])->name('areas.store');
+    Route::put('/areas-pesquisa/{id}', [AdminController::class, 'updateAreaPesquisa'])->name('areas.update');
+    Route::delete('/areas-pesquisa/{id}', [AdminController::class, 'destroyAreaPesquisa'])->name('areas.destroy');
     Route::get('/usuarios', [AdminController::class, 'getUsuarios'])->name('usuarios.index');
     // =====================================
 
