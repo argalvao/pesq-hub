@@ -3,7 +3,7 @@
 @section('title', 'Cadastro - PesqHub')
 
 @section('content')
-<div class="min-h-[calc(100vh-80px)] flex items-center justify-center">
+<div class="min-h-[calc(100vh-80px)] flex items-center justify-center py-8">
     <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <div class="text-center mb-6">
             <h2 class="text-3xl font-bold text-gray-900">Criar Conta</h2>
