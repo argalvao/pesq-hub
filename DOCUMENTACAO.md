@@ -1785,7 +1785,6 @@ docker-compose down && docker-compose up -d --build
 
 Para dúvidas e suporte técnico:
 - **Documentação**: Este arquivo
-- **Issues**: [GitHub Issues]
 - **E-mail**: pesqhub@gmail.com
 
 ---
