@@ -7,16 +7,16 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use App\Services\DatabaseUserService;
-use App\Models\User;
+use App\Services\UsuarioService;
+use App\Models\Usuario;
 
 class AuthController extends Controller
 {
-    protected $userService;
+    protected $usuarioService;
 
-    public function __construct(DatabaseUserService $userService)
+    public function __construct(UsuarioService $usuarioService)
     {
-        $this->userService = $userService;
+        $this->usuarioService = $usuarioService;
     }
 
     public function showLogin()
@@ -35,9 +35,9 @@ class AuthController extends Controller
         ]);
 
         try {
-            $user = $this->userService->findUserByEmail($request->email);
+            $user = $this->usuarioService->findUserByEmail($request->email);
 
-            if ($user && Hash::check($request->password, $user['password'])) {
+            if ($user && Hash::check($request->password, $user['senha'])) {
                 if (!$user['ativo']) {
                     return back()->withErrors([
                         'email' => 'Sua conta está desativada. Entre em contato com o administrador.'
@@ -82,7 +82,7 @@ class AuthController extends Controller
         ]);
 
         try {
-            $existingUser = $this->userService->findUserByEmail($request->email);
+            $existingUser = $this->usuarioService->findUserByEmail($request->email);
             
             return response()->json([
                 'exists' => $existingUser !== null,
@@ -99,27 +99,27 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'nome' => 'required|string|max:255',
             'email' => 'required|email|max:255',
-            'password' => 'required|string|min:6|confirmed',
-            'nivel_permissao' => 'required|in:2,3' // Só organizador ou estudante
+            'senha' => 'required|string|min:6|confirmed',
+            'tipo_permissao' => 'required|in:DA,BASICO' // Só organizador ou estudante
         ]);
 
         try {
             // Verificar se o e-mail já existe antes de tentar criar
-            $existingUser = $this->userService->findUserByEmail($request->email);
+            $existingUser = $this->usuarioService->findUserByEmail($request->email);
             if ($existingUser) {
                 return back()->withErrors([
                     'email' => 'Este e-mail já está cadastrado no sistema.'
                 ])->withInput();
             }
 
-            $user = $this->userService->createUser([
-                'name' => $request->name,
+            $user = $this->usuarioService->createUser([
+                'nome' => $request->nome,
                 'email' => $request->email,
-                'password' => $request->password,
-                'nivel_permissao' => $request->nivel_permissao,
-                'ativo' => !($request->nivel_permissao == 2), // Organizador precisa aprovação
+                'senha' => $request->senha,
+                'tipo_permissao' => $request->tipo_permissao,
+                'ativo' => !($request->tipo_permissao == UsuarioService::NIVEL_ORGANIZADOR), // Organizador precisa aprovação
             ]);
 
             Session::put('user', $user);
@@ -136,12 +136,12 @@ class AuthController extends Controller
 
     private function redirectBasedOnLevel($user)
     {
-        switch ($user['nivel_permissao']) {
-            case 1: // ADMIN
+        switch ($user['tipo_permissao']) {
+            case UsuarioService::NIVEL_ADMIN:
                 return redirect()->route('admin.dashboard');
-            case 2: // ORGANIZADOR
+            case UsuarioService::NIVEL_ORGANIZADOR:
                 return redirect()->route('organizador.dashboard');
-            case 3: // BASICO
+            case UsuarioService::NIVEL_BASICO:
                 return redirect()->route('basico.dashboard');
             default:
                 return redirect()->route('home');

@@ -1,4 +1,4 @@
-@php use App\Services\DatabaseService; @endphp
+@php use App\Services\UsuarioService; @endphp
     <!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
 <head>
@@ -63,17 +63,17 @@
                 @if(Session::has('user'))
                     @php $user = Session::get('user'); @endphp
                     <div class="flex items-center space-x-4">
-                        <span class="font-semibold">{{ $user['name'] ?? $user['email'] }}</span>
+                        <span class="font-semibold">{{ $user['nome'] }}</span>
                         <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">
-                                {{ app(App\Services\UserService::class)->getNivelPermissaoTexto($user['nivel_permissao']) }}
+                                {{ app(App\Services\UsuarioService::class)->getNivelPermissaoTexto($user['tipo_permissao']) }}
                             </span>
-                        @if($user['nivel_permissao'] == 1)
+                        @if($user['tipo_permissao'] == UsuarioService::NIVEL_ADMIN)
                             <a href="{{ route('admin.dashboard') }}"
                                class="font-semibold text-indigo-600 hover:underline">Dashboard</a>
-                        @elseif($user['nivel_permissao'] == 2)
+                        @elseif($user['tipo_permissao'] == UsuarioService::NIVEL_ORGANIZADOR)
                             <a href="{{ route('organizador.dashboard') }}"
                                class="font-semibold text-indigo-600 hover:underline">Painel Organizador</a>
-                        @elseif($user['nivel_permissao'] == 3)
+                        @elseif($user['tipo_permissao'] == UsuarioService::NIVEL_BASICO)
                             <a href="{{ route('basico.dashboard') }}"
                                class="font-semibold text-indigo-600 hover:underline">Minha Área</a>
                         @endif

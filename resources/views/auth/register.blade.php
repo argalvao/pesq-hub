@@ -17,8 +17,8 @@
                 @csrf
                 <div class="space-y-4">
                     <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700">Nome Completo</label>
-                        <input type="text" id="name" name="name" 
+                        <label for="nome" class="block text-sm font-medium text-gray-700">Nome Completo</label>
+                        <input type="text" id="nome" name="nome" 
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
                                required autofocus>
                     </div>
@@ -31,27 +31,27 @@
                     </div>
 
                     <div>
-                        <label for="nivel_permissao" class="block text-sm font-medium text-gray-700">Tipo de Usuário</label>
-                        <select id="nivel_permissao" name="nivel_permissao" 
+                        <label for="tipo_permissao" class="block text-sm font-medium text-gray-700">Tipo de Usuário</label>
+                        <select id="tipo_permissao" name="tipo_permissao" 
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
                                 required>
                             <option value="">Selecione o tipo</option>
-                            <option value="2">Organizador</option>
-                            <option value="3">Estudante</option>
+                            <option value="DA">Organizador</option>
+                            <option value="BASICO">Estudante</option>
                         </select>
                     </div>
 
                     <div>
-                        <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
-                        <input type="password" id="password" name="password" 
+                        <label for="senha" class="block text-sm font-medium text-gray-700">Senha</label>
+                        <input type="password" id="senha" name="senha" 
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
                                required>
                         <p class="text-xs text-gray-500 mt-1">Mínimo de 6 caracteres</p>
                     </div>
 
                     <div>
-                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirmar Senha</label>
-                        <input type="password" id="password_confirmation" name="password_confirmation" 
+                        <label for="senha_confirmation" class="block text-sm font-medium text-gray-700">Confirmar Senha</label>
+                        <input type="password" id="senha_confirmation" name="senha_confirmation" 
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
                                required>
                     </div>
@@ -163,22 +163,22 @@ document.getElementById('form-cadastro').addEventListener('submit', async functi
     
     const formData = new FormData(e.target);
     const data = {
-        name: formData.get('name'),
+        nome: formData.get('nome'),
         email: formData.get('email'),
-        password: formData.get('password'),
-        password_confirmation: formData.get('password_confirmation'),
-        nivel_permissao: formData.get('nivel_permissao')
+        senha: formData.get('senha'),
+        senha_confirmation: formData.get('senha_confirmation'),
+        tipo_permissao: formData.get('tipo_permissao')
     };
     
     // Validação básica de senha
-    if (data.password !== data.password_confirmation) {
+    if (data.senha !== data.senha_confirmation) {
         showFeedback('As senhas não coincidem', 'error');
         btn.disabled = false;
         btn.textContent = 'Criar Conta';
         return;
     }
     
-    if (data.password.length < 6) {
+    if (data.senha.length < 6) {
         showFeedback('A senha deve ter no mínimo 6 caracteres', 'error');
         btn.disabled = false;
         btn.textContent = 'Criar Conta';

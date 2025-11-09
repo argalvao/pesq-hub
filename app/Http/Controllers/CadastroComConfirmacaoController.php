@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\TokenConfirmacaoService;
 use App\Services\EmailService;
-use App\Services\DatabaseUserService;
+use App\Services\UsuarioService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -13,16 +13,16 @@ class CadastroComConfirmacaoController extends Controller
 {
     protected $tokenService;
     protected $emailService;
-    protected $userService;
+    protected $usuarioService;
 
     public function __construct(
         TokenConfirmacaoService $tokenService,
         EmailService $emailService,
-        DatabaseUserService $userService
+        UsuarioService $usuarioService
     ) {
         $this->tokenService = $tokenService;
         $this->emailService = $emailService;
-        $this->userService = $userService;
+        $this->usuarioService = $usuarioService;
     }
 
     /**
@@ -33,20 +33,20 @@ class CadastroComConfirmacaoController extends Controller
         try {
             // Validação dos dados
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
+                'nome' => 'required|string|max:255',
                 'email' => 'required|email|max:255',
-                'password' => 'required|string|min:6',
-                'password_confirmation' => 'required|same:password',
-                'nivel_permissao' => 'required|in:2,3'
+                'senha' => 'required|string|min:6',
+                'senha_confirmation' => 'required|same:senha',
+                'tipo_permissao' => 'required|in:DA,BASICO'
             ], [
-                'name.required' => 'O nome é obrigatório',
+                'nome.required' => 'O nome é obrigatório',
                 'email.required' => 'O e-mail é obrigatório',
                 'email.email' => 'E-mail inválido',
-                'password.required' => 'A senha é obrigatória',
-                'password.min' => 'A senha deve ter no mínimo 6 caracteres',
-                'password_confirmation.same' => 'As senhas não coincidem',
-                'nivel_permissao.required' => 'Selecione o tipo de usuário',
-                'nivel_permissao.in' => 'Tipo de usuário inválido'
+                'senha.required' => 'A senha é obrigatória',
+                'senha.min' => 'A senha deve ter no mínimo 6 caracteres',
+                'senha_confirmation.same' => 'As senhas não coincidem',
+                'tipo_permissao.required' => 'Selecione o tipo de usuário',
+                'tipo_permissao.in' => 'Tipo de usuário inválido'
             ]);
 
             if ($validator->fails()) {
@@ -59,7 +59,7 @@ class CadastroComConfirmacaoController extends Controller
             $dados = $request->all();
 
             // Verificar se o e-mail já está cadastrado
-            $usuarioExistente = $this->userService->buscarPorEmail($dados['email']);
+            $usuarioExistente = $this->usuarioService->buscarPorEmail($dados['email']);
             if ($usuarioExistente) {
                 return response()->json([
                     'success' => false,
@@ -72,10 +72,10 @@ class CadastroComConfirmacaoController extends Controller
 
             // Armazenar token e dados temporariamente
             $dadosUsuario = [
-                'name' => $dados['name'],
+                'nome' => $dados['nome'],
                 'email' => $dados['email'],
-                'password' => $dados['password'], // Não hashear aqui - o DatabaseUserService já faz isso
-                'nivel_permissao' => $dados['nivel_permissao']
+                'senha' => $dados['senha'],
+                'tipo_permissao' => $dados['tipo_permissao']
             ];
 
             $this->tokenService->armazenarToken($dados['email'], $token, $dadosUsuario);
@@ -83,7 +83,7 @@ class CadastroComConfirmacaoController extends Controller
             // Enviar e-mail com token
             $emailEnviado = $this->emailService->enviarTokenConfirmacao(
                 $dados['email'],
-                $dados['name'],
+                $dados['nome'],
                 $token
             );
 
@@ -143,7 +143,7 @@ class CadastroComConfirmacaoController extends Controller
 
             // Token válido - criar usuário
             $dadosUsuario = $resultado['dados_usuario'];
-            $usuarioCriado = $this->userService->criar($dadosUsuario);
+            $usuarioCriado = $this->usuarioService->criar($dadosUsuario);
 
             if (!$usuarioCriado) {
                 return response()->json([
@@ -158,7 +158,7 @@ class CadastroComConfirmacaoController extends Controller
                 'success' => true,
                 'message' => 'Cadastro confirmado com sucesso! Você já pode fazer login.',
                 'user' => [
-                    'name' => $usuarioCriado['name'],
+                    'nome' => $usuarioCriado['nome'],
                     'email' => $usuarioCriado['email']
                 ]
             ]);
@@ -202,7 +202,7 @@ class CadastroComConfirmacaoController extends Controller
             if ($dados) {
                 $this->emailService->enviarTokenConfirmacao(
                     $request->email,
-                    $dados['dados_usuario']['name'],
+                    $dados['dados_usuario']['nome'],
                     $resultado['token']
                 );
             }
