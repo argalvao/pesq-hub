@@ -23,7 +23,7 @@ class AuthController extends Controller
         if (Session::has('user')) {
             return $this->redirectBasedOnLevel(Session::get('user'));
         }
-        return view('auth.login');
+        return redirect()->route('home');
     }
 
     public function login(Request $request)

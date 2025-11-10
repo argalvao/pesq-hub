@@ -18,6 +18,10 @@ Route::get('/register', [AuthController::class, 'showRegister'])->name('register
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Rotas de recuperação de senha
+Route::post('/password/send-token', [App\Http\Controllers\PasswordResetController::class, 'sendToken'])->name('password.send-token');
+Route::post('/password/update', [App\Http\Controllers\PasswordResetController::class, 'updatePassword'])->name('password.update');
+
 // Rota para verificação de e-mail (pública)
 Route::post('/check-email', [AuthController::class, 'checkEmail'])->name('check.email');
 
