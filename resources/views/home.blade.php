@@ -134,7 +134,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('close-profile-modal').addEventListener('click', () => this.closeProfileModal());
             document.getElementById('organizador-list-container').addEventListener('click', e => {
                 const card = e.target.closest('.organizador-card');
-                if (card) this.showProfessorProfile(parseInt(card.dataset.id));
+                if (card) {
+                    const id = card.dataset.id;
+                    this.showProfessorProfile(id);
+                }
             });
             // Login modal
             document.getElementById('login-trigger-btn')?.addEventListener('click', () => this.showLoginModal());
@@ -150,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderFilters() {
             const courses = [...new Set(this.data.professores.map(p => p.curso))].filter(Boolean);
-            const interests = [...new Set(this.data.professores.flatMap(p => p.areas_interesse || []))].filter(Boolean);
+            const interests = [...new Set(this.data.professores.flatMap(p => (p.areas_interesse || []).map(a => a.nome)))].filter(Boolean);
 
             const fillSelect = (id, items, label) => {
                 const el = document.getElementById(id);
@@ -169,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.data.filteredProfessores = this.data.professores.filter(p =>
                 p.nome.toLowerCase().includes(search) &&
                 (!curso || p.curso === curso) &&
-                (!interesse || (p.areas_interesse || []).includes(interesse))
+                (!interesse || (p.areas_interesse || []).some(a => a.nome === interesse))
             );
             this.renderProfessores();
         },
@@ -189,18 +192,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            c.innerHTML = this.data.filteredProfessores.map(p => `
-                <div class="organizador-card bg-white p-4 rounded-lg shadow-sm mb-4 flex items-start gap-4 hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer" data-id="${p.id}">
-                    <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center text-2xl font-bold text-indigo-700">${this.getInitials(p.nome)}</div>
-                    <div>
-                        <h3 class="text-lg font-bold text-indigo-800">${p.nome}</h3>
-                        <p class="text-sm text-gray-600">${p.curso}</p>
-                        <div class="mt-2 flex flex-wrap gap-2">
-                            ${(p.areas_interesse || []).map(a => `<span class="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2 py-1 rounded-full">${a.nome}</span>`).join('')}
+            try {
+                c.innerHTML = this.data.filteredProfessores.map(p => `
+                    <div class="organizador-card bg-white p-4 rounded-lg shadow-sm mb-4 flex items-start gap-4 hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer" data-id="${p.id}">
+                        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center text-2xl font-bold text-indigo-700">${this.getInitials(p.nome)}</div>
+                        <div>
+                            <h3 class="text-lg font-bold text-indigo-800">${p.nome}</h3>
+                            <p class="text-sm text-gray-600">${p.curso}</p>
+                            <div class="mt-2 flex flex-wrap gap-2">
+                                ${(p.areas_interesse || []).map(a => `<span class="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2 py-1 rounded-full">${a.nome}</span>`).join('')}
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            } catch (error) {
+                console.error('Erro ao renderizar professores:', error);
+                c.innerHTML = '<div class="bg-white p-6 rounded-lg shadow-sm text-center text-red-500">Erro ao carregar professores.</div>';
+            }
         },
 
         renderLinhasPesquisa() {
@@ -229,7 +237,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async showProfessorProfile(id) {
             const p = this.data.professores.find(p => p.id === id);
-            if (!p) return;
+            if (!p) {
+                console.error('Professor não encontrado com ID:', id);
+                return;
+            }
 
             const linhas = this.data.linhasPesquisa.filter(l => p.linhas_pesquisa_ids?.includes(l.id));
             const content = `

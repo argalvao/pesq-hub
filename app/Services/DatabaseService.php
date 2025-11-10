@@ -598,7 +598,7 @@ class DatabaseService
     public function getUserById($id)
     {
         try {
-            $user = Usuario::with('curso')->findOrFail($id);
+            $user = Usuario::with(['curso', 'areasInteresse'])->findOrFail($id);
 
             return [
                 'id' => $user->id,
@@ -607,10 +607,22 @@ class DatabaseService
                 'tipo_permissao' => $user->tipo_permissao,
                 'ativo' => $user->ativo,
                 'id_curso' => $user->id_curso,
+                'telefone' => $user->telefone,
+                'periodo' => $user->periodo,
+                'biografia' => $user->biografia,
+                'lattes' => $user->lattes,
                 'curso' => $user->curso ? [
                     'id' => $user->curso->id,
                     'nome' => $user->curso->nome
                 ] : null,
+                'areas_interesse' => $user->areasInteresse->map(function ($area) {
+                    return [
+                        'id' => $area->id,
+                        'nome' => $area->nome,
+                        'descricao' => $area->descricao
+                    ];
+                })->toArray(),
+                'areas_interesse_ids' => $user->areasInteresse->pluck('id')->toArray(),
                 'data_criacao' => $user->data_criacao->format('Y-m-d H:i:s'),
                 'data_atualizacao' => $user->data_atualizacao->format('Y-m-d H:i:s')
             ];
@@ -676,13 +688,19 @@ class DatabaseService
     public function updateUser($id, $data)
     {
         try {
+            DB::beginTransaction();
+            
             $user = Usuario::findOrFail($id);
 
             $updateData = [
                 'nome' => $data['nome'] ?? $user->nome,
                 'email' => $data['email'] ?? $user->email,
                 'id_curso' => $data['id_curso'] ?? $user->id_curso,
-                'tipo_permissao' => $data['tipo_permissao'] ?? $user->tipo_permissao
+                'tipo_permissao' => $data['tipo_permissao'] ?? $user->tipo_permissao,
+                'telefone' => $data['telefone'] ?? $user->telefone,
+                'periodo' => $data['periodo'] ?? $user->periodo,
+                'biografia' => $data['biografia'] ?? $user->biografia,
+                'lattes' => $data['lattes'] ?? $user->lattes
             ];
 
             // Atualizar senha apenas se fornecida
@@ -697,6 +715,12 @@ class DatabaseService
 
             $user->update($updateData);
 
+            // Atualizar áreas de interesse se fornecidas
+            if (isset($data['areas_interesse_ids'])) {
+                $user->areasInteresse()->sync($data['areas_interesse_ids']);
+            }
+
+            DB::commit();
             Cache::forget('usuarios_db');
 
             return $this->getUserById($user->id);

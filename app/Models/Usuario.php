@@ -23,7 +23,11 @@ class Usuario extends Model
         'senha',
         'ativo',
         'tipo_permissao',
-        'id_curso'
+        'id_curso',
+        'telefone',
+        'periodo',
+        'biografia',
+        'lattes'
     ];
 
     protected $hidden = [
@@ -47,6 +51,19 @@ class Usuario extends Model
     public function curso()
     {
         return $this->belongsTo(Curso::class, 'id_curso');
+    }
+
+    /**
+     * Um usuário tem várias áreas de interesse (many-to-many)
+     */
+    public function areasInteresse()
+    {
+        return $this->belongsToMany(
+            AreaPesquisa::class,
+            'usuario_area_interesse',
+            'id_usuario',
+            'id_area_pesquisa'
+        );
     }
 
     // Helpers

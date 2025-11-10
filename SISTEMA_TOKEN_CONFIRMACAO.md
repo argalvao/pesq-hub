@@ -39,7 +39,6 @@ Sistema completo de confirmação de cadastro por e-mail com token numérico de 
   - `POST /token/verificar`: Verificar token
   - `GET /token/consultar`: Consultar status
   - `DELETE /token/cancelar`: Cancelar token
-  - `POST /token/teste`: Teste para desenvolvimento
 
 #### CadastroComConfirmacaoController
 - **Arquivo**: `app/Http/Controllers/CadastroComConfirmacaoController.php`
@@ -48,11 +47,6 @@ Sistema completo de confirmação de cadastro por e-mail com token numérico de 
   - `POST /cadastro/confirmar`: Confirma token e finaliza cadastro
   - `POST /cadastro/reenviar-token`: Reenvia token
   - `DELETE /cadastro/cancelar`: Cancela processo
-
-### 5. **Página de Demonstração**
-- **Arquivo**: `resources/views/test-tokens.blade.php`
-- **URL**: `http://localhost:8001/test-tokens`
-- **Interface**: Completa para testar todas as funcionalidades
 
 ## 🔧 Especificações Técnicas
 
