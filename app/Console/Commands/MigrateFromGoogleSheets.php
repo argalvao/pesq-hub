@@ -84,9 +84,9 @@ class MigrateFromGoogleSheets extends Command
         $this->info('👥 Migrando Usuários...');
 
         try {
-            // Usar UsuarioService para pegar usuários do Google Sheets
-            $usuarioService = app(\App\Services\UsuarioService::class);
-            $usuariosSheets = $usuarioService->getUsers();
+            // Usar UserService para pegar usuários do Google Sheets
+            $userService = app(\App\Services\UserService::class);
+            $usuariosSheets = $userService->getUsers();
 
             foreach ($usuariosSheets as $usuario) {
                 $existing = User::where('email', $usuario['email'])->first();

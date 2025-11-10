@@ -42,7 +42,7 @@ class AdminController extends Controller
         // Validação ajustada para os dados do modal
         $request->validate([
             'nome' => 'required|string|max:255',
-            'email' => 'required|email|unique:organizador,email',
+            'email' => 'required|email|unique:professor,email',
             'telefone' => 'nullable|string|max:20',
             'id_curso' => 'required|string|exists:curso,id', // Validar o id_curso
             'departamento' => 'nullable|string|max:255',
@@ -68,7 +68,7 @@ class AdminController extends Controller
             'email' => [
                 'required',
                 'email',
-                Rule::unique('organizador')->ignore($id), // Ignorar o próprio ID na verificação de email único
+                Rule::unique('professor')->ignore($id), // Ignorar o próprio ID na verificação de email único
             ],
             'telefone' => 'nullable|string|max:20',
             'id_curso' => 'required|string|exists:curso,id', // Validar o id_curso

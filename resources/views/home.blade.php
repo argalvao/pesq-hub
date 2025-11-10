@@ -316,12 +316,213 @@ document.addEventListener('DOMContentLoaded', () => {
                         @csrf
                         <input type="email" name="email" placeholder="E-mail" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-400" required>
                         <input type="password" name="password" placeholder="Senha" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-400" required>
+                        <div class="text-right mb-4">
+                            <button type="button" onclick="App.showForgotPasswordModal()" class="text-sm text-indigo-600 hover:underline">
+                                Esqueci minha senha
+                            </button>
+                        </div>
                         <button type="submit" class="w-full mt-4 bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700 transition-all">
                             Entrar
                         </button>
                     </form>
                 </div>`;
             this.showGenericModal(content);
+        },
+
+        showForgotPasswordModal() {
+            const content = `
+                <button onclick="App.hideGenericModal()" class="absolute top-2 right-2 text-2xl text-gray-500 hover:text-gray-800 transition-colors" aria-label="Fechar modal">&times;</button>
+                <div class="p-8">
+                    <h2 class="text-2xl font-bold text-center mb-2">Recuperar Senha</h2>
+                    <p class="text-center text-sm text-gray-500 mb-6">Digite seu e-mail para receber um código de verificação</p>
+                    <form id="forgot-password-form" class="space-y-4">
+                        <input type="email" id="forgot-email" placeholder="E-mail" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-400" required>
+                        <button type="submit" class="w-full mt-4 bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700 transition-all">
+                            Enviar Código
+                        </button>
+                    </form>
+                    <div class="text-center mt-4">
+                        <button type="button" onclick="App.showLoginModal()" class="text-sm text-indigo-600 hover:underline">
+                            Voltar ao Login
+                        </button>
+                    </div>
+                </div>`;
+            this.showGenericModal(content);
+            
+            // Adicionar evento de submit ao formulário
+            document.getElementById('forgot-password-form').addEventListener('submit', (e) => this.handleForgotPassword(e));
+        },
+
+        async handleForgotPassword(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('forgot-email').value;
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            
+            // Desabilitar botão e mostrar loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Enviando...';
+            
+            try {
+                const response = await fetch('/api/password/send-token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Código de verificação enviado! Verifique seu e-mail.');
+                    this.showPasswordResetModal(email);
+                } else {
+                    alert(result.message || 'Erro ao enviar código. Tente novamente.');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro de conexão. Tente novamente.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Enviar Código';
+            }
+        },
+
+        showPasswordResetModal(email) {
+            const content = `
+                <button onclick="App.hideGenericModal()" class="absolute top-2 right-2 text-2xl text-gray-500 hover:text-gray-800 transition-colors" aria-label="Fechar modal">&times;</button>
+                <div class="p-8">
+                    <h2 class="text-2xl font-bold text-center mb-2">Redefinir Senha</h2>
+                    <p class="text-center text-sm text-gray-500 mb-6">Digite o código de 6 dígitos enviado para seu e-mail</p>
+                    <form id="reset-password-form" class="space-y-4">
+                        <input type="hidden" id="reset-email" value="${email}">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Código de Verificação</label>
+                            <input type="text" id="reset-token" placeholder="000000" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-400 text-center text-2xl tracking-widest" maxlength="6" pattern="[0-9]{6}" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Nova Senha</label>
+                            <input type="password" id="reset-password" placeholder="Nova senha" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-400" minlength="6" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Confirmar Senha</label>
+                            <input type="password" id="reset-password-confirmation" placeholder="Confirme a nova senha" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-400" minlength="6" required>
+                        </div>
+                        <button type="submit" class="w-full mt-4 bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700 transition-all">
+                            Redefinir Senha
+                        </button>
+                    </form>
+                    <div class="text-center mt-4">
+                        <button type="button" onclick="App.showForgotPasswordModal()" class="text-sm text-indigo-600 hover:underline">
+                            Reenviar Código
+                        </button>
+                    </div>
+                </div>`;
+            this.showGenericModal(content);
+            
+            // Adicionar evento de submit ao formulário
+            document.getElementById('reset-password-form').addEventListener('submit', (e) => this.handlePasswordReset(e));
+            
+            // Formatação automática do token
+            document.getElementById('reset-token').addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
+        },
+
+        async handlePasswordReset(event) {
+            event.preventDefault();
+            
+            console.log('handlePasswordReset iniciado');
+            
+            const email = document.getElementById('reset-email').value;
+            const token = document.getElementById('reset-token').value;
+            const password = document.getElementById('reset-password').value;
+            const passwordConfirmation = document.getElementById('reset-password-confirmation').value;
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            
+            console.log('Dados coletados:', { email, token, password: '***', passwordConfirmation: '***' });
+            
+            // Validações frontend
+            if (token.length !== 6) {
+                console.log('Token inválido - comprimento:', token.length);
+                alert('O código deve ter 6 dígitos.');
+                return;
+            }
+            
+            if (password !== passwordConfirmation) {
+                console.log('Senhas não conferem');
+                alert('As senhas não conferem.');
+                return;
+            }
+            
+            if (password.length < 6) {
+                console.log('Senha muito curta:', password.length);
+                alert('A senha deve ter pelo menos 6 caracteres.');
+                return;
+            }
+            
+            console.log('Validações OK, enviando requisição...');
+            
+            // Desabilitar botão e mostrar loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Redefinindo...';
+            
+            try {
+                const requestData = {
+                    email: email,
+                    token: token,
+                    password: password,
+                    password_confirmation: passwordConfirmation
+                };
+                
+                console.log('Enviando para:', '/api/password/update');
+                console.log('Request data:', { ...requestData, password: '***', password_confirmation: '***' });
+                
+                const response = await fetch('/api/password/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+                
+                // Verificar se é JSON antes de fazer parse
+                const contentType = response.headers.get('content-type');
+                console.log('Content-Type:', contentType);
+                
+                let result;
+                if (contentType && contentType.includes('application/json')) {
+                    result = await response.json();
+                    console.log('Response JSON:', result);
+                } else {
+                    const text = await response.text();
+                    console.log('Response TEXT (não é JSON):', text);
+                    throw new Error('Resposta não é JSON válida. Server retornou: ' + text.substring(0, 200));
+                }
+                
+                if (response.ok) {
+                    alert('Senha redefinida com sucesso! Você pode fazer login com a nova senha.');
+                    this.hideGenericModal();
+                    this.showLoginModal();
+                } else {
+                    alert(result.message || 'Erro ao redefinir senha. Verifique os dados e tente novamente.');
+                }
+            } catch (error) {
+                console.error('Erro detalhado:', error);
+                console.error('Stack trace:', error.stack);
+                console.error('Response status:', error.response?.status);
+                console.error('Response text:', error.response?.text);
+                alert('Erro de conexão. Tente novamente. Verifique o console para detalhes.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Redefinir Senha';
+            }
         },
 
         showGenericModal(content) {

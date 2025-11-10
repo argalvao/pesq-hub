@@ -14,19 +14,19 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/api/data', [HomeController::class, 'getData'])->name('api.data');
 Route::get('/sobre', [AboutController::class, 'index'])->name('sobre');
 
-// Rotas de autenticação
+// Rotas de autenticaçãoroutes/web.php
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Rotas de cadastro com confirmação por token
-Route::post('/cadastro/solicitar', [CadastroComConfirmacaoController::class, 'solicitarCadastro'])->name('cadastro.solicitar');
-Route::post('/cadastro/confirmar', [CadastroComConfirmacaoController::class, 'confirmarCadastro'])->name('cadastro.confirmar');
-Route::post('/cadastro/reenviar-token', [CadastroComConfirmacaoController::class, 'reenviarToken'])->name('cadastro.reenviar');
-Route::delete('/cadastro/cancelar', [CadastroComConfirmacaoController::class, 'cancelarCadastro'])->name('cadastro.cancelar');
-Route::get('/cadastro/status', [CadastroComConfirmacaoController::class, 'consultarStatus'])->name('cadastro.status');
+// Rotas de recuperação de senha
+Route::post('/password/send-token', [App\Http\Controllers\PasswordResetController::class, 'sendToken'])->name('password.send-token');
+Route::post('/password/update', [App\Http\Controllers\PasswordResetController::class, 'updatePassword'])->name('password.update');
+
+// Rota para verificação de e-mail (pública)
+Route::post('/check-email', [AuthController::class, 'checkEmail'])->name('check.email');
 
 // Rotas de admin (protegidas por user.level:admin middleware)
 Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(function () {
