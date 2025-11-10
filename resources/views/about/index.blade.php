@@ -170,54 +170,54 @@
                         </div>
                         <div class="p-8">
                             <p class="text-gray-700 mb-6 text-center text-lg font-medium">
-                                Divulgue suas pesquisas e encontre estudantes motivados
+                                Seus dados são gerenciados pelos organizadores do sistema
                             </p>
                             
                             <div class="bg-purple-50 rounded-lg p-4 mb-6">
-                                <p class="text-purple-900 font-semibold mb-2">🎯 O que você pode fazer:</p>
+                                <p class="text-purple-900 font-semibold mb-2">🎯 Como seu perfil funciona:</p>
                             </div>
                             
                             <ul class="space-y-4">
                                 <li class="flex items-start">
                                     <span class="text-purple-600 mr-3 text-2xl flex-shrink-0">✓</span>
                                     <div>
-                                        <span class="font-semibold text-gray-800">Gerenciar seu perfil acadêmico</span>
-                                        <p class="text-sm text-gray-600">Mantenha suas informações sempre atualizadas</p>
+                                        <span class="font-semibold text-gray-800">Perfil acadêmico visível</span>
+                                        <p class="text-sm text-gray-600">Suas informações são cadastradas pelos organizadores</p>
                                     </div>
                                 </li>
                                 <li class="flex items-start">
                                     <span class="text-purple-600 mr-3 text-2xl flex-shrink-0">✓</span>
                                     <div>
-                                        <span class="font-semibold text-gray-800">Cadastrar linhas de pesquisa</span>
-                                        <p class="text-sm text-gray-600">Divulgue seus projetos e áreas de interesse</p>
+                                        <span class="font-semibold text-gray-800">Linhas de pesquisa cadastradas</span>
+                                        <p class="text-sm text-gray-600">Seus projetos e áreas de interesse ficam disponíveis</p>
                                     </div>
                                 </li>
                                 <li class="flex items-start">
                                     <span class="text-purple-600 mr-3 text-2xl flex-shrink-0">✓</span>
                                     <div>
-                                        <span class="font-semibold text-gray-800">Atrair estudantes qualificados</span>
-                                        <p class="text-sm text-gray-600">Estudantes interessados encontram você facilmente</p>
+                                        <span class="font-semibold text-gray-800">Estudantes encontram você</span>
+                                        <p class="text-sm text-gray-600">Seu perfil é facilmente localizado por estudantes interessados</p>
                                     </div>
                                 </li>
                                 <li class="flex items-start">
                                     <span class="text-purple-600 mr-3 text-2xl flex-shrink-0">✓</span>
                                     <div>
-                                        <span class="font-semibold text-gray-800">Facilitar o primeiro contato</span>
-                                        <p class="text-sm text-gray-600">Suas informações de contato ficam visíveis</p>
+                                        <span class="font-semibold text-gray-800">Contato direto disponível</span>
+                                        <p class="text-sm text-gray-600">Suas informações de contato ficam visíveis para estudantes</p>
                                     </div>
                                 </li>
                                 <li class="flex items-start">
                                     <span class="text-purple-600 mr-3 text-2xl flex-shrink-0">✓</span>
                                     <div>
-                                        <span class="font-semibold text-gray-800">Aumentar visibilidade</span>
-                                        <p class="text-sm text-gray-600">Seus projetos acessíveis 24/7 online</p>
+                                        <span class="font-semibold text-gray-800">Visibilidade online 24/7</span>
+                                        <p class="text-sm text-gray-600">Seus projetos acessíveis a qualquer momento</p>
                                     </div>
                                 </li>
                             </ul>
 
                             <div class="mt-6 bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg text-center">
-                                <p class="font-semibold">💡 Dica:</p>
-                                <p class="text-sm">Quanto mais completo seu perfil, mais estudantes interessados você atrai!</p>
+                                <p class="font-semibold">ℹ️ Informação:</p>
+                                <p class="text-sm">Para atualizar suas informações, entre em contato com os organizadores do sistema!</p>
                             </div>
                         </div>
                     </div>
