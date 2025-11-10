@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OrganizadorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\CadastroComConfirmacaoController;
 use App\Http\Controllers\AboutController;
 
 // Rotas públicas
@@ -20,8 +21,12 @@ Route::get('/register', [AuthController::class, 'showRegister'])->name('register
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Rota para verificação de e-mail (pública)
-Route::post('/check-email', [AuthController::class, 'checkEmail'])->name('check.email');
+// Rotas de cadastro com confirmação por token
+Route::post('/cadastro/solicitar', [CadastroComConfirmacaoController::class, 'solicitarCadastro'])->name('cadastro.solicitar');
+Route::post('/cadastro/confirmar', [CadastroComConfirmacaoController::class, 'confirmarCadastro'])->name('cadastro.confirmar');
+Route::post('/cadastro/reenviar-token', [CadastroComConfirmacaoController::class, 'reenviarToken'])->name('cadastro.reenviar');
+Route::delete('/cadastro/cancelar', [CadastroComConfirmacaoController::class, 'cancelarCadastro'])->name('cadastro.cancelar');
+Route::get('/cadastro/status', [CadastroComConfirmacaoController::class, 'consultarStatus'])->name('cadastro.status');
 
 // Rotas de admin (protegidas por user.level:admin middleware)
 Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(function () {
@@ -43,6 +48,9 @@ Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(fu
     // Rotas para carregar dados para os modais
     Route::get('/cursos', [AdminController::class, 'getCursos'])->name('cursos.index');
     Route::get('/areas-pesquisa', [AdminController::class, 'getAreasPesquisa'])->name('areas.index');
+    Route::post('/areas-pesquisa', [AdminController::class, 'storeAreaPesquisa'])->name('areas.store');
+    Route::put('/areas-pesquisa/{id}', [AdminController::class, 'updateAreaPesquisa'])->name('areas.update');
+    Route::delete('/areas-pesquisa/{id}', [AdminController::class, 'destroyAreaPesquisa'])->name('areas.destroy');
     Route::get('/usuarios', [AdminController::class, 'getUsuarios'])->name('usuarios.index');
     // =====================================
 

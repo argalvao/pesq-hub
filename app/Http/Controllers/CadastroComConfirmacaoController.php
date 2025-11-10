@@ -3,287 +3,288 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use App\Services\TokenConfirmacaoService;
-use App\Services\DatabaseService;
-use Illuminate\Support\Facades\Hash;
-use Exception;
+use App\Services\EmailService;
+use App\Services\UsuarioService;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class CadastroComConfirmacaoController extends Controller
 {
-    protected TokenConfirmacaoService $tokenService;
-    protected DatabaseService $databaseService;
+    protected $tokenService;
+    protected $emailService;
+    protected $usuarioService;
 
-    public function __construct(TokenConfirmacaoService $tokenService, DatabaseService $databaseService)
-    {
+    public function __construct(
+        TokenConfirmacaoService $tokenService,
+        EmailService $emailService,
+        UsuarioService $usuarioService
+    ) {
         $this->tokenService = $tokenService;
-        $this->databaseService = $databaseService;
+        $this->emailService = $emailService;
+        $this->usuarioService = $usuarioService;
     }
 
     /**
-     * Etapa 1: Solicitar cadastro e enviar token por e-mail
-     *
-     * @param Request $request
-     * @return JsonResponse
+     * Etapa 1: Solicitar cadastro (gera e envia token)
      */
-    public function solicitarCadastro(Request $request): JsonResponse
+    public function solicitarCadastro(Request $request)
     {
         try {
-            $validatedData = $request->validate([
-                'name' => 'required|string|min:2|max:100',
+            // Validação dos dados
+            $validator = Validator::make($request->all(), [
+                'nome' => 'required|string|max:255',
                 'email' => 'required|email|max:255',
-                'password' => 'required|string|min:6|confirmed',
-                'nivel_permissao' => 'required|in:2,3', // 2=professor, 3=estudante
+                'senha' => 'required|string|min:6',
+                'senha_confirmation' => 'required|same:senha',
+                'tipo_permissao' => 'required|in:DA,BASICO'
+            ], [
+                'nome.required' => 'O nome é obrigatório',
+                'email.required' => 'O e-mail é obrigatório',
+                'email.email' => 'E-mail inválido',
+                'senha.required' => 'A senha é obrigatória',
+                'senha.min' => 'A senha deve ter no mínimo 6 caracteres',
+                'senha_confirmation.same' => 'As senhas não coincidem',
+                'tipo_permissao.required' => 'Selecione o tipo de usuário',
+                'tipo_permissao.in' => 'Tipo de usuário inválido'
             ]);
 
-            // Verificar se e-mail já existe
-            $usuarioExistente = $this->databaseService->getUserByEmail($validatedData['email']);
-            if ($usuarioExistente) {
+            if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
-                    'message' => '❌ Este e-mail já está cadastrado no sistema',
-                    'codigo' => 'EMAIL_JA_EXISTE'
+                    'message' => $validator->errors()->first()
                 ], 422);
             }
 
-            // Determinar tipo baseado no nível
-            $tipoUsuario = $validatedData['nivel_permissao'] == 2 ? 'professor' : 'estudante';
+            $dados = $request->all();
 
-            // Salvar dados temporariamente no cache junto com o token
-            $dadosTemporarios = [
-                'name' => $validatedData['name'],
-                'email' => $validatedData['email'],
-                'password' => Hash::make($validatedData['password']),
-                'nivel_permissao' => $validatedData['nivel_permissao'],
-                'tipo' => $tipoUsuario
-            ];
-
-            // Gerar e enviar token
-            $resultado = $this->tokenService->enviarTokenConfirmacao(
-                $validatedData['email'],
-                $validatedData['name'],
-                $tipoUsuario
-            );
-
-            if ($resultado['success']) {
-                // Salvar dados do cadastro temporariamente (por 5 minutos)
-                $chaveCadastro = 'cadastro_temp_' . md5(strtolower($validatedData['email']));
-                cache()->put($chaveCadastro, $dadosTemporarios, 300); // 5 minutos
-
+            // Verificar se o e-mail já está cadastrado
+            $usuarioExistente = $this->usuarioService->buscarPorEmail($dados['email']);
+            if ($usuarioExistente) {
                 return response()->json([
-                    'success' => true,
-                    'message' => '✅ Token de confirmação enviado! Verifique seu e-mail.',
-                    'email' => $validatedData['email'],
-                    'proxima_etapa' => 'confirmar_token',
-                    'expira_em' => 300
-                ], 200);
-            } else {
-                return response()->json($resultado, 500);
+                    'success' => false,
+                    'message' => 'Este e-mail já está cadastrado no sistema.'
+                ], 422);
             }
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => '❌ Dados inválidos',
-                'errors' => $e->errors()
-            ], 422);
+            // Gerar token
+            $token = $this->tokenService->gerarToken();
 
-        } catch (Exception $e) {
+            // Armazenar token e dados temporariamente
+            $dadosUsuario = [
+                'nome' => $dados['nome'],
+                'email' => $dados['email'],
+                'senha' => $dados['senha'],
+                'tipo_permissao' => $dados['tipo_permissao']
+            ];
+
+            $this->tokenService->armazenarToken($dados['email'], $token, $dadosUsuario);
+
+            // Enviar e-mail com token
+            $emailEnviado = $this->emailService->enviarTokenConfirmacao(
+                $dados['email'],
+                $dados['nome'],
+                $token
+            );
+
+            if (!$emailEnviado) {
+                Log::warning("Falha ao enviar e-mail para: {$dados['email']}. Token: {$token}");
+            }
+
+            Log::info("Token gerado para {$dados['email']}: {$token}");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Código de confirmação enviado para seu e-mail. Verifique sua caixa de entrada.',
+                'email' => $dados['email']
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Erro ao solicitar cadastro: " . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => '❌ Erro interno: ' . $e->getMessage()
+                'message' => 'Erro ao processar solicitação. Tente novamente.'
             ], 500);
         }
     }
 
     /**
-     * Etapa 2: Confirmar token e finalizar cadastro
-     *
-     * @param Request $request
-     * @return JsonResponse
+     * Etapa 2: Confirmar token e criar usuário
      */
-    public function confirmarCadastro(Request $request): JsonResponse
+    public function confirmarCadastro(Request $request)
     {
         try {
-            $validatedData = $request->validate([
-                'email' => 'required|email|max:255',
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email',
                 'token' => 'required|string|size:6|regex:/^[0-9]{6}$/'
+            ], [
+                'email.required' => 'E-mail é obrigatório',
+                'token.required' => 'Código é obrigatório',
+                'token.size' => 'O código deve ter 6 dígitos',
+                'token.regex' => 'O código deve conter apenas números'
             ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->first()
+                ], 422);
+            }
 
             // Verificar token
-            $verificacaoToken = $this->tokenService->verificarToken(
-                $validatedData['email'],
-                $validatedData['token']
+            $resultado = $this->tokenService->verificarToken(
+                $request->email,
+                $request->token
             );
 
-            if (!$verificacaoToken['success']) {
-                return response()->json($verificacaoToken, 400);
+            if (!$resultado['success']) {
+                return response()->json($resultado, 422);
             }
 
-            // Recuperar dados temporários do cadastro
-            $chaveCadastro = 'cadastro_temp_' . md5(strtolower($validatedData['email']));
-            $dadosTemporarios = cache()->get($chaveCadastro);
+            // Token válido - criar usuário
+            $dadosUsuario = $resultado['dados_usuario'];
+            $usuarioCriado = $this->usuarioService->criar($dadosUsuario);
 
-            if (!$dadosTemporarios) {
+            if (!$usuarioCriado) {
                 return response()->json([
                     'success' => false,
-                    'message' => '❌ Dados de cadastro expirados. Inicie o processo novamente.',
-                    'codigo' => 'DADOS_EXPIRADOS'
-                ], 400);
+                    'message' => 'Erro ao criar usuário. Tente novamente.'
+                ], 500);
             }
 
-            // Verificar novamente se e-mail não foi cadastrado enquanto isso
-            $usuarioExistente = $this->databaseService->getUserByEmail($validatedData['email']);
-            if ($usuarioExistente) {
-                cache()->forget($chaveCadastro);
+            Log::info("Usuário criado com sucesso: {$dadosUsuario['email']}");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cadastro confirmado com sucesso! Você já pode fazer login.',
+                'user' => [
+                    'nome' => $usuarioCriado['nome'],
+                    'email' => $usuarioCriado['email']
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Erro ao confirmar cadastro: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao confirmar cadastro. Tente novamente.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Reenviar token
+     */
+    public function reenviarToken(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email'
+            ]);
+
+            if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
-                    'message' => '❌ Este e-mail já foi cadastrado por outro processo',
-                    'codigo' => 'EMAIL_JA_EXISTE'
+                    'message' => 'E-mail inválido'
                 ], 422);
             }
 
-            // Criar usuário no banco de dados
-            $userData = [
-                'name' => $dadosTemporarios['name'],
-                'email' => $dadosTemporarios['email'],
-                'password' => $dadosTemporarios['password'], // Já está hasheado
-                'nivel_permissao' => $dadosTemporarios['nivel_permissao'],
-                'ativo' => 1
-            ];
+            $resultado = $this->tokenService->reenviarToken($request->email);
 
-            $novoUsuario = $this->databaseService->createUser($userData);
+            if (!$resultado['success']) {
+                return response()->json($resultado, 422);
+            }
 
-            // Limpar dados temporários
-            cache()->forget($chaveCadastro);
+            // Enviar novo token por e-mail
+            $chaveCache = 'token_confirmacao_' . md5(strtolower(trim($request->email)));
+            $dados = cache()->get($chaveCache);
+            
+            if ($dados) {
+                $this->emailService->enviarTokenConfirmacao(
+                    $request->email,
+                    $dados['dados_usuario']['nome'],
+                    $resultado['token']
+                );
+            }
+
+            Log::info("Token reenviado para: {$request->email}");
 
             return response()->json([
                 'success' => true,
-                'message' => '🎉 Cadastro confirmado com sucesso! Você já pode fazer login.',
-                'usuario' => [
-                    'id' => $novoUsuario['id'],
-                    'name' => $novoUsuario['name'],
-                    'email' => $novoUsuario['email'],
-                    'tipo' => $dadosTemporarios['tipo']
-                ],
-                'codigo' => 'CADASTRO_CONFIRMADO'
-            ], 201);
+                'message' => 'Novo código enviado para seu e-mail.'
+            ]);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (\Exception $e) {
+            Log::error("Erro ao reenviar token: " . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => '❌ Dados inválidos',
-                'errors' => $e->errors()
-            ], 422);
-
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => '❌ Erro interno: ' . $e->getMessage()
+                'message' => 'Erro ao reenviar código. Tente novamente.'
             ], 500);
         }
     }
 
     /**
-     * Reenviar token para um cadastro pendente
-     *
-     * @param Request $request
-     * @return JsonResponse
+     * Cancelar processo de cadastro
      */
-    public function reenviarToken(Request $request): JsonResponse
+    public function cancelarCadastro(Request $request)
     {
         try {
-            $validatedData = $request->validate([
-                'email' => 'required|email|max:255'
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email'
             ]);
 
-            // Verificar se existem dados temporários para este e-mail
-            $chaveCadastro = 'cadastro_temp_' . md5(strtolower($validatedData['email']));
-            $dadosTemporarios = cache()->get($chaveCadastro);
-
-            if (!$dadosTemporarios) {
+            if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
-                    'message' => '❌ Nenhum cadastro pendente encontrado para este e-mail',
-                    'codigo' => 'CADASTRO_NAO_PENDENTE'
-                ], 404);
+                    'message' => 'E-mail inválido'
+                ], 422);
             }
 
-            // Cancelar token anterior (se existir)
-            $this->tokenService->cancelarToken($validatedData['email']);
+            $this->tokenService->cancelarConfirmacao($request->email);
 
-            // Enviar novo token
-            $resultado = $this->tokenService->enviarTokenConfirmacao(
-                $dadosTemporarios['email'],
-                $dadosTemporarios['name'],
-                $dadosTemporarios['tipo']
-            );
+            return response()->json([
+                'success' => true,
+                'message' => 'Processo de cadastro cancelado.'
+            ]);
 
-            if ($resultado['success']) {
-                // Renovar tempo dos dados temporários
-                cache()->put($chaveCadastro, $dadosTemporarios, 300);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => '✅ Novo token enviado! Verifique seu e-mail.',
-                    'email' => $validatedData['email']
-                ], 200);
-            } else {
-                return response()->json($resultado, 500);
-            }
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (\Exception $e) {
+            Log::error("Erro ao cancelar cadastro: " . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => '❌ E-mail inválido',
-                'errors' => $e->errors()
-            ], 422);
-
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => '❌ Erro interno: ' . $e->getMessage()
+                'message' => 'Erro ao cancelar. Tente novamente.'
             ], 500);
         }
     }
 
     /**
-     * Cancelar processo de cadastro pendente
-     *
-     * @param Request $request
-     * @return JsonResponse
+     * Consultar status do token
      */
-    public function cancelarCadastro(Request $request): JsonResponse
+    public function consultarStatus(Request $request)
     {
         try {
-            $validatedData = $request->validate([
-                'email' => 'required|email|max:255'
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email'
             ]);
 
-            // Cancelar token
-            $this->tokenService->cancelarToken($validatedData['email']);
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'E-mail inválido'
+                ], 422);
+            }
 
-            // Remover dados temporários
-            $chaveCadastro = 'cadastro_temp_' . md5(strtolower($validatedData['email']));
-            cache()->forget($chaveCadastro);
+            $status = $this->tokenService->consultarStatus($request->email);
 
             return response()->json([
                 'success' => true,
-                'message' => '✅ Processo de cadastro cancelado com sucesso',
-                'codigo' => 'CADASTRO_CANCELADO'
-            ], 200);
+                'data' => $status
+            ]);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (\Exception $e) {
+            Log::error("Erro ao consultar status: " . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => '❌ E-mail inválido',
-                'errors' => $e->errors()
-            ], 422);
-
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => '❌ Erro interno: ' . $e->getMessage()
+                'message' => 'Erro ao consultar status.'
             ], 500);
         }
     }
