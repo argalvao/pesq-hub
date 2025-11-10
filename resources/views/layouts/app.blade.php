@@ -65,7 +65,7 @@
                     <div class="flex items-center space-x-4">
                         <span class="font-semibold">{{ $user['nome'] }}</span>
                         <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">
-                                {{ app(App\Services\UserService::class)->getNivelPermissaoTexto($user['tipo_permissao']) }}
+                                {{ app(App\Services\UsuarioService::class)->getNivelPermissaoTexto($user['tipo_permissao']) }}
                             </span>
                         @if($user['tipo_permissao'] == DatabaseService::NIVEL_ADMIN)
                             <a href="{{ route('admin.dashboard') }}"
