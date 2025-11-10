@@ -7,15 +7,16 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use App\Services\DatabaseService;
+use App\Services\UsuarioService;
+use App\Models\Usuario;
 
 class AuthController extends Controller
 {
-    protected $databaseService;
+    protected $usuarioService;
 
-    public function __construct(DatabaseService $databaseService)
+    public function __construct(UsuarioService $usuarioService)
     {
-        $this->databaseService = $databaseService;
+        $this->usuarioService = $usuarioService;
     }
 
     public function showLogin()
@@ -34,7 +35,7 @@ class AuthController extends Controller
         ]);
 
         try {
-            $user = $this->databaseService->getUserByEmail($request->email);
+            $user = $this->usuarioService->findUserByEmail($request->email);
 
             if ($user && Hash::check($request->password, $user['senha'])) {
                 if (!$user['ativo']) {
@@ -49,6 +50,7 @@ class AuthController extends Controller
                 return $this->redirectBasedOnLevel($user);
             }
         } catch (\Exception $e) {
+            Log::error('Erro no login: ' . $e->getMessage());
             return back()->withErrors([
                 'email' => 'Erro ao validar credenciais. Tente novamente.'
             ]);
@@ -80,7 +82,7 @@ class AuthController extends Controller
         ]);
 
         try {
-            $existingUser = $this->databaseService->getUserByEmail($request->email);
+            $existingUser = $this->usuarioService->findUserByEmail($request->email);
             
             return response()->json([
                 'exists' => $existingUser !== null,
@@ -97,28 +99,27 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'nome' => 'required|string|max:255',
             'email' => 'required|email|max:255',
-            'password' => 'required|string|min:6|confirmed',
-            'nivel_permissao' => 'required|in:2,3' // Só organizador ou estudante
+            'senha' => 'required|string|min:6|confirmed',
+            'tipo_permissao' => 'required|in:DA,BASICO' // Só organizador ou estudante
         ]);
 
         try {
             // Verificar se o e-mail já existe antes de tentar criar
-            $existingUser = $this->databaseService->getUserByEmail($request->email);
+            $existingUser = $this->usuarioService->findUserByEmail($request->email);
             if ($existingUser) {
                 return back()->withErrors([
                     'email' => 'Este e-mail já está cadastrado no sistema.'
                 ])->withInput();
             }
 
-            $user = $this->databaseService->createUser([
-                'nome' => $request->name,
+            $user = $this->usuarioService->createUser([
+                'nome' => $request->nome,
                 'email' => $request->email,
-                'senha' => $request->password,
-                'tipo_permissao' => ($request->nivel_permissao == 2? DatabaseService::NIVEL_ORGANIZADOR : DatabaseService::NIVEL_BASICO),
-                'ativo' => !($request->nivel_permissao == 2),
-                'id_curso' => $request->id_curso ?? null
+                'senha' => $request->senha,
+                'tipo_permissao' => $request->tipo_permissao,
+                'ativo' => !($request->tipo_permissao == UsuarioService::NIVEL_ORGANIZADOR), // Organizador precisa aprovação
             ]);
 
             Session::put('user', $user);
@@ -126,6 +127,7 @@ class AuthController extends Controller
             return $this->redirectBasedOnLevel($user)->with('success', 'Conta criada com sucesso!');
 
         } catch (\Exception $e) {
+            Log::error('Erro no registro: ' . $e->getMessage());
             return back()->withErrors([
                 'email' => $e->getMessage()
             ])->withInput();
@@ -135,11 +137,11 @@ class AuthController extends Controller
     private function redirectBasedOnLevel($user)
     {
         switch ($user['tipo_permissao']) {
-            case DatabaseService::NIVEL_ADMIN:
+            case UsuarioService::NIVEL_ADMIN:
                 return redirect()->route('admin.dashboard');
-            case DatabaseService::NIVEL_ORGANIZADOR:
+            case UsuarioService::NIVEL_ORGANIZADOR:
                 return redirect()->route('organizador.dashboard');
-            case DatabaseService::NIVEL_BASICO:
+            case UsuarioService::NIVEL_BASICO:
                 return redirect()->route('basico.dashboard');
             default:
                 return redirect()->route('home');
