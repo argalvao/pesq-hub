@@ -158,7 +158,7 @@ class EmailService
         ];
 
         $assunto = '🔐 Confirmação de Cadastro - PesqHub UEFS';
-        
+
         return $this->enviarEmail(
             $emailUsuario,
             'confirmacao-cadastro',
@@ -219,7 +219,7 @@ class EmailService
 
         return $this->enviarEmail(
             $emailProfessor,
-            'contato-com-organizador',
+            'contato-com-professor',
             $dadosTemplate,
             $assunto,
             'pesqhub@gmail.com', // Sempre usar o e-mail oficial
