@@ -12,7 +12,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(\App\Services\GoogleSheetsService::class);
-        $this->app->singleton(\App\Services\UsuarioService::class);
+        $this->app->singleton(\App\Services\UserService::class);
         $this->app->singleton(\App\Services\DatabaseService::class);
     }
 

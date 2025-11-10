@@ -2,15 +2,6 @@
 
 echo "🚀 Iniciando aplicação PesqHub..."
 
-# Verificar e instalar dependências do Composer se necessário
-if [ ! -d "/var/www/html/vendor" ] || [ ! -f "/var/www/html/vendor/autoload.php" ]; then
-    echo "📦 Instalando dependências do Composer..."
-    composer install --no-dev --optimize-autoloader --no-interaction
-    echo "✅ Dependências instaladas!"
-else
-    echo "✅ Dependências do Composer já instaladas!"
-fi
-
 # Aguardar o banco de dados estar pronto
 echo "⏳ Aguardando banco de dados..."
 while ! pg_isready -h db -p 5432 -U root; do
@@ -44,4 +35,3 @@ echo "✅ Aplicação inicializada com sucesso!"
 # Iniciar Apache
 echo "🌐 Iniciando servidor web..."
 exec apache2-foreground
-
