@@ -70,7 +70,10 @@ class AuthController extends Controller
 
     public function showRegister()
     {
-        return view('auth.register');
+        $cursos = $this->databaseService->getCursos();
+        return view('auth.register', [
+            'cursos' => $cursos
+        ]);
     }
 
     public function checkEmail(Request $request)
@@ -116,14 +119,20 @@ class AuthController extends Controller
                 'nome' => $request->name,
                 'email' => $request->email,
                 'senha' => $request->password,
-                'tipo_permissao' => ($request->nivel_permissao == 2? DatabaseService::NIVEL_ORGANIZADOR : DatabaseService::NIVEL_BASICO),
+                'tipo_permissao' => (
+                    $request->nivel_permissao == 2
+                    ? DatabaseService::NIVEL_ORGANIZADOR
+                    : DatabaseService::NIVEL_BASICO
+                ),
+
                 'ativo' => !($request->nivel_permissao == 2),
                 'id_curso' => $request->id_curso ?? null
             ]);
 
             Session::put('user', $user);
 
-            return $this->redirectBasedOnLevel($user)->with('success', 'Conta criada com sucesso!');
+            return $this->redirectBasedOnLevel($user)
+                ->with('success', 'Conta criada com sucesso!');
 
         } catch (\Exception $e) {
             return back()->withErrors([
