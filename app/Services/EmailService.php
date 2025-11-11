@@ -158,7 +158,7 @@ class EmailService
         ];
 
         $assunto = '🔐 Confirmação de Cadastro - PesqHub UEFS';
-        
+
         return $this->enviarEmail(
             $emailUsuario,
             'confirmacao-cadastro',
@@ -219,7 +219,7 @@ class EmailService
 
         return $this->enviarEmail(
             $emailProfessor,
-            'contato-com-organizador',
+            'contato-com-professor',
             $dadosTemplate,
             $assunto,
             'pesqhub@gmail.com', // Sempre usar o e-mail oficial
@@ -265,5 +265,52 @@ class EmailService
         }
 
         return $templates;
+    }
+
+    /**
+     * Enviar e-mail com conteúdo HTML direto
+     *
+     * @param string $destinatario
+     * @param string $assunto
+     * @param string $mensagemHtml
+     * @return bool
+     */
+    public function sendEmail(string $destinatario, string $assunto, string $mensagemHtml): bool
+    {
+        try {
+            // Validar e-mail do destinatário
+            if (!filter_var($destinatario, FILTER_VALIDATE_EMAIL)) {
+                throw new Exception('E-mail do destinatário inválido');
+            }
+
+            // Criar instância de Mailable para HTML direto
+            $mailable = new class($mensagemHtml, $assunto) extends \Illuminate\Mail\Mailable {
+                private $htmlContent;
+                private $emailSubject;
+
+                public function __construct($htmlContent, $emailSubject)
+                {
+                    $this->htmlContent = $htmlContent;
+                    $this->emailSubject = $emailSubject;
+                }
+
+                public function build()
+                {
+                    return $this->from('pesqhub@gmail.com', 'PesqHub - UEFS')
+                                ->subject($this->emailSubject)
+                                ->html($this->htmlContent);
+                }
+            };
+
+            // Enviar o e-mail
+            Mail::to($destinatario)->send($mailable);
+
+            return true;
+
+        } catch (\Exception $e) {
+            // Log do erro para debug
+            \Illuminate\Support\Facades\Log::error('Erro ao enviar e-mail: ' . $e->getMessage());
+            return false;
+        }
     }
 }

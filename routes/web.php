@@ -6,17 +6,41 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OrganizadorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\CadastroComConfirmacaoController;
+use App\Http\Controllers\AboutController;
 
 // Rotas públicas
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/api/data', [HomeController::class, 'getData'])->name('api.data');
+Route::get('/sobre', [AboutController::class, 'index'])->name('sobre');
 
-// Rotas de autenticação
+// Rotas de autenticaçãoroutes/web.php
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Rota para tela de confirmação de token
+Route::get('/confirm-token', function() {
+    if (!session('email')) {
+        return redirect()->route('register');
+    }
+    return view('auth.confirm-token', ['email' => session('email')]);
+})->name('confirm.token');
+
+// Rota para processar confirmação de token (com sessão)
+Route::post('/confirm-token', [AuthController::class, 'confirmToken'])->name('confirm.token.post');
+
+// Rotas de recuperação de senha
+Route::post('/password/send-token', [App\Http\Controllers\PasswordResetController::class, 'sendToken'])->name('password.send-token');
+Route::post('/password/update', [App\Http\Controllers\PasswordResetController::class, 'updatePassword'])->name('password.update');
+
+// Rota para verificação de e-mail (pública)
+Route::post('/check-email', [AuthController::class, 'checkEmail'])->name('check.email');
+
+// Rota para verificação de telefone (pública)
+Route::post('/check-phone', [AuthController::class, 'checkPhone'])->name('check.phone');
 
 // Rotas de admin (protegidas por user.level:admin middleware)
 Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(function () {
@@ -37,6 +61,9 @@ Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(fu
     // Rotas para carregar dados para os modais
     Route::get('/cursos', [AdminController::class, 'getCursos'])->name('cursos.index');
     Route::get('/areas-pesquisa', [AdminController::class, 'getAreasPesquisa'])->name('areas.index');
+    Route::post('/areas-pesquisa', [AdminController::class, 'storeAreaPesquisa'])->name('areas.store');
+    Route::put('/areas-pesquisa/{id}', [AdminController::class, 'updateAreaPesquisa'])->name('areas.update');
+    Route::delete('/areas-pesquisa/{id}', [AdminController::class, 'destroyAreaPesquisa'])->name('areas.destroy');
     Route::get('/usuarios', [AdminController::class, 'getUsuarios'])->name('usuarios.index');
 
     // API routes para gerenciamento de usuários
@@ -83,6 +110,8 @@ Route::middleware('user.level:organizador')->prefix('organizador')->name('organi
 Route::middleware('user.level:basico')->prefix('basico')->name('basico.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\EstudanteController::class, 'dashboard'])->name('dashboard');
     Route::get('/favorites', [App\Http\Controllers\EstudanteController::class, 'favorites'])->name('favorites');
+    Route::get('/profile', [App\Http\Controllers\EstudanteController::class, 'profile'])->name('profile');
+    Route::put('/profile', [App\Http\Controllers\EstudanteController::class, 'updateProfile'])->name('profile.update');
 });
 
 // Rotas de e-mail
@@ -96,14 +125,6 @@ Route::post('/token/enviar', [App\Http\Controllers\TokenConfirmacaoController::c
 Route::post('/token/verificar', [App\Http\Controllers\TokenConfirmacaoController::class, 'verificarToken'])->name('token.verificar');
 Route::get('/token/consultar', [App\Http\Controllers\TokenConfirmacaoController::class, 'consultarToken'])->name('token.consultar');
 Route::delete('/token/cancelar', [App\Http\Controllers\TokenConfirmacaoController::class, 'cancelarToken'])->name('token.cancelar');
-
-// Rota de teste para desenvolvimento
-Route::post('/token/teste', [App\Http\Controllers\TokenConfirmacaoController::class, 'testeEnvio'])->name('token.teste');
-
-// Página de demonstração do sistema de tokens
-Route::get('/test-tokens', function () {
-    return view('test-tokens');
-})->name('test.tokens');
 
 // Rotas para cadastro com confirmação por token
 Route::post('/cadastro/solicitar', [App\Http\Controllers\CadastroComConfirmacaoController::class, 'solicitarCadastro'])->name('cadastro.solicitar');

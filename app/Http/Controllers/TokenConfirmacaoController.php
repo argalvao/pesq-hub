@@ -51,7 +51,7 @@ class TokenConfirmacaoController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ Erro interno: ' . $e->getMessage()
+                'message' => ' Erro interno: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -75,21 +75,58 @@ class TokenConfirmacaoController extends Controller
                 $validatedData['token']
             );
 
+            if ($resultado['success']) {
+                // Verificar se há dados de registro pendente na sessão
+                $pendingData = session('pending_registration');
+                
+                if ($pendingData && $pendingData['email'] === $validatedData['email']) {
+                    // Criar usuário no banco
+                    $databaseService = app(\App\Services\DatabaseService::class);
+                    $user = $databaseService->createUser($pendingData);
+                    
+                    // Limpar dados pendentes e fazer login
+                    session()->forget(['pending_registration', 'email']);
+                    session()->put('user', $user);
+                    
+                    return response()->json([
+                        'success' => true,
+                        'message' => ' E-mail confirmado! Conta criada com sucesso.',
+                        'redirect' => $this->getRedirectUrl($user)
+                    ], 200);
+                }
+            }
+
             $statusCode = $resultado['success'] ? 200 : 400;
             return response()->json($resultado, $statusCode);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ Dados inválidos para verificação',
+                'message' => ' Dados inválidos para verificação',
                 'errors' => $e->errors()
             ], 422);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ Erro interno: ' . $e->getMessage()
+                'message' => ' Erro interno: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    private function getRedirectUrl($user): string
+    {
+        $databaseService = app(\App\Services\DatabaseService::class);
+        
+        switch ($user['tipo_permissao']) {
+            case $databaseService::NIVEL_ADMIN:
+                return route('admin.dashboard');
+            case $databaseService::NIVEL_ORGANIZADOR:
+                return route('organizador.dashboard');
+            case $databaseService::NIVEL_BASICO:
+                return route('basico.dashboard');
+            default:
+                return route('home');
         }
     }
 
@@ -116,14 +153,14 @@ class TokenConfirmacaoController extends Controller
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ E-mail inválido',
+                'message' => ' E-mail inválido',
                 'errors' => $e->errors()
             ], 422);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ Erro interno: ' . $e->getMessage()
+                'message' => 'Erro interno: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -145,61 +182,21 @@ class TokenConfirmacaoController extends Controller
             
             return response()->json([
                 'success' => true,
-                'message' => $removido ? '✅ Token cancelado com sucesso' : 'ℹ️ Nenhum token ativo encontrado',
+                'message' => $removido ? 'Token cancelado com sucesso' : 'Nenhum token ativo encontrado',
                 'removido' => $removido
             ], 200);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ E-mail inválido',
+                'message' => ' E-mail inválido',
                 'errors' => $e->errors()
             ], 422);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => '❌ Erro interno: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Testar envio de token (apenas para desenvolvimento)
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function testeEnvio(Request $request): JsonResponse
-    {
-        // Verificar se estamos em ambiente de desenvolvimento
-        if (!app()->environment(['local', 'testing'])) {
-            return response()->json([
-                'success' => false,
-                'message' => '❌ Endpoint disponível apenas em ambiente de desenvolvimento'
-            ], 403);
-        }
-
-        try {
-            $email = $request->input('email', 'teste@exemplo.com');
-            $nome = $request->input('nome', 'Usuário Teste');
-            $tipo = $request->input('tipo', 'estudante');
-
-            $resultado = $this->tokenService->enviarTokenConfirmacao($email, $nome, $tipo);
-
-            // Incluir informações extras para debug em ambiente de desenvolvimento
-            if ($resultado['success']) {
-                $consultaToken = $this->tokenService->consultarToken($email);
-                $resultado['debug_info'] = $consultaToken;
-            }
-
-            $statusCode = $resultado['success'] ? 200 : 500;
-            return response()->json($resultado, $statusCode);
-
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => '❌ Erro no teste: ' . $e->getMessage()
+                'message' => ' Erro interno: ' . $e->getMessage()
             ], 500);
         }
     }

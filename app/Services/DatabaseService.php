@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 
 class DatabaseService
 {
@@ -105,10 +106,10 @@ class DatabaseService
             $professor = Professor::create([
                 'nome' => $data['nome'],
                 'email' => $data['email'],
-                'telefone' => $data['telefone'] ?? null,
+                'telefone' => $data['telefone'] ? preg_replace('/\D/', '', $data['telefone']): null,
                 'id_curso' => $data['id_curso'],
                 'departamento' => $data['departamento'] ?? null,
-                'criado_por' => $data['criado_por'] ?? auth()->id()
+                'criado_por' => $data['criado_por'] ?? Session::get('user')['id']
             ]);
 
             // Associar linhas de pesquisa
@@ -143,7 +144,7 @@ class DatabaseService
             $professor->update([
                 'nome' => $data['nome'],
                 'email' => $data['email'],
-                'telefone' => $data['telefone'] ?? null,
+                'telefone' => $data['telefone'] ? preg_replace('/\D/', '', $data['telefone']) : null,
                 'id_curso' => $data['id_curso'],
                 'departamento' => $data['departamento'] ?? null
             ]);
@@ -260,7 +261,7 @@ class DatabaseService
                 'nome' => $data['nome'],
                 'descricao' => $data['descricao'] ?? null,
                 'id_area_pesquisa' => $data['id_area_pesquisa'],
-                'criado_por' => $data['criado_por'] ?? auth()->id()
+                'criado_por' => $data['criado_por'] ?? Session::get('user')['id']
             ]);
 
             Cache::forget('linhas_pesquisa_db');
@@ -382,7 +383,7 @@ class DatabaseService
             $area = AreaPesquisa::create([
                 'nome' => $data['nome'],
                 'descricao' => $data['descricao'] ?? null,
-                'criado_por' => $data['criado_por'] ?? auth()->id()
+                'criado_por' => $data['criado_por'] ?? Session::get('user')['id']
             ]);
 
             Cache::forget('areas_pesquisa_db');
@@ -567,7 +568,7 @@ class DatabaseService
 
     public function getUsers()
     {
-        return Cache::remember('usuarios_db', 300, function () {
+        $allUsers = Cache::remember('usuarios_db', 300, function () {
             try {
                 return Usuario::with('curso')
                     ->get()
@@ -593,12 +594,18 @@ class DatabaseService
                 throw $e;
             }
         });
+
+        $usuarioLogado = Session::get('user')['id'];
+        // 3. Filtra o array para remover o usuário logado e reindexa as chaves
+        return array_values(array_filter($allUsers, function($user) use ($usuarioLogado) {
+            return $user['id'] != $usuarioLogado;
+        }));
     }
 
     public function getUserById($id)
     {
         try {
-            $user = Usuario::with('curso')->findOrFail($id);
+            $user = Usuario::with(['curso', 'areasInteresse'])->findOrFail($id);
 
             return [
                 'id' => $user->id,
@@ -607,10 +614,22 @@ class DatabaseService
                 'tipo_permissao' => $user->tipo_permissao,
                 'ativo' => $user->ativo,
                 'id_curso' => $user->id_curso,
+                'telefone' => $user->telefone,
+                'periodo' => $user->periodo,
+                'biografia' => $user->biografia,
+                'lattes' => $user->lattes,
                 'curso' => $user->curso ? [
                     'id' => $user->curso->id,
                     'nome' => $user->curso->nome
                 ] : null,
+                'areas_interesse' => $user->areasInteresse->map(function ($area) {
+                    return [
+                        'id' => $area->id,
+                        'nome' => $area->nome,
+                        'descricao' => $area->descricao
+                    ];
+                })->toArray(),
+                'areas_interesse_ids' => $user->areasInteresse->pluck('id')->toArray(),
                 'data_criacao' => $user->data_criacao->format('Y-m-d H:i:s'),
                 'data_atualizacao' => $user->data_atualizacao->format('Y-m-d H:i:s')
             ];
@@ -641,6 +660,34 @@ class DatabaseService
             ];
         } catch (\Exception $e) {
             Log::error('Erro ao buscar usuário por email: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function getProfessorByPhone($phone, $excludeProfessorId = null)
+    {
+        try {
+            $query = Professor::where('telefone', $phone);
+
+            // Exclui o professor atual da busca (útil para edição)
+            if ($excludeProfessorId) {
+                $query->where('id', '!=', $excludeProfessorId);
+            }
+
+            $professor = $query->first();
+
+            if (!$professor) {
+                return null;
+            }
+
+            return [
+                'id' => $professor->id,
+                'nome' => $professor->nome,
+                'email' => $professor->email,
+                'telefone' => $professor->telefone
+            ];
+        } catch (\Exception $e) {
+            Log::error('Erro ao buscar professor por telefone: ' . $e->getMessage());
             throw $e;
         }
     }
@@ -676,13 +723,19 @@ class DatabaseService
     public function updateUser($id, $data)
     {
         try {
+            DB::beginTransaction();
+
             $user = Usuario::findOrFail($id);
 
             $updateData = [
                 'nome' => $data['nome'] ?? $user->nome,
                 'email' => $data['email'] ?? $user->email,
                 'id_curso' => $data['id_curso'] ?? $user->id_curso,
-                'tipo_permissao' => $data['tipo_permissao'] ?? $user->tipo_permissao
+                'tipo_permissao' => $data['tipo_permissao'] ?? $user->tipo_permissao,
+                'telefone' => $data['telefone'] ?? $user->telefone,
+                'periodo' => $data['periodo'] ?? $user->periodo,
+                'biografia' => $data['biografia'] ?? $user->biografia,
+                'lattes' => $data['lattes'] ?? $user->lattes
             ];
 
             // Atualizar senha apenas se fornecida
@@ -697,12 +750,21 @@ class DatabaseService
 
             $user->update($updateData);
 
+            // Atualizar áreas de interesse se fornecidas
+            if (isset($data['areas_interesse_ids'])) {
+                $user->areasInteresse()->sync($data['areas_interesse_ids']);
+            }
+
+            DB::commit();
             Cache::forget('usuarios_db');
 
             return $this->getUserById($user->id);
 
         } catch (\Exception $e) {
-            Log::error('Erro ao atualizar usuário: ' . $e->getMessage());
+            Log::error('Erro ao atualizar usuário', [
+                'id' => $id,
+                'error' => $e->getMessage()
+            ]);
             throw $e;
         }
     }

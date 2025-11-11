@@ -46,4 +46,18 @@ class UsuarioService {
     {
         return $user && in_array($user['tipo_permissao'], [self::NIVEL_ADMIN, self::NIVEL_ORGANIZADOR, self::NIVEL_BASICO]);
     }
+
+    public function getNivelPermissaoTexto($nivel)
+    {
+        switch ($nivel) {
+            case self::NIVEL_ADMIN:
+                return 'Administrador';
+            case self::NIVEL_ORGANIZADOR:
+                return 'Organizador';
+            case self::NIVEL_BASICO:
+                return 'Estudante';
+            default:
+                return 'Desconhecido';
+        }
+    }
 }

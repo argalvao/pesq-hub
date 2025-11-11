@@ -148,7 +148,7 @@ class OrganizadorController extends Controller
         try {
             // Adiciona o 'criado_por' com o ID do organizador logado
             $data = $request->all();
-            $data['criado_por'] = auth()->id();
+            $data['criado_por'] = Session::get('user')['id'];
 
             $professor = $this->databaseService->createProfessor($data); //
             return response()->json(['data' => $professor, 'success' => true]);
@@ -213,7 +213,7 @@ class OrganizadorController extends Controller
         try {
             // Adiciona o 'criado_por' com o ID do organizador logado
             $data = $request->all();
-            $data['criado_por'] = auth()->id();
+            $data['criado_por'] = Session::get('user')['id'];
 
             $linha = $this->databaseService->createLinhaPesquisa($data); //
             return response()->json(['data' => $linha, 'success' => true]);
@@ -271,7 +271,7 @@ class OrganizadorController extends Controller
         try {
             // Adiciona o 'criado_por' com o ID do organizador logado
             $data = $request->all();
-            $data['criado_por'] = auth()->id();
+            $data['criado_por'] = Session::get('user')['id'];
 
             $area = $this->databaseService->createAreaPesquisa($data); //
             return response()->json(['data' => $area, 'success' => true]);
