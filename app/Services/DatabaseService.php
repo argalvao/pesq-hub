@@ -657,6 +657,34 @@ class DatabaseService
         }
     }
 
+    public function getProfessorByPhone($phone, $excludeProfessorId = null)
+    {
+        try {
+            $query = Professor::where('telefone', $phone);
+            
+            // Exclui o professor atual da busca (útil para edição)
+            if ($excludeProfessorId) {
+                $query->where('id', '!=', $excludeProfessorId);
+            }
+            
+            $professor = $query->first();
+            
+            if (!$professor) {
+                return null;
+            }
+
+            return [
+                'id' => $professor->id,
+                'nome' => $professor->nome,
+                'email' => $professor->email,
+                'telefone' => $professor->telefone
+            ];
+        } catch (\Exception $e) {
+            Log::error('Erro ao buscar professor por telefone: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
     public function createUser($data)
     {
         try {

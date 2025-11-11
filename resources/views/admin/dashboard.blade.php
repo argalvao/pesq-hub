@@ -462,8 +462,23 @@
                     <h2 class="text-2xl font-bold mb-6">${isEditing ? 'Editar' : 'Adicionar'} Professor</h2>
                     <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
                         <input type="text" name="nome" placeholder="Nome Completo" class="w-full px-3 py-2 border rounded-md" value="${professor.nome}" required>
-                        <input type="email" name="email" placeholder="E-mail" class="w-full px-3 py-2 border rounded-md" value="${professor.email}" required>
-                        <input type="tel" name="telefone" placeholder="Telefone" class="w-full px-3 py-2 border rounded-md" value="${professor.telefone || ''}">
+                        
+                        <div>
+                            <div class="relative">
+                                <input type="email" id="professor-email" name="email" placeholder="E-mail" class="w-full px-3 py-2 border border-gray-300 rounded-md" value="${professor.email}" required>
+                                <div id="professor-email-spinner" class="absolute right-3 top-1/2 transform -translate-y-1/2 hidden">
+                                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
+                                </div>
+                            </div>
+                            <div id="professor-email-feedback" class="mt-1 text-sm hidden"></div>
+                        </div>
+                        
+                        <div>
+                            <div class="relative">
+                                <input type="tel" id="professor-telefone" name="telefone" placeholder="Telefone (ex: (11) 99999-9999)" class="w-full px-3 py-2 border border-gray-300 rounded-md" value="${professor.telefone || ''}">
+                            </div>
+                            <div id="professor-telefone-feedback" class="mt-1 text-sm hidden"></div>
+                        </div>
 
                         <select name="id_curso" class="w-full px-3 py-2 border rounded-md" required>
                             <option value="" disabled ${!professor.id_curso ? 'selected' : ''}>Selecione um curso</option>
@@ -497,6 +512,323 @@
                 </form>
             `;
                     App.showGenericModal(content);
+                    
+                    // Configurar validação de e-mail após o modal ser mostrado
+                    setTimeout(() => {
+                        this.setupEmailValidation(isEditing, professor.email);
+                        this.setupPhoneValidation(isEditing, professor.telefone || '', professor.id || '');
+                    }, 100);
+                },
+
+                // Função para configurar validação de e-mail no modal do professor
+                setupEmailValidation(isEditing, currentEmail) {
+                    const emailInput = document.getElementById('professor-email');
+                    const emailFeedback = document.getElementById('professor-email-feedback');
+                    const emailSpinner = document.getElementById('professor-email-spinner');
+                    const submitButton = document.querySelector('button[type="submit"]');
+                    
+                    if (!emailInput || !emailFeedback || !emailSpinner || !submitButton) {
+                        return; // Elementos não encontrados
+                    }
+                    
+                    let emailCheckTimeout;
+                    let isEmailValid = isEditing; // Se estiver editando, assume que o e-mail atual é válido
+                    
+                    function showFeedback(message, isError = false) {
+                        emailFeedback.textContent = message;
+                        emailFeedback.className = `mt-1 text-sm ${isError ? 'text-red-600' : 'text-green-600'}`;
+                        emailFeedback.classList.remove('hidden');
+                    }
+                    
+                    function hideFeedback() {
+                        emailFeedback.classList.add('hidden');
+                    }
+                    
+                    function showSpinner() {
+                        emailSpinner.classList.remove('hidden');
+                    }
+                    
+                    function hideSpinner() {
+                        emailSpinner.classList.add('hidden');
+                    }
+                    
+                    function updateEmailFieldStyle(isError = false) {
+                        if (isError) {
+                            emailInput.classList.remove('border-gray-300', 'focus:border-indigo-500', 'border-green-500', 'focus:border-green-500');
+                            emailInput.classList.add('border-red-500', 'focus:border-red-500');
+                        } else if (isEmailValid) {
+                            emailInput.classList.remove('border-gray-300', 'focus:border-indigo-500', 'border-red-500', 'focus:border-red-500');
+                            emailInput.classList.add('border-green-500', 'focus:border-green-500');
+                        } else {
+                            emailInput.classList.remove('border-red-500', 'focus:border-red-500', 'border-green-500', 'focus:border-green-500');
+                            emailInput.classList.add('border-gray-300', 'focus:border-indigo-500');
+                        }
+                    }
+                    
+                    function updateSubmitButton() {
+                        if (isEmailValid) {
+                            submitButton.disabled = false;
+                            submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                        } else {
+                            submitButton.disabled = true;
+                            submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+                        }
+                    }
+                    
+                    async function checkEmail(email) {
+                        // Validação básica de e-mail
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        
+                        if (!email || !emailRegex.test(email)) {
+                            if (email && !emailRegex.test(email)) {
+                                showFeedback('⚠️ Formato de e-mail inválido', true);
+                                isEmailValid = false;
+                                updateEmailFieldStyle(true);
+                            } else {
+                                hideFeedback();
+                                isEmailValid = false;
+                                updateEmailFieldStyle();
+                            }
+                            updateSubmitButton();
+                            return;
+                        }
+                        
+                        // Se estivermos editando e o e-mail não mudou, é válido
+                        if (isEditing && email === currentEmail) {
+                            showFeedback('✅ E-mail atual', false);
+                            isEmailValid = true;
+                            updateEmailFieldStyle(false);
+                            updateSubmitButton();
+                            return;
+                        }
+                        
+                        showSpinner();
+                        hideFeedback();
+                        
+                        try {
+                            const response = await fetch('{{ route("check.email") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                },
+                                body: JSON.stringify({ email: email })
+                            });
+                            
+                            const data = await response.json();
+                            
+                            hideSpinner();
+                            
+                            if (data.exists) {
+                                showFeedback('❌ Este e-mail já está em uso. Use outro e-mail.', true);
+                                isEmailValid = false;
+                                updateEmailFieldStyle(true);
+                            } else {
+                                showFeedback('✅ E-mail disponível', false);
+                                isEmailValid = true;
+                                updateEmailFieldStyle(false);
+                            }
+                            
+                        } catch (error) {
+                            hideSpinner();
+                            showFeedback('⚠️ Erro ao verificar e-mail. Tente novamente.', true);
+                            isEmailValid = false;
+                            updateEmailFieldStyle(true);
+                        }
+                        
+                        updateSubmitButton();
+                    }
+                    
+                    emailInput.addEventListener('input', function() {
+                        const email = this.value.trim();
+                        
+                        // Limpar timeout anterior
+                        clearTimeout(emailCheckTimeout);
+                        
+                        if (email.length === 0) {
+                            hideFeedback();
+                            hideSpinner();
+                            isEmailValid = false;
+                            updateEmailFieldStyle();
+                            updateSubmitButton();
+                            return;
+                        }
+                        
+                        // Aguardar 500ms após parar de digitar
+                        emailCheckTimeout = setTimeout(() => {
+                            checkEmail(email);
+                        }, 500);
+                    });
+                    
+                    emailInput.addEventListener('blur', function() {
+                        const email = this.value.trim();
+                        if (email && email.includes('@')) {
+                            clearTimeout(emailCheckTimeout);
+                            checkEmail(email);
+                        }
+                    });
+                    
+                    // Inicializar validação
+                    updateSubmitButton();
+                    if (isEditing && currentEmail) {
+                        checkEmail(currentEmail);
+                    }
+                },
+
+                setupPhoneValidation: function(isEditing, currentPhone, professorId) {
+                    const phoneInput = document.getElementById('professor-telefone');
+                    const phoneFeedback = document.getElementById('professor-telefone-feedback');
+                    
+                    if (!phoneInput || !phoneFeedback) {
+                        return;
+                    }
+                    
+                    let phoneCheckTimeout;
+                    
+                    function showPhoneFeedback(message, isError) {
+                        if (isError === undefined) isError = false;
+                        phoneFeedback.textContent = message;
+                        phoneFeedback.className = 'mt-1 text-sm ' + (isError ? 'text-red-600' : 'text-green-600');
+                        phoneFeedback.classList.remove('hidden');
+                    }
+                    
+                    function hidePhoneFeedback() {
+                        phoneFeedback.classList.add('hidden');
+                    }
+                    
+                    function updatePhoneFieldStyle(isError) {
+                        if (isError === undefined) isError = false;
+                        phoneInput.classList.remove('border-red-500', 'focus:border-red-500', 'border-green-500', 'focus:border-green-500');
+                        if (isError) {
+                            phoneInput.classList.add('border-red-500', 'focus:border-red-500');
+                        } else if (phoneInput.value.trim()) {
+                            phoneInput.classList.add('border-green-500', 'focus:border-green-500');
+                        }
+                    }
+                    
+                    function formatPhone(value) {
+                        const cleaned = value.replace(/\D/g, '');
+                        if (cleaned.length <= 10) {
+                            return cleaned.replace(/^(\d{2})(\d{4})(\d{4}).*/, '($1) $2-$3');
+                        } else {
+                            return cleaned.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+                        }
+                    }
+                    
+                    function validatePhoneFormat(phone) {
+                        const cleaned = phone.replace(/\D/g, '');
+                        
+                        if (!cleaned) {
+                            hidePhoneFeedback();
+                            updatePhoneFieldStyle();
+                            return { valid: true, message: '' };
+                        }
+                        
+                        if (cleaned.length < 10) {
+                            return { valid: false, message: '⚠️ Telefone deve ter pelo menos 10 dígitos' };
+                        }
+                        
+                        if (cleaned.length > 11) {
+                            return { valid: false, message: '⚠️ Telefone deve ter no máximo 11 dígitos' };
+                        }
+                        
+                        const ddd = cleaned.substring(0, 2);
+                        const validDDDs = [
+                            '11', '12', '13', '14', '15', '16', '17', '18', '19',
+                            '21', '22', '24', '27', '28',
+                            '31', '32', '33', '34', '35', '37', '38',
+                            '41', '42', '43', '44', '45', '46',
+                            '47', '48', '49', '51', '53', '54', '55',
+                            '61', '62', '63', '64', '65', '66', '67',
+                            '68', '69', '71', '73', '74', '75', '77',
+                            '79', '81', '82', '83', '84', '85', '86',
+                            '87', '88', '89', '91', '92', '93', '94',
+                            '95', '96', '97', '98', '99'
+                        ];
+                        
+                        if (!validDDDs.includes(ddd)) {
+                            return { valid: false, message: '⚠️ DDD inválido' };
+                        }
+                        
+                        return { valid: true, message: '' };
+                    }
+                    
+                    async function validatePhone(phone) {
+                        const formatValidation = validatePhoneFormat(phone);
+                        
+                        if (!formatValidation.valid) {
+                            showPhoneFeedback(formatValidation.message, true);
+                            updatePhoneFieldStyle(true);
+                            return;
+                        }
+                        
+                        if (!phone.trim()) {
+                            hidePhoneFeedback();
+                            updatePhoneFieldStyle();
+                            return;
+                        }
+                        
+                        const cleaned = phone.replace(/\D/g, '');
+                        const currentCleaned = currentPhone.replace(/\D/g, '');
+                        
+                        if (isEditing && cleaned === currentCleaned) {
+                            showPhoneFeedback('✅ Telefone atual', false);
+                            updatePhoneFieldStyle(false);
+                            return;
+                        }
+                        
+                        try {
+                            const response = await fetch('{{ route("check.phone") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                },
+                                body: JSON.stringify({ 
+                                    telefone: cleaned,
+                                    professor_id: professorId 
+                                })
+                            });
+                            
+                            const data = await response.json();
+                            console.log('Resposta da API:', data);
+                            
+                            if (data.exists) {
+                                showPhoneFeedback('❌ Este telefone já está cadastrado', true);
+                                updatePhoneFieldStyle(true);
+                            } else {
+                                showPhoneFeedback('✅ Telefone disponível', false);
+                                updatePhoneFieldStyle(false);
+                            }
+                            
+                        } catch (error) {
+                            showPhoneFeedback('⚠️ Erro ao verificar telefone', true);
+                            updatePhoneFieldStyle(true);
+                        }
+                    }
+                    
+                    phoneInput.addEventListener('input', function(e) {
+                        let value = e.target.value;
+                        const formatted = formatPhone(value);
+                        if (formatted !== value) {
+                            e.target.value = formatted;
+                        }
+                        
+                        clearTimeout(phoneCheckTimeout);
+                        phoneCheckTimeout = setTimeout(function() {
+                            validatePhone(e.target.value);
+                        }, 500);
+                    });
+                    
+                    phoneInput.addEventListener('blur', function() {
+                        clearTimeout(phoneCheckTimeout);
+                        validatePhone(this.value);
+                    });
+                    
+                    if (phoneInput.value) {
+                        phoneInput.value = formatPhone(phoneInput.value);
+                        validatePhone(phoneInput.value);
+                    }
                 },
 
                 async saveLinha(event) {
@@ -545,6 +877,13 @@
                     const form = event.target;
                     const id = form.dataset.id;
                     const isEditing = id !== '';
+                    
+                    // Verificar se o botão de submit está desabilitado (e-mail inválido)
+                    const submitButton = event.target.querySelector('button[type="submit"]');
+                    if (submitButton && submitButton.disabled) {
+                        this.showError('Por favor, verifique o e-mail antes de salvar.');
+                        return;
+                    }
 
                     const data = {
                         nome: form.nome.value,
