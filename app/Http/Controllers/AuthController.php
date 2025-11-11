@@ -41,6 +41,12 @@ class AuthController extends Controller
 
             if ($user && Hash::check($request->password, $user['senha'])) {
                 if (!$user['ativo']) {
+                    if ($request->ajax() || $request->expectsJson()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Sua conta está desativada. Entre em contato com o administrador.'
+                        ], 422);
+                    }
                     return back()->withErrors([
                         'email' => 'Sua conta está desativada. Entre em contato com o administrador.'
                     ]);
@@ -49,16 +55,36 @@ class AuthController extends Controller
                 // Salvar usuário na sessão
                 Session::put('user', $user);
 
+                if ($request->ajax() || $request->expectsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'redirect' => $this->getRedirectUrl($user)
+                    ]);
+                }
+
                 return $this->redirectBasedOnLevel($user);
             }
         } catch (\Exception $e) {
+            if ($request->ajax() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao validar credenciais. Tente novamente.'
+                ], 500);
+            }
             return back()->withErrors([
                 'email' => 'Erro ao validar credenciais. Tente novamente.'
             ]);
         }
 
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Usuário não encontrado ou credenciais incorretas.'
+            ], 422);
+        }
+
         return back()->withErrors([
-            'email' => 'As credenciais fornecidas não conferem com nossos registros.'
+            'email' => 'Usuário não encontrado ou credenciais incorretas.'
         ]);
     }
 
@@ -262,6 +288,20 @@ class AuthController extends Controller
                 return redirect()->route('basico.dashboard');
             default:
                 return redirect()->route('home');
+        }
+    }
+
+    private function getRedirectUrl($user)
+    {
+        switch ($user['tipo_permissao']) {
+            case DatabaseService::NIVEL_ADMIN:
+                return route('admin.dashboard');
+            case DatabaseService::NIVEL_ORGANIZADOR:
+                return route('organizador.dashboard');
+            case DatabaseService::NIVEL_BASICO:
+                return route('basico.dashboard');
+            default:
+                return route('home');
         }
     }
 }
