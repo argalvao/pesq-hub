@@ -563,30 +563,50 @@ class DatabaseService
         }
     }
 
-    // =============== USUÁRIOS ===============
+   // =============== USUÁRIOS ===============
 
     public function getUsers()
     {
         return Cache::remember('usuarios_db', 300, function () {
             try {
+                // Foi usado whereNot para já filtrar os admins da consulta
                 return Usuario::with('curso')
+                    ->where('tipo_permissao', '!=', self::NIVEL_ADMIN) // Filtra 'SUPER'
                     ->get()
                     ->map(function ($user) {
+                        
+                        // --- LÓGICA DE TRADUÇÃO ADICIONADA ---
+                        $levelName = 'N/A'; // Padrão
+                        if ($user->tipo_permissao === self::NIVEL_ORGANIZADOR) { // 'DA'
+                            $levelName = 'Organizador';
+                        } else if ($user->tipo_permissao === self::NIVEL_BASICO) { // 'BASICO'
+                            $levelName = 'Basico';
+                        }
+                        // ----------------------------------------
+
                         return [
                             'id' => $user->id,
                             'nome' => $user->nome,
                             'email' => $user->email,
-                            'tipo_permissao' => $user->tipo_permissao,
+                            
+                            // --- CORREÇÃO AQUI ---
+                            // 1. Foi modificado o nome da chave para 'level' (o que o JS espera)
+                            // 2. Foi usado o valor já traduzido ($levelName)
+                            'level' => $levelName,
+                            // ---------------------
+
                             'ativo' => $user->ativo,
                             'id_curso' => $user->id_curso,
                             'curso' => $user->curso ? $user->curso->nome : null,
                             'data_criacao' => $user->data_criacao ? $user->data_criacao->format('Y-m-d H:i:s') : null,
                             'data_atualizacao' => $user->data_atualizacao ? $user->data_atualizacao->format('Y-m-d H:i:s') : null,
+                            
                             'is_super' => $user->isSuperAdmin(),
                             'is_da' => $user->isDepartamentoAcademico(),
                             'is_basico' => $user->isBasico()
                         ];
                     })
+                    ->values() // Re-indexa o array
                     ->toArray();
             } catch (\Exception $e) {
                 Log::error('Erro ao buscar usuários: ' . $e->getMessage());
