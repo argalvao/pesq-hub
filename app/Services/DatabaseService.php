@@ -106,7 +106,7 @@ class DatabaseService
             $professor = Professor::create([
                 'nome' => $data['nome'],
                 'email' => $data['email'],
-                'telefone' => $data['telefone'] ?? null,
+                'telefone' => $data['telefone'] ? preg_replace('/\D/', '', $data['telefone']): null,
                 'id_curso' => $data['id_curso'],
                 'departamento' => $data['departamento'] ?? null,
                 'criado_por' => $data['criado_por'] ?? Session::get('user')['id']
@@ -144,7 +144,7 @@ class DatabaseService
             $professor->update([
                 'nome' => $data['nome'],
                 'email' => $data['email'],
-                'telefone' => $data['telefone'] ?? null,
+                'telefone' => $data['telefone'] ? preg_replace('/\D/', '', $data['telefone']) : null,
                 'id_curso' => $data['id_curso'],
                 'departamento' => $data['departamento'] ?? null
             ]);
@@ -660,6 +660,34 @@ class DatabaseService
             ];
         } catch (\Exception $e) {
             Log::error('Erro ao buscar usuário por email: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function getProfessorByPhone($phone, $excludeProfessorId = null)
+    {
+        try {
+            $query = Professor::where('telefone', $phone);
+
+            // Exclui o professor atual da busca (útil para edição)
+            if ($excludeProfessorId) {
+                $query->where('id', '!=', $excludeProfessorId);
+            }
+
+            $professor = $query->first();
+
+            if (!$professor) {
+                return null;
+            }
+
+            return [
+                'id' => $professor->id,
+                'nome' => $professor->nome,
+                'email' => $professor->email,
+                'telefone' => $professor->telefone
+            ];
+        } catch (\Exception $e) {
+            Log::error('Erro ao buscar professor por telefone: ' . $e->getMessage());
             throw $e;
         }
     }

@@ -100,6 +100,31 @@ class AuthController extends Controller
         }
     }
 
+    public function checkPhone(Request $request)
+    {
+        $request->validate([
+            'telefone' => 'required|string',
+            'professor_id' => 'nullable|uuid'
+        ]);
+
+        try {
+            // Limpa o telefone para comparação (remove formatação)
+            $cleanPhone = preg_replace('/\D/', '', $request->telefone);
+            
+            $existingProfessor = $this->databaseService->getProfessorByPhone($cleanPhone, $request->professor_id);
+            
+            return response()->json([
+                'exists' => $existingProfessor !== null,
+                'message' => $existingProfessor ? 'Telefone já cadastrado para outro professor' : 'Telefone disponível'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'exists' => false,
+                'message' => 'Erro ao verificar telefone'
+            ], 500);
+        }
+    }
+
     public function register(Request $request)
     {
         $request->validate([

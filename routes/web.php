@@ -39,6 +39,9 @@ Route::post('/password/update', [App\Http\Controllers\PasswordResetController::c
 // Rota para verificação de e-mail (pública)
 Route::post('/check-email', [AuthController::class, 'checkEmail'])->name('check.email');
 
+// Rota para verificação de telefone (pública)
+Route::post('/check-phone', [AuthController::class, 'checkPhone'])->name('check.phone');
+
 // Rotas de admin (protegidas por user.level:admin middleware)
 Route::middleware('user.level:admin')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
