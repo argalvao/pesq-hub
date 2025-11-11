@@ -6,12 +6,15 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OrganizadorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\CadastroComConfirmacaoController;
+use App\Http\Controllers\AboutController;
 
 // Rotas públicas
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/api/data', [HomeController::class, 'getData'])->name('api.data');
+Route::get('/sobre', [AboutController::class, 'index'])->name('sobre');
 
-// Rotas de autenticação
+// Rotas de autenticaçãoroutes/web.php
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
