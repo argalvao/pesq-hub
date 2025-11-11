@@ -21,6 +21,17 @@ Route::get('/register', [AuthController::class, 'showRegister'])->name('register
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Rota para tela de confirmação de token
+Route::get('/confirm-token', function() {
+    if (!session('email')) {
+        return redirect()->route('register');
+    }
+    return view('auth.confirm-token', ['email' => session('email')]);
+})->name('confirm.token');
+
+// Rota para processar confirmação de token (com sessão)
+Route::post('/confirm-token', [AuthController::class, 'confirmToken'])->name('confirm.token.post');
+
 // Rotas de recuperação de senha
 Route::post('/password/send-token', [App\Http\Controllers\PasswordResetController::class, 'sendToken'])->name('password.send-token');
 Route::post('/password/update', [App\Http\Controllers\PasswordResetController::class, 'updatePassword'])->name('password.update');

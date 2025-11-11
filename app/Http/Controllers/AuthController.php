@@ -8,14 +8,17 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use App\Services\DatabaseService;
+use App\Services\TokenConfirmacaoService;
 
 class AuthController extends Controller
 {
     protected $databaseService;
+    protected $tokenService;
 
-    public function __construct(DatabaseService $databaseService)
+    public function __construct(DatabaseService $databaseService, TokenConfirmacaoService $tokenService)
     {
         $this->databaseService = $databaseService;
+        $this->tokenService = $tokenService;
     }
 
     public function showLogin()
@@ -115,7 +118,8 @@ class AuthController extends Controller
                 ])->withInput();
             }
 
-            $user = $this->databaseService->createUser([
+            // Salvar dados do cadastro na sessão temporariamente
+            Session::put('pending_registration', [
                 'nome' => $request->name,
                 'email' => $request->email,
                 'senha' => $request->password,
@@ -124,20 +128,101 @@ class AuthController extends Controller
                     ? DatabaseService::NIVEL_ORGANIZADOR
                     : DatabaseService::NIVEL_BASICO
                 ),
-
-                'ativo' => !($request->nivel_permissao == 2),
+                'ativo' => true, // Após confirmar email, usuário fica ativo
                 'id_curso' => $request->id_curso ?? null
             ]);
 
-            Session::put('user', $user);
+            // Enviar token de confirmação
+            $resultado = $this->tokenService->enviarTokenConfirmacao(
+                $request->email,
+                $request->name,
+                $request->nivel_permissao == 2 ? 'organizador' : 'estudante'
+            );
 
-            return $this->redirectBasedOnLevel($user)
-                ->with('success', 'Conta criada com sucesso!');
+            if ($resultado['success']) {
+                // Salvar email na sessão e redirecionar para tela de confirmação
+                Session::put('email', $request->email);
+                return redirect()->route('confirm.token')
+                    ->with('success', 'Código de confirmação enviado para seu e-mail!');
+            } else {
+                return back()->withErrors([
+                    'email' => 'Erro ao enviar código de confirmação. Tente novamente.'
+                ])->withInput();
+            }
 
         } catch (\Exception $e) {
             return back()->withErrors([
                 'email' => $e->getMessage()
             ])->withInput();
+        }
+    }
+
+    public function confirmToken(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'token' => 'required|string|size:6|regex:/^[0-9]{6}$/'
+        ]);
+
+        try {
+            // Verificar token
+            $resultado = $this->tokenService->verificarToken(
+                $request->email,
+                $request->token
+            );
+
+            if (!$resultado['success']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $resultado['message'] ?? '❌ Token inválido'
+                ], 400);
+            }
+
+            // Buscar dados pendentes na sessão
+            $pendingData = Session::get('pending_registration');
+            
+            if (!$pendingData || $pendingData['email'] !== $request->email) {
+                return response()->json([
+                    'success' => false,
+                    'message' => '❌ Dados de cadastro não encontrados. Tente se cadastrar novamente.'
+                ], 400);
+            }
+
+            // Criar usuário no banco
+            $user = $this->databaseService->createUser($pendingData);
+            
+            // Limpar dados pendentes
+            Session::forget(['pending_registration', 'email']);
+            
+            // Fazer login automático
+            Session::put('user', $user);
+            
+            return response()->json([
+                'success' => true,
+                'message' => '✅ E-mail confirmado! Conta criada com sucesso.',
+                'redirect' => $this->getRedirectUrl($user)
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao confirmar token: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => '❌ Erro ao confirmar token: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function getRedirectUrl($user): string
+    {
+        switch ($user['tipo_permissao']) {
+            case DatabaseService::NIVEL_ADMIN:
+                return route('admin.dashboard');
+            case DatabaseService::NIVEL_ORGANIZADOR:
+                return route('organizador.dashboard');
+            case DatabaseService::NIVEL_BASICO:
+                return route('basico.dashboard');
+            default:
+                return route('home');
         }
     }
 
