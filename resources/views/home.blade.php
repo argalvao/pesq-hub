@@ -312,21 +312,126 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="p-8">
                     <h2 class="text-2xl font-bold text-center mb-2">Login de Administrador</h2>
                     <p class="text-center text-sm text-gray-500 mb-6">Digite suas credenciais para acessar o painel.</p>
-                    <form action="{{ route('login') }}" method="POST" class="space-y-4">
-                        @csrf
-                        <input type="email" name="email" placeholder="E-mail" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-400" required>
-                        <input type="password" name="password" placeholder="Senha" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-400" required>
+                    
+                    <!-- Alert container -->
+                    <div id="login-alert" class="hidden mb-4 p-4 rounded-lg"></div>
+                    
+                    <form id="login-form" class="space-y-4">
+                        <input type="email" id="login-email" name="email" placeholder="E-mail" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-400" required>
+                        <input type="password" id="login-password" name="password" placeholder="Senha" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-400" required>
                         <div class="text-right mb-4">
                             <button type="button" onclick="App.showForgotPasswordModal()" class="text-sm text-indigo-600 hover:underline">
                                 Esqueci minha senha
                             </button>
                         </div>
-                        <button type="submit" class="w-full mt-4 bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700 transition-all">
-                            Entrar
+                        <button type="submit" id="login-submit-btn" class="w-full mt-4 bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700 transition-all">
+                            <span id="login-btn-text">Entrar</span>
+                            <span id="login-btn-loading" class="hidden">
+                                <svg class="inline w-4 h-4 mr-2 animate-spin" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Entrando...
+                            </span>
                         </button>
                     </form>
                 </div>`;
             this.showGenericModal(content);
+            
+            // Setup login form handler
+            setTimeout(() => {
+                this.setupLoginForm();
+            }, 100);
+        },
+
+        setupLoginForm() {
+            const form = document.getElementById('login-form');
+            const alertContainer = document.getElementById('login-alert');
+            const submitBtn = document.getElementById('login-submit-btn');
+            const btnText = document.getElementById('login-btn-text');
+            const btnLoading = document.getElementById('login-btn-loading');
+            
+            if (!form) return;
+            
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                
+                // Hide previous alert
+                this.hideLoginAlert();
+                
+                // Show loading state
+                this.setLoginLoading(true);
+                
+                try {
+                    const response = await fetch('{{ route('login') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.showLoginAlert('✅ Login realizado com sucesso! Redirecionando...', 'success');
+                        setTimeout(() => {
+                            window.location.href = data.redirect;
+                        }, 1000);
+                    } else {
+                        this.showLoginAlert('❌ ' + data.message, 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('Erro no login:', error);
+                    this.showLoginAlert('❌ Erro de conexão. Tente novamente.', 'error');
+                } finally {
+                    this.setLoginLoading(false);
+                }
+            });
+        },
+
+        showLoginAlert(message, type) {
+            const alertContainer = document.getElementById('login-alert');
+            if (!alertContainer) return;
+            
+            alertContainer.className = `mb-4 p-4 rounded-lg ${
+                type === 'success' 
+                    ? 'bg-green-100 border border-green-400 text-green-700' 
+                    : 'bg-red-100 border border-red-400 text-red-700'
+            }`;
+            alertContainer.textContent = message;
+            alertContainer.classList.remove('hidden');
+        },
+
+        hideLoginAlert() {
+            const alertContainer = document.getElementById('login-alert');
+            if (alertContainer) {
+                alertContainer.classList.add('hidden');
+            }
+        },
+
+        setLoginLoading(loading) {
+            const submitBtn = document.getElementById('login-submit-btn');
+            const btnText = document.getElementById('login-btn-text');
+            const btnLoading = document.getElementById('login-btn-loading');
+            
+            if (!submitBtn || !btnText || !btnLoading) return;
+            
+            if (loading) {
+                submitBtn.disabled = true;
+                btnText.classList.add('hidden');
+                btnLoading.classList.remove('hidden');
+            } else {
+                submitBtn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoading.classList.add('hidden');
+            }
         },
 
         showForgotPasswordModal() {

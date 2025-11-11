@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\DatabaseService;
 use Illuminate\Validation\Rule; // Importante para validação de UUIDs
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UserActivatedMail;
 
 class AdminController extends Controller
 {
@@ -213,10 +215,25 @@ class AdminController extends Controller
     public function ativarUsuario($id)
     {
         try {
-            $this->databaseService->ativarUsuario($id);
-            return response()->json(['success' => true, 'message' => 'Usuário ativado com sucesso']);
+            // Ativar o usuário no banco de dados
+            $usuarioAtivado = $this->databaseService->ativarUsuario($id);
+            
+            // Enviar email de notificação para o usuário
+            if ($usuarioAtivado && isset($usuarioAtivado['email'])) {
+                // Criar objeto stdClass para compatibilidade com o template
+                $userObject = (object) $usuarioAtivado;
+                Mail::to($usuarioAtivado['email'])->send(new UserActivatedMail($userObject));
+            }
+            
+            return response()->json([
+                'success' => true, 
+                'message' => 'Usuário ativado com sucesso e email de notificação enviado'
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage(), 'success' => false], 500);
+            return response()->json([
+                'error' => $e->getMessage(), 
+                'success' => false
+            ], 500);
         }
     }
 
