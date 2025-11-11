@@ -348,21 +348,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>`;
             this.showGenericModal(content);
-            
+
             // Adicionar evento de submit ao formulário
             document.getElementById('forgot-password-form').addEventListener('submit', (e) => this.handleForgotPassword(e));
         },
 
         async handleForgotPassword(event) {
             event.preventDefault();
-            
+
             const email = document.getElementById('forgot-email').value;
             const submitBtn = event.target.querySelector('button[type="submit"]');
-            
+
             // Desabilitar botão e mostrar loading
             submitBtn.disabled = true;
             submitBtn.textContent = 'Enviando...';
-            
+
             try {
                 const response = await fetch('/api/password/send-token', {
                     method: 'POST',
@@ -372,9 +372,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     body: JSON.stringify({ email: email })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (response.ok) {
                     alert('Código de verificação enviado! Verifique seu e-mail.');
                     this.showPasswordResetModal(email);
@@ -421,10 +421,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>`;
             this.showGenericModal(content);
-            
+
             // Adicionar evento de submit ao formulário
             document.getElementById('reset-password-form').addEventListener('submit', (e) => this.handlePasswordReset(e));
-            
+
             // Formatação automática do token
             document.getElementById('reset-token').addEventListener('input', function(e) {
                 e.target.value = e.target.value.replace(/\D/g, '');
@@ -433,42 +433,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async handlePasswordReset(event) {
             event.preventDefault();
-            
+
             console.log('handlePasswordReset iniciado');
-            
+
             const email = document.getElementById('reset-email').value;
             const token = document.getElementById('reset-token').value;
             const password = document.getElementById('reset-password').value;
             const passwordConfirmation = document.getElementById('reset-password-confirmation').value;
             const submitBtn = event.target.querySelector('button[type="submit"]');
-            
+
             console.log('Dados coletados:', { email, token, password: '***', passwordConfirmation: '***' });
-            
+
             // Validações frontend
             if (token.length !== 6) {
                 console.log('Token inválido - comprimento:', token.length);
                 alert('O código deve ter 6 dígitos.');
                 return;
             }
-            
+
             if (password !== passwordConfirmation) {
                 console.log('Senhas não conferem');
                 alert('As senhas não conferem.');
                 return;
             }
-            
+
             if (password.length < 6) {
                 console.log('Senha muito curta:', password.length);
                 alert('A senha deve ter pelo menos 6 caracteres.');
                 return;
             }
-            
+
             console.log('Validações OK, enviando requisição...');
-            
+
             // Desabilitar botão e mostrar loading
             submitBtn.disabled = true;
             submitBtn.textContent = 'Redefinindo...';
-            
+
             try {
                 const requestData = {
                     email: email,
@@ -476,10 +476,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     password: password,
                     password_confirmation: passwordConfirmation
                 };
-                
+
                 console.log('Enviando para:', '/api/password/update');
                 console.log('Request data:', { ...requestData, password: '***', password_confirmation: '***' });
-                
+
                 const response = await fetch('/api/password/update', {
                     method: 'POST',
                     headers: {
@@ -488,14 +488,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     body: JSON.stringify(requestData)
                 });
-                
+
                 console.log('Response status:', response.status);
                 console.log('Response headers:', [...response.headers.entries()]);
-                
+
                 // Verificar se é JSON antes de fazer parse
                 const contentType = response.headers.get('content-type');
                 console.log('Content-Type:', contentType);
-                
+
                 let result;
                 if (contentType && contentType.includes('application/json')) {
                     result = await response.json();
@@ -505,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('Response TEXT (não é JSON):', text);
                     throw new Error('Resposta não é JSON válida. Server retornou: ' + text.substring(0, 200));
                 }
-                
+
                 if (response.ok) {
                     alert('Senha redefinida com sucesso! Você pode fazer login com a nova senha.');
                     this.hideGenericModal();
@@ -547,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Verificar se é contato com organizador específico
+            // Verificar se é contato com professor específico
             const professorEmail = form.dataset.professorEmail;
             const professorName = form.dataset.professorName;
 
@@ -555,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let response;
 
                 if (professorEmail && professorName) {
-                    // Contato específico com organizador
+                    // Contato específico com professor
                     response = await fetch('/contact-professor', {
                         method: 'POST',
                         headers: {

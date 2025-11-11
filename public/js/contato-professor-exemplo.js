@@ -54,7 +54,7 @@ async function enviarContatoProfessorGenerico(dadosContato) {
             },
             body: JSON.stringify({
                 destinatario: dadosContato.emailProfessor,
-                template: 'contato-com-organizador',
+                template: 'contato-com-professor',
                 assunto: dadosContato.assunto || `Contato de ${dadosContato.nomeEstudante} via PesqHub UEFS`,
                 remetente: dadosContato.emailEstudante,
                 nome_remetente: `${dadosContato.nomeEstudante} - PesqHub UEFS`,

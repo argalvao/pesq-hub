@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 
 class DatabaseService
 {
@@ -108,7 +109,7 @@ class DatabaseService
                 'telefone' => $data['telefone'] ?? null,
                 'id_curso' => $data['id_curso'],
                 'departamento' => $data['departamento'] ?? null,
-                'criado_por' => $data['criado_por'] ?? auth()->id()
+                'criado_por' => $data['criado_por'] ?? Session::get('user')['id']
             ]);
 
             // Associar linhas de pesquisa
@@ -260,7 +261,7 @@ class DatabaseService
                 'nome' => $data['nome'],
                 'descricao' => $data['descricao'] ?? null,
                 'id_area_pesquisa' => $data['id_area_pesquisa'],
-                'criado_por' => $data['criado_por'] ?? auth()->id()
+                'criado_por' => $data['criado_por'] ?? Session::get('user')['id']
             ]);
 
             Cache::forget('linhas_pesquisa_db');
@@ -382,7 +383,7 @@ class DatabaseService
             $area = AreaPesquisa::create([
                 'nome' => $data['nome'],
                 'descricao' => $data['descricao'] ?? null,
-                'criado_por' => $data['criado_por'] ?? auth()->id()
+                'criado_por' => $data['criado_por'] ?? Session::get('user')['id']
             ]);
 
             Cache::forget('areas_pesquisa_db');
@@ -567,7 +568,7 @@ class DatabaseService
 
     public function getUsers()
     {
-        return Cache::remember('usuarios_db', 300, function () {
+        $allUsers = Cache::remember('usuarios_db', 300, function () {
             try {
                 return Usuario::with('curso')
                     ->get()
@@ -593,6 +594,12 @@ class DatabaseService
                 throw $e;
             }
         });
+
+        $usuarioLogado = Session::get('user')['id'];
+        // 3. Filtra o array para remover o usuário logado e reindexa as chaves
+        return array_values(array_filter($allUsers, function($user) use ($usuarioLogado) {
+            return $user['id'] != $usuarioLogado;
+        }));
     }
 
     public function getUserById($id)
@@ -689,7 +696,7 @@ class DatabaseService
     {
         try {
             DB::beginTransaction();
-            
+
             $user = Usuario::findOrFail($id);
 
             $updateData = [
