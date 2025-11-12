@@ -366,7 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.setLoginLoading(true);
                 
                 try {
-                    const response = await fetch('/login', {
+                    const response = await fetch('{{ route('login') }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
