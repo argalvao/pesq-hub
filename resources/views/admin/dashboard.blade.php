@@ -107,12 +107,13 @@
                                         <th class="p-3 font-semibold">Email</th>
                                         <th class="p-3 font-semibold">Curso</th>
                                         <th class="p-3 font-semibold">Status</th>
+                                        <th class="p-3 font-semibold">Permissão</th>
                                         <th class="p-3 font-semibold">Ações</th>
                                     </tr>
                                     </thead>
                                     <tbody id="usuarios-tbody">
                                     <tr>
-                                        <td colspan="5" class="p-3 text-center">
+                                        <td colspan="6" class="p-3 text-center">
                                             <div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
                                             Carregando...
                                         </td>
@@ -349,10 +350,12 @@
                     const tbody = document.getElementById('usuarios-tbody');
 
                     if (this.data.usuarios.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-gray-500">Nenhum usuário cadastrado</td></tr>';
+                        // ALTERAÇÃO AQUI (colspan)
+                        tbody.innerHTML = '<tr><td colspan="6" class="p-3 text-center text-gray-500">Nenhum usuário cadastrado</td></tr>';
                         return;
                     }
-
+                    
+                    // ALTERAÇÃO AQUI (adicionada nova <td> para usuario.level)
                     tbody.innerHTML = this.data.usuarios.map(usuario => `
                 <tr class="border-b hover:bg-gray-50">
                     <td class="p-3 font-medium">${usuario.nome}</td>
@@ -364,6 +367,7 @@
                         : '<span class="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 rounded-full">Inativo</span>'
                     }
                     </td>
+                    <td class="p-3 text-gray-600">${this.formatUserLevel(usuario.level)}</td>
                     <td class="p-3 space-x-2">
                         ${usuario.ativo
                         ? `<button data-id="${usuario.id}" class="deactivate-user-btn text-red-600 hover:underline">Desativar</button>`
@@ -372,6 +376,13 @@
                     </td>
                 </tr>
             `).join('');
+                },
+
+                // NOVA FUNÇÃO AUXILIAR ADICIONADA
+                formatUserLevel(level) {
+                    if (!level) return 'N/A';
+                    // Capitaliza a primeira letra (ex: "basico" -> "Basico", "organizador" -> "Organizador")
+                    return level.charAt(0).toUpperCase() + level.slice(1);
                 },
 
                 // =============== MODAIS E SALVAMENTO ===============
