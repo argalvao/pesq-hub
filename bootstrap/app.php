@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth' => \App\Http\Middleware\CheckUserLevel::class,
             'user.level' => \App\Http\Middleware\CheckUserLevel::class,
         ]);
+        $middleware->trustProxies(at: ['127.0.0.1']);
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
