@@ -113,7 +113,7 @@ class AuthController extends Controller
 
         try {
             $existingUser = $this->databaseService->getUserByEmail($request->email);
-            
+
             return response()->json([
                 'exists' => $existingUser !== null,
                 'message' => $existingUser ? 'E-mail já cadastrado no sistema' : 'E-mail disponível'
@@ -136,9 +136,9 @@ class AuthController extends Controller
         try {
             // Limpa o telefone para comparação (remove formatação)
             $cleanPhone = preg_replace('/\D/', '', $request->telefone);
-            
+
             $existingProfessor = $this->databaseService->getProfessorByPhone($cleanPhone, $request->professor_id);
-            
+
             return response()->json([
                 'exists' => $existingProfessor !== null,
                 'message' => $existingProfessor ? 'Telefone já cadastrado para outro professor' : 'Telefone disponível'
@@ -231,7 +231,7 @@ class AuthController extends Controller
 
             // Buscar dados pendentes na sessão
             $pendingData = Session::get('pending_registration');
-            
+
             if (!$pendingData || $pendingData['email'] !== $request->email) {
                 return response()->json([
                     'success' => false,
@@ -241,13 +241,13 @@ class AuthController extends Controller
 
             // Criar usuário no banco
             $user = $this->databaseService->createUser($pendingData);
-            
+
             // Limpar dados pendentes
             Session::forget(['pending_registration', 'email']);
-            
+
             // Fazer login automático
             Session::put('user', $user);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => '✅ E-mail confirmado! Conta criada com sucesso.',
@@ -260,20 +260,6 @@ class AuthController extends Controller
                 'success' => false,
                 'message' => '❌ Erro ao confirmar token: ' . $e->getMessage()
             ], 500);
-        }
-    }
-
-    private function getRedirectUrl($user): string
-    {
-        switch ($user['tipo_permissao']) {
-            case DatabaseService::NIVEL_ADMIN:
-                return route('admin.dashboard');
-            case DatabaseService::NIVEL_ORGANIZADOR:
-                return route('organizador.dashboard');
-            case DatabaseService::NIVEL_BASICO:
-                return route('basico.dashboard');
-            default:
-                return route('home');
         }
     }
 
