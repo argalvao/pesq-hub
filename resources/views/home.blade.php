@@ -310,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const content = `
                 <button onclick="App.hideGenericModal()" class="absolute top-2 right-2 text-2xl text-gray-500 hover:text-gray-800 transition-colors" aria-label="Fechar modal">&times;</button>
                 <div class="p-8">
-                    <h2 class="text-2xl font-bold text-center mb-2">Login de Administrador</h2>
+                    <h2 class="text-2xl font-bold text-center mb-2">Login</h2>
                     <p class="text-center text-sm text-gray-500 mb-6">Digite suas credenciais para acessar o painel.</p>
                     
                     <!-- Alert container -->
