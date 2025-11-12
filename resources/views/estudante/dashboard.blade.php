@@ -4,13 +4,14 @@
 
 @section('content')
 <div class="container mx-auto px-4 lg:px-6 py-8">
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex justify-b                    <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">ween items-center mb-6">
         <h1 class="text-3xl font-bold">Área do Estudante</h1>
         <div class="flex items-center space-x-4">
             <a href="{{ route('basico.profile') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
                 📝 Perfil
             </a>
-            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+            <span class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
                 Estudante
             </span>
         </div>
@@ -29,7 +30,7 @@
     @endif
 
     <!-- Welcome Section -->
-    <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6 rounded-lg mb-8">
+    <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white p-6 rounded-lg mb-8">
         <h2 class="text-2xl font-bold mb-2">Bem-vindo, {{ $user['nome'] }}!</h2>
         <p class="text-indigo-100">Explore professores e linhas de pesquisa para encontrar seu orientador ideal.</p>
     </div>
@@ -51,7 +52,7 @@
         </div>
 
         <div class="bg-white p-6 rounded-lg shadow-sm text-center">
-            <div class="text-3xl font-bold text-purple-600">
+            <div class="text-3xl font-bold text-indigo-600">
                 {{ isset($professores) ? count(array_filter($professores, function($p) { return !empty($p['areas_interesse']); })) : 0 }}
             </div>
             <div class="text-sm text-gray-600">Com Áreas Definidas</div>
@@ -142,17 +143,21 @@
             <a href="{{ route('home') }}#linhas" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
                 📚 Explorar Linhas de Pesquisa
             </a>
-            <button onclick="showContactModal()" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors">
-                📧 Contato Geral
+                        <button onclick="showContactModal()" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors">
+                📧 Contato
             </button>
         </div>
     </div>
 </div>
 
 <!-- Modal de Detalhes do Professor -->
-<div id="professor-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
-        <button onclick="hideProfessorModal()" class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-800 z-10">&times;</button>
+<div id="professor-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 hidden items-center justify-center p-4 transition-all duration-300">
+    <div id="professor-modal-container" class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative transform transition-all duration-300 scale-95 opacity-0">
+        <button onclick="hideProfessorModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
         <div id="professor-modal-content" class="p-8">
             <!-- Content will be populated by JavaScript -->
         </div>
@@ -160,19 +165,30 @@
 </div>
 
 <!-- Modal de Contato -->
-<div id="contact-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg relative">
-        <button onclick="hideContactModal()" class="absolute top-2 right-2 text-2xl text-gray-500 hover:text-gray-800">&times;</button>
+<div id="contact-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 hidden items-center justify-center p-4 transition-all duration-300">
+    <div id="contact-modal-container" class="bg-white rounded-3xl shadow-2xl w-full max-w-lg relative transform transition-all duration-300 scale-95 opacity-0">
+        <button onclick="hideContactModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
         <div class="p-8">
-            <h2 class="text-2xl font-bold mb-4">Contato</h2>
+            <div class="flex items-center space-x-3 border-b border-gray-200 pb-4 mb-6">
+                <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800">Contato</h2>
+            </div>
             <form onsubmit="sendContact(event)">
                 <div class="space-y-4">
-                    <input type="text" name="nome" placeholder="Seu Nome" class="w-full px-3 py-2 border rounded-md" required>
-                    <input type="email" name="email" placeholder="Seu E-mail" class="w-full px-3 py-2 border rounded-md" required>
-                    <input type="text" name="assunto" placeholder="Assunto" class="w-full px-3 py-2 border rounded-md" required>
-                    <textarea name="mensagem" placeholder="Digite sua mensagem (mínimo 5 caracteres)" rows="4" class="w-full px-3 py-2 border rounded-md" required></textarea>
+                    <input type="text" name="nome" placeholder="Seu Nome" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" required>
+                    <input type="email" name="email" placeholder="Seu E-mail" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" required>
+                    <input type="text" name="assunto" placeholder="Assunto" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" required>
+                    <textarea name="mensagem" placeholder="Digite sua mensagem (mínimo 5 caracteres)" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-none" required></textarea>
                 </div>
-                <button type="submit" class="w-full mt-6 bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                <button type="submit" class="w-full mt-6 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white font-semibold py-3 rounded-xl hover:from-indigo-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-lg">
                     Enviar Mensagem
                 </button>
             </form>
@@ -234,24 +250,57 @@ function showProfessorModal(professor) {
         </div>
     `;
 
-    document.getElementById('organizador-modal-content').innerHTML = content;
-    document.getElementById('organizador-modal').classList.remove('hidden');
-    document.getElementById('organizador-modal').classList.add('flex');
+    document.getElementById('professor-modal-content').innerHTML = content;
+    
+    const modal = document.getElementById('professor-modal');
+    const modalContainer = document.getElementById('professor-modal-container');
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    
+    setTimeout(() => {
+        modalContainer.classList.add('scale-100', 'opacity-100');
+        modalContainer.classList.remove('scale-95', 'opacity-0');
+    }, 10);
 }
 
 function hideProfessorModal() {
-    document.getElementById('organizador-modal').classList.add('hidden');
-    document.getElementById('organizador-modal').classList.remove('flex');
+    const modal = document.getElementById('professor-modal');
+    const modalContainer = document.getElementById('professor-modal-container');
+    
+    modalContainer.classList.add('scale-95', 'opacity-0');
+    modalContainer.classList.remove('scale-100', 'opacity-100');
+    
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }, 300);
 }
 
 function showContactModal() {
-    document.getElementById('contact-modal').classList.remove('hidden');
-    document.getElementById('contact-modal').classList.add('flex');
+    const modal = document.getElementById('contact-modal');
+    const modalContainer = document.getElementById('contact-modal-container');
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    
+    setTimeout(() => {
+        modalContainer.classList.add('scale-100', 'opacity-100');
+        modalContainer.classList.remove('scale-95', 'opacity-0');
+    }, 10);
 }
 
 function hideContactModal() {
-    document.getElementById('contact-modal').classList.add('hidden');
-    document.getElementById('contact-modal').classList.remove('flex');
+    const modal = document.getElementById('contact-modal');
+    const modalContainer = document.getElementById('contact-modal-container');
+    
+    modalContainer.classList.add('scale-95', 'opacity-0');
+    modalContainer.classList.remove('scale-100', 'opacity-100');
+    
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }, 300);
 }
 
 let currentProfessorData = null;

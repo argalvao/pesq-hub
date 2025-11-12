@@ -2,37 +2,58 @@
 
 namespace App\Mail;
 
+use App\Models\Usuario;
+use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 class UserActivatedMail extends Mailable
 {
-    use SerializesModels;
+    use Queueable, SerializesModels;
 
-    public $user;
+    public $usuario;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($user)
+    public function __construct(Usuario $usuario)
     {
-        $this->user = $user;
+        $this->usuario = $usuario;
     }
 
     /**
-     * Build the message.
+     * Get the message envelope.
      */
-    public function build()
+    public function envelope(): Envelope
     {
-        return $this->subject('Conta Ativada - PesqHub UEFS')
-                    ->view('emails.user-activated')
-                    ->with([
-                        'nome_usuario' => $this->user->nome,
-                        'email_usuario' => $this->user->email,
-                        'tipo_permissao' => $this->user->tipo_permissao,
-                        'data_ativacao' => now()->format('d/m/Y'),
-                        'hora_ativacao' => now()->format('H:i'),
-                        'login_url' => config('app.url') . '/login'
-                    ]);
+        return new Envelope(
+            subject: 'Conta Ativada - PesqHub UEFS',
+        );
+    }
+
+    /**
+     * Get the message content definition.
+     */
+    public function content(): Content
+    {
+        return new Content(
+            view: 'emails.user-activated',
+            with: [
+                'usuario' => $this->usuario,
+                'loginUrl' => url('/login'),
+            ],
+        );
+    }
+
+    /**
+     * Get the attachments for the message.
+     *
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     */
+    public function attachments(): array
+    {
+        return [];
     }
 }

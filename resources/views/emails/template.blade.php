@@ -210,8 +210,6 @@
         <div class="content">
             @hasSection('greeting')
                 @yield('greeting')
-            @else
-                <div class="greeting">Olá!</div>
             @endif
             
             @yield('content')
