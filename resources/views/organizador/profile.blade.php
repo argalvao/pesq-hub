@@ -41,14 +41,14 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="nome" class="block text-sm font-medium text-gray-700 mb-2">Nome Completo *</label>
-                        <input type="text" id="nome" name="nome" value="{{ old('nome', $professorCompleto['nome']) }}" 
+                        <input type="text" id="nome" name="nome" value="{{ old('nome', $organizadorData['nome']) }}" 
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
                                required>
                     </div>
 
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                        <input type="email" id="email" name="email" value="{{ old('email', $professorCompleto['email']) }}" 
+                        <input type="email" id="email" name="email" value="{{ old('email', $organizadorData['email']) }}" 
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
                                required>
                     </div>
@@ -65,7 +65,7 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
                             <option value="">Selecione um curso</option>
                             @foreach($cursos as $curso)
-                                <option value="{{ $curso['id'] }}" {{ old('id_curso', $professorCompleto['id_curso']) == $curso['id'] ? 'selected' : '' }}>
+                                <option value="{{ $curso['id'] }}" {{ old('id_curso', $organizadorData['id_curso']) == $curso['id'] ? 'selected' : '' }}>
                                     {{ $curso['nome'] }}
                                 </option>
                             @endforeach
@@ -73,9 +73,10 @@
                     </div>
 
                     <div>
-                        <label for="departamento" class="block text-sm font-medium text-gray-700 mb-2">Departamento</label>
-                        <input type="text" id="departamento" name="departamento" value="{{ old('departamento', $professorCompleto['departamento'] ?? '') }}" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        <label for="periodo" class="block text-sm font-medium text-gray-700 mb-2">Período</label>
+                        <input type="text" id="periodo" name="periodo" value="{{ old('periodo', $organizadorData['periodo'] ?? '') }}" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                               placeholder="Ex: 5º período">
                     </div>
                 </div>
             </div>
@@ -83,11 +84,31 @@
             <!-- Informações de Contato -->
             <div class="border-b border-gray-200 pb-6">
                 <h2 class="text-xl font-semibold mb-4 text-gray-800">Informações de Contato</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="telefone" class="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
+                        <input type="tel" id="telefone" name="telefone" value="{{ old('telefone', $organizadorData['telefone'] ?? '') }}" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                               placeholder="(00) 00000-0000">
+                    </div>
+
+                    <div>
+                        <label for="lattes" class="block text-sm font-medium text-gray-700 mb-2">Currículo Lattes</label>
+                        <input type="url" id="lattes" name="lattes" value="{{ old('lattes', $organizadorData['lattes'] ?? '') }}" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                               placeholder="http://lattes.cnpq.br/...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Biografia -->
+            <div class="border-b border-gray-200 pb-6">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Biografia</h2>
                 <div>
-                    <label for="telefone" class="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
-                    <input type="tel" id="telefone" name="telefone" value="{{ old('telefone', $professorCompleto['telefone'] ?? '') }}" 
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                           placeholder="(00) 00000-0000">
+                    <label for="biografia" class="block text-sm font-medium text-gray-700 mb-2">Sobre você</label>
+                    <textarea id="biografia" name="biografia" rows="4"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                              placeholder="Conte um pouco sobre sua trajetória acadêmica e interesses...">{{ old('biografia', $organizadorData['biografia'] ?? '') }}</textarea>
                 </div>
             </div>
 
@@ -107,7 +128,7 @@
                         <label for="senha_nova" class="block text-sm font-medium text-gray-700 mb-2">Nova Senha</label>
                         <input type="password" id="senha_nova" name="senha_nova" 
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                               placeholder="Digite sua nova senha">
+                               placeholder="Digite sua nova senha (mínimo 8 caracteres)">
                     </div>
 
                     <div>
@@ -120,30 +141,16 @@
             </div>
 
             <!-- Áreas de Interesse -->
-            <div class="border-b border-gray-200 pb-6">
+            <div class="pb-6">
                 <h2 class="text-xl font-semibold mb-4 text-gray-800">Áreas de Interesse</h2>
+                <p class="text-sm text-gray-600 mb-4">Selecione as áreas de pesquisa que você tem interesse</p>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                     @foreach($areas as $area)
                         <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
                             <input type="checkbox" name="areas_interesse_ids[]" value="{{ $area['id'] }}" 
-                                   {{ in_array($area['id'], old('areas_interesse_ids', $professorCompleto['areas_interesse_ids'] ?? [])) ? 'checked' : '' }}
+                                   {{ in_array($area['id'], old('areas_interesse_ids', $organizadorData['areas_interesse_ids'] ?? [])) ? 'checked' : '' }}
                                    class="rounded text-indigo-600 focus:ring-indigo-500">
                             <span class="text-sm">{{ $area['nome'] }}</span>
-                        </label>
-                    @endforeach
-                </div>
-            </div>
-
-            <!-- Linhas de Pesquisa -->
-            <div class="pb-6">
-                <h2 class="text-xl font-semibold mb-4 text-gray-800">Linhas de Pesquisa</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    @foreach($linhas as $linha)
-                        <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-                            <input type="checkbox" name="linhas_pesquisa_ids[]" value="{{ $linha['id'] }}" 
-                                   {{ in_array($linha['id'], old('linhas_pesquisa_ids', $professorCompleto['linhas_pesquisa_ids'] ?? [])) ? 'checked' : '' }}
-                                   class="rounded text-indigo-600 focus:ring-indigo-500">
-                            <span class="text-sm">{{ $linha['nome'] }}</span>
                         </label>
                     @endforeach
                 </div>
@@ -162,3 +169,4 @@
     </div>
 </div>
 @endsection
+

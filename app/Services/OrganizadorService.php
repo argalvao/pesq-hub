@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Professor;
+use App\Models\Usuario;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -11,39 +11,39 @@ class OrganizadorService
     public function atualizarDados($id, array $dados)
     {
         try {
-            $professor = Professor::findOrFail($id);
+            $organizador = Usuario::findOrFail($id);
             
             DB::beginTransaction();
             
-            // Atualizar dados do professor
-            $professor->update([
-                'nome' => $dados['nome'] ?? $professor->nome,
-                'email' => $dados['email'] ?? $professor->email,
-                'telefone' => $dados['telefone'] ?? $professor->telefone,
-                'curso' => $dados['curso'] ?? $professor->curso,
-                'areas_interesse' => $dados['areas_interesse'] ?? $professor->areas_interesse
+            // Atualizar dados do organizador
+            $organizador->update([
+                'nome' => $dados['nome'] ?? $organizador->nome,
+                'email' => $dados['email'] ?? $organizador->email,
+                'telefone' => $dados['telefone'] ?? $organizador->telefone,
+                'id_curso' => $dados['id_curso'] ?? $organizador->id_curso,
+                'periodo' => $dados['periodo'] ?? $organizador->periodo,
+                'biografia' => $dados['biografia'] ?? $organizador->biografia,
+                'lattes' => $dados['lattes'] ?? $organizador->lattes
             ]);
 
-            // Atualizar linhas de pesquisa se fornecidas
-            if (isset($dados['linhas_pesquisa_ids'])) {
-                $professor->linhasPesquisa()->sync($dados['linhas_pesquisa_ids']);
+            // Atualizar áreas de interesse se fornecidas
+            if (isset($dados['areas_interesse_ids'])) {
+                $organizador->areasInteresse()->sync($dados['areas_interesse_ids']);
             }
 
-            // Atualizar usuário associado se necessário
-            if ($professor->user) {
-                $professor->user->update([
-                    'name' => $dados['nome'] ?? $professor->user->name,
-                    'email' => $dados['email'] ?? $professor->user->email
-                ]);
+            // Atualizar senha se fornecida
+            if (isset($dados['senha'])) {
+                $organizador->senha = $dados['senha'];
+                $organizador->save();
             }
 
             DB::commit();
             
-            return $professor->fresh();
+            return $organizador->fresh(['curso', 'areasInteresse']);
             
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Erro ao atualizar perfil:', [
+            Log::error('Erro ao atualizar perfil do organizador:', [
                 'id' => $id,
                 'erro' => $e->getMessage()
             ]);

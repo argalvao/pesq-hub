@@ -61,38 +61,27 @@ class OrganizadorController extends Controller
         $user = Session::get('user');
         
         try {
-            // Buscar dados do usuário organizador
-            $usuario = \App\Models\Usuario::with('curso')->findOrFail($user['id']);
+            // Buscar dados do usuário organizador com relacionamentos
+            $organizador = \App\Models\Usuario::with(['curso', 'areasInteresse'])->findOrFail($user['id']);
             
-            // Buscar professor vinculado ao organizador (se existir)
-            $professor = \App\Models\Professor::where('email', $usuario->email)->first();
-            
-            // Preparar dados do perfil
-            $professorCompleto = [
-                'id' => $usuario->id,
-                'nome' => $usuario->nome,
-                'email' => $usuario->email,
-                'telefone' => $usuario->telefone,
-                'id_curso' => $usuario->id_curso,
-                'curso' => $usuario->curso ? $usuario->curso->nome : null,
-                'departamento' => $professor ? $professor->departamento : null,
-                'linhas_pesquisa_ids' => [],
-                'areas_interesse_ids' => []
+            // Preparar dados do perfil do organizador
+            $organizadorData = [
+                'id' => $organizador->id,
+                'nome' => $organizador->nome,
+                'email' => $organizador->email,
+                'telefone' => $organizador->telefone,
+                'id_curso' => $organizador->id_curso,
+                'curso' => $organizador->curso ? $organizador->curso->nome : null,
+                'periodo' => $organizador->periodo,
+                'biografia' => $organizador->biografia,
+                'lattes' => $organizador->lattes,
+                'areas_interesse_ids' => $organizador->areasInteresse->pluck('id')->toArray()
             ];
-            
-            // Se tiver professor vinculado, buscar suas linhas e áreas
-            if ($professor) {
-                $professorData = $this->databaseService->getProfessorById($professor->id);
-                $professorCompleto['departamento'] = $professorData['departamento'];
-                $professorCompleto['linhas_pesquisa_ids'] = $professorData['linhas_pesquisa_ids'] ?? [];
-                $professorCompleto['areas_interesse_ids'] = $professorData['areas_interesse_ids'] ?? [];
-            }
             
             $cursos = $this->databaseService->getCursos();
             $areas = $this->databaseService->getAreasPesquisa();
-            $linhas = $this->databaseService->getLinhasPesquisa();
             
-            return view('organizador.profile', compact('professorCompleto', 'cursos', 'areas', 'linhas'));
+            return view('organizador.profile', compact('organizadorData', 'cursos', 'areas'));
         } catch (\Exception $e) {
             return back()->with('error', 'Erro ao carregar perfil: ' . $e->getMessage());
         }
@@ -110,11 +99,11 @@ class OrganizadorController extends Controller
             'email' => ['required', 'email', Rule::unique('usuario')->ignore($user['id'])],
             'telefone' => 'nullable|string|max:20',
             'id_curso' => 'required|string|exists:curso,id',
-            'departamento' => 'nullable|string|max:255',
+            'periodo' => 'nullable|string|max:50',
+            'biografia' => 'nullable|string',
+            'lattes' => 'nullable|string|max:255',
             'areas_interesse_ids' => 'nullable|array',
-            'areas_interesse_ids.*' => 'string|exists:area_pesquisa,id',
-            'linhas_pesquisa_ids' => 'nullable|array',
-            'linhas_pesquisa_ids.*' => 'string|exists:linha_pesquisa,id'
+            'areas_interesse_ids.*' => 'string|exists:area_pesquisa,id'
         ];
 
         // Adiciona validação de senha se informada
@@ -126,46 +115,33 @@ class OrganizadorController extends Controller
         $request->validate($validationRules);
 
         try {
+            $organizador = \App\Models\Usuario::findOrFail($user['id']);
+            
             // Verifica senha atual se fornecida
             if ($request->filled('senha_atual')) {
-                $usuario = \App\Models\Usuario::find($user['id']);
-                
-                if (!$usuario || !password_verify($request->senha_atual, $usuario->senha)) {
+                if (!password_verify($request->senha_atual, $organizador->senha)) {
                     return back()->withInput()->withErrors(['senha_atual' => 'Senha atual incorreta.']);
                 }
 
-                // Atualiza a senha no usuário
+                // Atualiza a senha
                 if ($request->filled('senha_nova')) {
-                    $usuario->senha = $request->senha_nova;
-                    $usuario->save();
+                    $organizador->senha = $request->senha_nova;
                 }
             }
 
-            // Atualiza dados do perfil (busca o professor vinculado ao usuário)
-            $professor = \App\Models\Professor::where('email', $user['email'])->first();
+            // Atualiza dados do organizador
+            $organizador->nome = $request->nome;
+            $organizador->email = $request->email;
+            $organizador->telefone = $request->telefone;
+            $organizador->id_curso = $request->id_curso;
+            $organizador->periodo = $request->periodo;
+            $organizador->biografia = $request->biografia;
+            $organizador->lattes = $request->lattes;
+            $organizador->save();
             
-            if ($professor) {
-                $data = $request->only([
-                    'nome', 
-                    'email', 
-                    'telefone', 
-                    'id_curso', 
-                    'departamento',
-                    'areas_interesse_ids',
-                    'linhas_pesquisa_ids'
-                ]);
-
-                $updatedProfessor = $this->databaseService->updateProfessor($professor->id, $data);
-            }
-            
-            // Atualiza também o usuário (organizador)
-            $usuario = \App\Models\Usuario::find($user['id']);
-            if ($usuario) {
-                $usuario->nome = $request->nome;
-                $usuario->email = $request->email;
-                $usuario->telefone = $request->telefone;
-                $usuario->id_curso = $request->id_curso;
-                $usuario->save();
+            // Atualiza áreas de interesse
+            if ($request->has('areas_interesse_ids')) {
+                $organizador->areasInteresse()->sync($request->areas_interesse_ids);
             }
             
             // Atualizar sessão

@@ -290,18 +290,4 @@ class AuthController extends Controller
                 return redirect()->route('home');
         }
     }
-
-    private function getRedirectUrl($user)
-    {
-        switch ($user['tipo_permissao']) {
-            case DatabaseService::NIVEL_ADMIN:
-                return route('admin.dashboard');
-            case DatabaseService::NIVEL_ORGANIZADOR:
-                return route('organizador.dashboard');
-            case DatabaseService::NIVEL_BASICO:
-                return route('basico.dashboard');
-            default:
-                return route('home');
-        }
-    }
 }
