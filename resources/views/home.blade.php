@@ -78,8 +78,8 @@
 </div>
 
 <!-- Modal Genérico -->
-<div id="generic-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
-    <div id="generic-modal-content" class="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-y-auto relative"></div>
+<div id="generic-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 hidden items-center justify-center p-4 transition-all duration-300">
+    <div id="generic-modal-content" class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-y-auto relative transform transition-all duration-300"></div>
 </div>
 @endsection
 
@@ -534,6 +534,57 @@ document.addEventListener('DOMContentLoaded', () => {
             this.toggleModal('generic-modal', false);
         },
 
+        showAlert(message, type = 'info', title = '') {
+            const iconMap = {
+                'success': '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>',
+                'error': '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>',
+                'warning': '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
+                'info': '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>'
+            };
+            
+            const colorMap = {
+                'success': 'from-emerald-500 to-green-600 text-white',
+                'error': 'from-red-500 to-rose-600 text-white',
+                'warning': 'from-amber-500 to-orange-600 text-white',
+                'info': 'from-indigo-500 to-indigo-600 text-white'
+            };
+
+            const bgColorMap = {
+                'success': 'from-emerald-50 to-green-50 border-emerald-200 text-emerald-800',
+                'error': 'from-red-50 to-rose-50 border-red-200 text-red-800',
+                'warning': 'from-amber-50 to-orange-50 border-amber-200 text-amber-800',
+                'info': 'from-indigo-50 to-indigo-50 border-indigo-200 text-indigo-800'
+            };
+
+            const buttonColorMap = {
+                'success': 'bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700',
+                'error': 'bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700',
+                'warning': 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700',
+                'info': 'bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700'
+            };
+
+            const titleHtml = title ? `<h3 class="text-xl font-bold text-gray-800 mb-2">${title}</h3>` : '';
+            const subtitleHtml = title ? `<p class="text-gray-500 text-sm mb-6 opacity-80">Notificação do sistema</p>` : '';
+
+            const content = `
+                <button onclick="App.hideGenericModal()" class="absolute top-4 right-4 text-2xl text-gray-400 hover:text-gray-600 transition-colors transform hover:scale-110" aria-label="Fechar modal">&times;</button>
+                <div class="p-8 text-center">
+                    <div class="inline-flex items-center justify-center w-20 h-20 mb-6 rounded-full bg-gradient-to-br ${colorMap[type]} shadow-lg">
+                        ${iconMap[type]}
+                    </div>
+                    ${titleHtml}
+                    ${subtitleHtml}
+                    <div class="bg-gradient-to-br ${bgColorMap[type]} rounded-2xl p-6 mb-6 shadow-sm border border-opacity-20">
+                        <p class="font-medium text-lg leading-relaxed">${message}</p>
+                    </div>
+                    <button onclick="App.hideGenericModal()" class="${buttonColorMap[type]} text-white font-semibold px-10 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-opacity-50">
+                        Entendi
+                    </button>
+                </div>
+            `;
+            this.showGenericModal(content);
+        },
+
         async sendContact(event) {
             event.preventDefault();
 
@@ -543,7 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Validação frontend para mensagem
             const mensagem = formData.get('mensagem');
             if (mensagem.length < 5) {
-                alert('A mensagem deve ter pelo menos 5 caracteres.');
+                this.showAlert('A mensagem deve ter pelo menos 5 caracteres.', 'warning', 'Validação');
                 return;
             }
 
@@ -592,14 +643,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
 
                 if (result.success) {
-                    alert('E-mail enviado com sucesso!');
+                    this.showAlert('E-mail enviado com sucesso!', 'success', 'Sucesso');
                     this.hideGenericModal();
                 } else {
-                    alert('Erro ao enviar e-mail: ' + (result.message || 'Erro desconhecido'));
+                    this.showAlert('Erro ao enviar e-mail: ' + (result.message || 'Erro desconhecido'), 'error', 'Erro');
                 }
             } catch (error) {
                 console.error('Erro ao enviar e-mail:', error);
-                alert('Erro de conexão. Tente novamente.');
+                this.showAlert('Erro de conexão. Tente novamente.', 'error', 'Erro de Conexão');
             }
         },
 

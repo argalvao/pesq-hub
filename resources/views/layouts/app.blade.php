@@ -98,12 +98,83 @@
     </main>
 </div>
 
-<!-- Modals -->
-<div id="generic-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
-    <div id="generic-modal-content" class="bg-white rounded-lg shadow-xl w-full max-w-lg relative">
+<!-- Modals Globais -->
+<div id="generic-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 hidden items-center justify-center p-4 transition-all duration-300">
+    <div id="generic-modal-content" class="bg-white rounded-3xl shadow-2xl w-full max-w-lg relative transform transition-all duration-300 scale-95 opacity-0">
         <!-- Content is injected dynamically -->
     </div>
 </div>
+
+<div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 hidden items-center justify-center p-4 transition-all duration-300">
+    <div id="confirmation-modal-content" class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden relative transform transition-all duration-300 scale-95 opacity-0">
+        <!-- Content is injected dynamically -->
+    </div>
+</div>
+
+<script>
+// Global Modal Functions
+if (!window.App) {
+    window.App = {
+        showGenericModal(content) {
+            let modal = document.getElementById('generic-modal');
+            let modalContent = document.getElementById('generic-modal-content');
+            if(modal && modalContent) {
+                modalContent.innerHTML = content;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                setTimeout(() => {
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                }, 10);
+            }
+        },
+
+        hideGenericModal() {
+            let modal = document.getElementById('generic-modal');
+            let modalContent = document.getElementById('generic-modal-content');
+            if(modal && modalContent) {
+                modalContent.classList.add('scale-95', 'opacity-0');
+                modalContent.classList.remove('scale-100', 'opacity-100');
+                
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }, 300);
+            }
+        },
+
+        showConfirmationModal(content) {
+            let modal = document.getElementById('confirmation-modal');
+            let modalContent = document.getElementById('confirmation-modal-content');
+            if(modal && modalContent) {
+                modalContent.innerHTML = content;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                setTimeout(() => {
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                }, 10);
+            }
+        },
+
+        hideConfirmationModal() {
+            let modal = document.getElementById('confirmation-modal');
+            let modalContent = document.getElementById('confirmation-modal-content');
+            if(modal && modalContent) {
+                modalContent.classList.add('scale-95', 'opacity-0');
+                modalContent.classList.remove('scale-100', 'opacity-100');
+                
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }, 300);
+            }
+        }
+    };
+}
+</script>
 
 @stack('scripts')
 </body>

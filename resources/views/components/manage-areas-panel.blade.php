@@ -100,7 +100,7 @@
                         <td class="p-3 text-gray-600">${area.linhas_pesquisa_count}</td>
                         <td class="p-3 text-gray-600">${area.professores_count}</td>
                         <td class="p-3 space-x-2">
-                            <button data-id="${area.id}" class="edit-area-btn text-blue-600 hover:underline">Editar</button>
+                            <button data-id="${area.id}" class="edit-area-btn text-indigo-600 hover:underline">Editar</button>
                             <button data-id="${area.id}" class="delete-area-btn text-red-600 hover:underline">Excluir</button>
                         </td>
                     </tr>
@@ -170,12 +170,17 @@
                         if (result.success) {
                             App.hideGenericModal();
                             await this.loadAreasPesquisa();
-                            this.showSuccess(isEditing ? 'Área atualizada!' : 'Área criada!');
+                            // Delay antes de mostrar mensagem de sucesso
+                            setTimeout(() => {
+                                this.showSuccess(isEditing ? 'Área atualizada!' : 'Área criada!');
+                            }, 300);
 
                             // Opcional: Dispara um evento para que outros painéis (como o de Linhas) possam recarregar
                             document.dispatchEvent(new CustomEvent('areas-updated'));
                         } else {
-                            this.showError(result.error || 'Erro ao salvar');
+                            setTimeout(() => {
+                                this.showError(result.error || 'Erro ao salvar');
+                            }, 100);
                         }
                     } catch (error) {
                         this.showError('Erro de conexão');
@@ -183,10 +188,13 @@
                 },
 
                 async deleteArea(id) {
-                    if (!confirm('Tem certeza de que deseja excluir esta área de pesquisa?')) {
-                        return;
-                    }
+                    this.showConfirmDialog(
+                        'Tem certeza de que deseja excluir esta área de pesquisa?',
+                        () => this.executeDeleteArea(id)
+                    );
+                },
 
+                async executeDeleteArea(id) {
                     try {
                         const response = await fetch(`${this.basePath}/areas-pesquisa/${id}`, {
                             method: 'DELETE',
@@ -199,20 +207,117 @@
 
                         if (result.success) {
                             await this.loadAreasPesquisa();
-                            this.showSuccess('Área de pesquisa excluída!');
+                            // Delay antes de mostrar mensagem de sucesso
+                            setTimeout(() => {
+                                this.showSuccess('Área de pesquisa excluída!');
+                            }, 300);
                             // Opcional: Dispara evento
                             document.dispatchEvent(new CustomEvent('areas-updated'));
                         } else {
-                            this.showError(result.error || 'Erro ao excluir');
+                            setTimeout(() => {
+                                this.showError(result.error || 'Erro ao excluir');
+                            }, 100);
                         }
                     } catch (error) {
-                        this.showError('Erro de conexão');
+                        setTimeout(() => {
+                            this.showError('Erro de conexão');
+                        }, 100);
                     }
                 },
 
-                // Funções de helper (elas podem ser movidas para um App.js global)
-                showSuccess(message) { alert(message); },
-                showError(message) { alert('Erro: ' + message); }
+                            showSuccess(message) {
+                setTimeout(() => {
+                    this.showAlert(message, 'success');
+                }, 300);
+            },
+
+            showError(message) {
+                setTimeout(() => {
+                    this.showAlert('Erro: ' + message, 'error');
+                }, 100);
+            },
+
+            showAlert(message, type = 'info') {
+                setTimeout(() => {
+                    const iconMap = {
+                        'success': '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>',
+                        'error': '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>',
+                        'warning': '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
+                        'info': '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>'
+                    };
+                    
+                    const colorMap = {
+                        'success': 'from-emerald-500 to-emerald-600 text-white',
+                        'error': 'from-red-500 to-red-600 text-white',
+                        'warning': 'from-amber-500 to-amber-600 text-white',
+                        'info': 'from-indigo-500 to-indigo-600 text-white'
+                    };
+
+                    const bgColorMap = {
+                        'success': 'from-emerald-50 to-emerald-50 border-emerald-200 text-emerald-800',
+                        'error': 'from-red-50 to-red-50 border-red-200 text-red-800',
+                        'warning': 'from-amber-50 to-amber-50 border-amber-200 text-amber-800',
+                        'info': 'from-indigo-50 to-indigo-50 border-indigo-200 text-indigo-800'
+                    };
+
+                    const buttonColorMap = {
+                        'success': 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700',
+                        'error': 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700',
+                        'warning': 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700',
+                        'info': 'bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700'
+                    };
+
+                    const content = `
+                        <div class="p-8 text-center">
+                            <div class="inline-flex items-center justify-center w-20 h-20 mb-6 rounded-full bg-gradient-to-br ${colorMap[type]} shadow-lg">
+                                ${iconMap[type]}
+                            </div>
+                            <div class="bg-gradient-to-br ${bgColorMap[type]} rounded-2xl p-6 mb-6 shadow-sm border border-opacity-20">
+                                <p class="font-medium text-lg leading-relaxed">${message}</p>
+                            </div>
+                            <button onclick="App.hideConfirmationModal()" class="${buttonColorMap[type]} text-white font-semibold px-10 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-opacity-50">
+                                Entendi
+                            </button>
+                        </div>
+                    `;
+                    App.showConfirmationModal(content);
+                }, 50);
+            },
+
+            showConfirmDialog(message, onConfirm, title = 'Confirmação') {
+                    if (window.App && window.App.showConfirmationModal) {
+                        // Store callback globally for access from modal
+                        window._tempModalConfirm = onConfirm;
+                        
+                        const modalContent = `
+                            <div class="p-8 text-center">
+                                <div class="inline-flex items-center justify-center w-20 h-20 mb-6 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 shadow-lg border border-indigo-300">
+                                    <svg class="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-2xl font-bold text-indigo-800 mb-2">${title}</h3>
+                                <p class="text-indigo-500 text-sm mb-6 opacity-80">Esta ação requer sua confirmação</p>
+                                <div class="bg-gradient-to-br from-indigo-50 to-indigo-50 rounded-2xl p-6 mb-8 border border-indigo-200 shadow-sm">
+                                    <p class="text-indigo-700 text-lg leading-relaxed font-medium">${message}</p>
+                                </div>
+                                <div class="flex justify-center gap-4">
+                                    <button onclick="App.hideConfirmationModal()" class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-lg">
+                                        Cancelar
+                                    </button>
+                                    <button onclick="App.hideConfirmationModal(); if(window._tempModalConfirm) window._tempModalConfirm();" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-2xl hover:from-indigo-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-lg">
+                                        Confirmar
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        window.App.showConfirmationModal(modalContent);
+                    } else {
+                        if (confirm(message)) {
+                            onConfirm();
+                        }
+                    }
+                }
             };
 
             // Disponibiliza o AreaPanel globalmente para o onsubmit do formulário

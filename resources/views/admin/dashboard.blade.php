@@ -315,7 +315,7 @@
                     <td class="p-3 text-gray-600">${linha.descricao || ''}</td>
                     <td class="p-3 text-gray-600">${linha.area_pesquisa || 'N/A'}</td>
                     <td class="p-3 space-x-2">
-                        <button data-id="${linha.id}" class="edit-linha-btn text-blue-600 hover:underline">Editar</button>
+                        <button data-id="${linha.id}" class="edit-linha-btn text-indigo-600 hover:underline">Editar</button>
                         <button data-id="${linha.id}" class="delete-linha-btn text-red-600 hover:underline">Excluir</button>
                     </td>
                 </tr>
@@ -337,7 +337,7 @@
                     <td class="p-3 text-gray-600">${professor.curso || 'N/A'}</td>
                     <td class="p-3 text-gray-600">${professor.email}</td>
                     <td class="p-3 space-x-2">
-                        <button data-id="${professor.id}" class="edit-professor-btn text-blue-600 hover:underline">Editar</button>
+                        <button data-id="${professor.id}" class="edit-professor-btn text-indigo-600 hover:underline">Editar</button>
                         <button data-id="${professor.id}" class="delete-professor-btn text-red-600 hover:underline">Excluir</button>
                     </td>
                 </tr>
@@ -584,121 +584,205 @@
                 },
 
                 async deleteLinha(id) {
-                    // ... (código existente - sem alteração)
-                    if (!confirm('Tem certeza de que deseja excluir esta linha de pesquisa?')) {
-                        return;
-                    }
+                    // Substituindo confirm por modal estilizado
+                    this.showConfirmDialog(
+                        'Tem certeza de que deseja excluir esta linha de pesquisa? Esta ação não pode ser desfeita.',
+                        async () => {
+                            try {
+                                const response = await fetch(`/admin/linhas-pesquisa/${id}`, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                    }
+                                });
 
-                    try {
-                        const response = await fetch(`/admin/linhas-pesquisa/${id}`, {
-                            method: 'DELETE',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                const result = await response.json();
+
+                                if (result.success) {
+                                    await this.loadLinhasPesquisa();
+                                    this.showSuccess('Linha de pesquisa excluída com sucesso!');
+                                } else {
+                                    this.showError(result.error || 'Erro ao excluir');
+                                }
+                            } catch (error) {
+                                this.showError('Erro de conexão');
                             }
-                        });
-
-                        const result = await response.json();
-
-                        if (result.success) {
-                            await this.loadLinhasPesquisa();
-                            this.showSuccess('Linha de pesquisa excluída!');
-                        } else {
-                            this.showError(result.error || 'Erro ao excluir');
                         }
-                    } catch (error) {
-                        this.showError('Erro de conexão');
-                    }
+                    );
                 },
 
                 async deleteProfessor(id) {
-                    // ... (código existente - sem alteração)
-                    if (!confirm('Tem certeza de que deseja excluir este professor?')) {
-                        return;
-                    }
+                    // Substituindo confirm por modal estilizado
+                    this.showConfirmDialog(
+                        'Tem certeza de que deseja excluir este professor? Esta ação não pode ser desfeita.',
+                        async () => {
+                            try {
+                                const response = await fetch(`/admin/professores/${id}`, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                    }
+                                });
 
-                    try {
-                        const response = await fetch(`/admin/professores/${id}`, {
-                            method: 'DELETE',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                const result = await response.json();
+
+                                if (result.success) {
+                                    await this.loadProfessores();
+                                    this.showSuccess('Professor excluído com sucesso!');
+                                } else {
+                                    this.showError(result.error || 'Erro ao excluir');
+                                }
+                            } catch (error) {
+                                this.showError('Erro de conexão');
                             }
-                        });
-
-                        const result = await response.json();
-
-                        if (result.success) {
-                            await this.loadProfessores();
-                            this.showSuccess('Professor excluído!');
-                        } else {
-                            this.showError(result.error || 'Erro ao excluir');
                         }
-                    } catch (error) {
-                        this.showError('Erro de conexão');
-                    }
+                    );
                 },
 
                 // --- NOVAS FUNÇÕES ---
 
                 async desativarUsuario(id) {
-                    if (!confirm('Tem certeza de que deseja desativar este usuário?')) {
-                        return;
-                    }
+                    const self = this;
+                    this.showConfirmDialog(
+                        'Tem certeza de que deseja desativar este usuário? Ele não poderá mais acessar o sistema.',
+                        async function() {
+                            try {
+                                const response = await fetch(`/admin/usuarios/desativar/${id}`, {
+                                    method: 'PUT',
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                    }
+                                });
 
-                    try {
-                        const response = await fetch(`/admin/usuarios/desativar/${id}`, {
-                            method: 'PUT',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                const result = await response.json();
+
+                                if (result.success) {
+                                    await self.loadUsuarios();
+                                    self.showSuccess('Usuário desativado com sucesso!');
+                                } else {
+                                    self.showError(result.error || 'Erro ao desativar usuário');
+                                }
+                            } catch (error) {
+                                self.showError('Erro de conexão');
                             }
-                        });
-
-                        const result = await response.json();
-
-                        if (result.success) {
-                            await this.loadUsuarios(); // Recarrega a tabela de usuários
-                            this.showSuccess('Usuário desativado com sucesso!');
-                        } else {
-                            this.showError(result.error || 'Erro ao desativar usuário');
                         }
-                    } catch (error) {
-                        this.showError('Erro de conexão');
-                    }
+                    );
                 },
 
                 async ativarUsuario(id) {
-                    if (!confirm('Tem certeza de que deseja ativar este usuário?')) {
-                        return;
-                    }
+                    const self = this;
+                    this.showConfirmDialog(
+                        'Tem certeza de que deseja ativar este usuário? Um email será enviado notificando sobre a ativação.',
+                        async function() {
+                            try {
+                                const response = await fetch(`/admin/usuarios/ativar/${id}`, {
+                                    method: 'PUT',
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                    }
+                                });
 
-                    try {
-                        const response = await fetch(`/admin/usuarios/ativar/${id}`, {
-                            method: 'PUT',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                const result = await response.json();
+
+                                if (result.success) {
+                                    await self.loadUsuarios();
+                                    self.showSuccess('Usuário ativado com sucesso e email de notificação enviado!');
+                                } else {
+                                    self.showError(result.error || 'Erro ao ativar usuário');
+                                }
+                            } catch (error) {
+                                self.showError('Erro de conexão');
                             }
-                        });
-
-                        const result = await response.json();
-
-                        if (result.success) {
-                            await this.loadUsuarios(); // Recarrega a tabela de usuários
-                            this.showSuccess('Usuário ativado com sucesso!');
-                        } else {
-                            this.showError(result.error || 'Erro ao ativar usuário');
                         }
-                    } catch (error) {
-                        this.showError('Erro de conexão');
-                    }
+                    );
                 },
 
 
                 showSuccess(message) {
-                    // Simple alert for now - you can replace with a toast notification
-                    alert(message);
+                    this.showAlert(message, 'success');
                 },
 
                 showError(message) {
-                    alert('Erro: ' + message);
+                    this.showAlert('Erro: ' + message, 'error');
+                },
+
+                showAlert(message, type = 'info') {
+                    const iconMap = {
+                        'success': '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>',
+                        'error': '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>',
+                        'warning': '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
+                        'info': '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>'
+                    };
+                    
+                    const colorMap = {
+                        'success': 'from-emerald-500 to-emerald-600 text-white',
+                        'error': 'from-red-500 to-red-600 text-white',
+                        'warning': 'from-amber-500 to-amber-600 text-white',
+                        'info': 'from-indigo-500 to-indigo-600 text-white'
+                    };
+
+                    const bgColorMap = {
+                        'success': 'from-emerald-50 to-emerald-50 border-emerald-200 text-emerald-800',
+                        'error': 'from-red-50 to-red-50 border-red-200 text-red-800',
+                        'warning': 'from-amber-50 to-amber-50 border-amber-200 text-amber-800',
+                        'info': 'from-indigo-50 to-indigo-50 border-indigo-200 text-indigo-800'
+                    };
+
+                    const buttonColorMap = {
+                        'success': 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700',
+                        'error': 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700',
+                        'warning': 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700',
+                        'info': 'bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700'
+                    };
+
+                    const content = `
+                        <div class="p-8 text-center">
+                            <div class="inline-flex items-center justify-center w-20 h-20 mb-6 rounded-full bg-gradient-to-br ${colorMap[type]} shadow-lg">
+                                ${iconMap[type]}
+                            </div>
+                            <div class="bg-gradient-to-br ${bgColorMap[type]} rounded-2xl p-6 mb-6 shadow-sm border border-opacity-20">
+                                <p class="font-medium text-lg leading-relaxed">${message}</p>
+                            </div>
+                            <button onclick="App.hideConfirmationModal()" class="${buttonColorMap[type]} text-white font-semibold px-10 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-opacity-50">
+                                Entendi
+                            </button>
+                        </div>
+                    `;
+                    App.showConfirmationModal(content);
+                },
+
+                showConfirmDialog(message, onConfirm, onCancel = null) {
+                    // Store the callback functions globally for access from modal
+                    window._tempModalConfirm = onConfirm;
+                    window._tempModalCancel = onCancel;
+                    
+                    const content = `
+                        <div class="p-8 text-center">
+                            <div class="inline-flex items-center justify-center w-20 h-20 mb-6 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 shadow-lg border border-indigo-300">
+                                <svg class="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-indigo-800 mb-2">
+                                Confirmação Necessária
+                            </h3>
+                            <p class="text-indigo-500 text-sm mb-6 opacity-80">Esta ação requer sua confirmação</p>
+                            <div class="bg-gradient-to-br from-indigo-50 to-indigo-50 rounded-2xl p-6 mb-8 border border-indigo-200 shadow-sm">
+                                <p class="text-indigo-700 text-lg leading-relaxed font-medium">${message}</p>
+                            </div>
+                            <div class="flex justify-center gap-4">
+                                <button onclick="App.hideConfirmationModal(); if(window._tempModalCancel) window._tempModalCancel();" 
+                                        class="bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-gray-300">
+                                    Cancelar
+                                </button>
+                                <button onclick="App.hideConfirmationModal(); if(window._tempModalConfirm) window._tempModalConfirm();" 
+                                        class="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-300">
+                                    Confirmar
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    App.showConfirmationModal(content);
                 }
             };
 
@@ -712,13 +796,15 @@
                     showGenericModal(content) {
                         let modal = document.getElementById('generic-modal');
                         let modalContent = document.getElementById('generic-modal-content');
-                        if(modal && modalContent) {
-                            modalContent.innerHTML = content;
-                            modal.classList.remove('hidden');
-                            modal.classList.add('flex');
-                        } else {
-                            console.error('Modal elements not found');
+                        
+                        if(!modal || !modalContent) {
+                            console.error('Elementos do modal não encontrados:', {modal, modalContent});
+                            return;
                         }
+                        
+                        modalContent.innerHTML = content;
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
                     },
 
                     hideGenericModal() {
@@ -726,6 +812,38 @@
                         if(modal) {
                             modal.classList.add('hidden');
                             modal.classList.remove('flex');
+                        }
+                    },
+
+                    showConfirmationModal(content) {
+                        let modal = document.getElementById('confirmation-modal');
+                        let modalContent = document.getElementById('confirmation-modal-content');
+                        if(modal && modalContent) {
+                            modalContent.innerHTML = content;
+                            modal.classList.remove('hidden');
+                            modal.classList.add('flex');
+                            
+                            // Trigger animation
+                            setTimeout(() => {
+                                modalContent.classList.remove('scale-95', 'opacity-0');
+                                modalContent.classList.add('scale-100', 'opacity-100');
+                            }, 10);
+                        } else {
+                            console.error('Confirmation modal elements not found');
+                        }
+                    },
+
+                    hideConfirmationModal() {
+                        let modal = document.getElementById('confirmation-modal');
+                        let modalContent = document.getElementById('confirmation-modal-content');
+                        if(modal && modalContent) {
+                            modalContent.classList.add('scale-95', 'opacity-0');
+                            modalContent.classList.remove('scale-100', 'opacity-100');
+                            
+                            setTimeout(() => {
+                                modal.classList.add('hidden');
+                                modal.classList.remove('flex');
+                            }, 300);
                         }
                     }
                 };
@@ -743,5 +861,52 @@
         select[multiple] {
             background-image: none; /* Remove a seta padrão */
         }
+
+        /* Animações dos modais */
+        .modal-enter {
+            animation: modalEnter 0.3s ease-out forwards;
+        }
+
+        @keyframes modalEnter {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* Gradientes personalizados */
+        .bg-glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Efeito hover para botões */
+        .btn-elegant {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-elegant:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transform: translateY(-1px);
+        }
     </style>
 @endpush
+
+<!-- Modal de Confirmação -->
+<div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 hidden items-center justify-center p-4 transition-all duration-300" onclick="App.hideConfirmationModal()">
+    <div id="confirmation-modal-content" class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden relative transform transition-all duration-300 scale-95 opacity-0 modal-enter" onclick="event.stopPropagation()">
+        <!-- Conteúdo será inserido dinamicamente -->
+    </div>
+</div>
+
+<!-- Modal Genérico -->
+<div id="generic-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 hidden items-center justify-center p-4 transition-all duration-300">
+    <div id="generic-modal-content" class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-y-auto relative transform transition-all duration-300 scale-95 opacity-0 modal-enter">
+        <!-- Conteúdo será inserido dinamicamente -->
+    </div>
+</div>
