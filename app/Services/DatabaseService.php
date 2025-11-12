@@ -574,13 +574,15 @@ class DatabaseService
                     ->where('tipo_permissao', '!=', self::NIVEL_ADMIN) // Filtra 'SUPER'
                     ->get()
                     ->map(function ($user) {
-                        
+
                         // --- LÓGICA DE TRADUÇÃO ADICIONADA ---
                         $levelName = 'N/A'; // Padrão
                         if ($user->tipo_permissao === self::NIVEL_ORGANIZADOR) { // 'DA'
                             $levelName = 'Organizador';
                         } else if ($user->tipo_permissao === self::NIVEL_BASICO) { // 'BASICO'
-                            $levelName = 'Basico';
+                            $levelName = 'Estudante';
+                        } else if ($user->tipo_permissao === self::NIVEL_ADMIN) { // 'BASICO'
+                            $levelName = 'Administrador';
                         }
                         // ----------------------------------------
 
@@ -588,7 +590,7 @@ class DatabaseService
                             'id' => $user->id,
                             'nome' => $user->nome,
                             'email' => $user->email,
-                            
+
                             // --- CORREÇÃO AQUI ---
                             // 1. Foi modificado o nome da chave para 'level' (o que o JS espera)
                             // 2. Foi usado o valor já traduzido ($levelName)
@@ -600,7 +602,7 @@ class DatabaseService
                             'curso' => $user->curso ? $user->curso->nome : null,
                             'data_criacao' => $user->data_criacao ? $user->data_criacao->format('Y-m-d H:i:s') : null,
                             'data_atualizacao' => $user->data_atualizacao ? $user->data_atualizacao->format('Y-m-d H:i:s') : null,
-                            
+
                             'is_super' => $user->isSuperAdmin(),
                             'is_da' => $user->isDepartamentoAcademico(),
                             'is_basico' => $user->isBasico()
@@ -709,7 +711,7 @@ class DatabaseService
     {
         try {
             DB::beginTransaction();
-            
+
             $user = Usuario::findOrFail($id);
 
             $updateData = [
