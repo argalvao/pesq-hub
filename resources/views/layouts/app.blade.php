@@ -91,8 +91,7 @@
                     <div class="flex items-center space-x-2">
                         <a href="{{ route('register') }}" class="text-indigo-600 font-semibold hover:underline">Cadastrar</a>
                         <button id="login-trigger-btn" class="bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">Login</button>
-                        <a href="{{ route('login') }}" class="bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">Login </a>
-                    </div>
+                        </div>
                 @endif
             </div>
         </nav>
