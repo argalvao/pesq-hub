@@ -26,7 +26,8 @@ class AuthController extends Controller
         if (Session::has('user')) {
             return $this->redirectBasedOnLevel(Session::get('user'));
         }
-        return redirect()->route('home');
+        // Redirecionar para home que tem o modal de login
+        return redirect()->route('home')->with('show_login_modal', true);
     }
 
     public function login(Request $request)
@@ -288,20 +289,6 @@ class AuthController extends Controller
                 return redirect()->route('basico.dashboard');
             default:
                 return redirect()->route('home');
-        }
-    }
-
-    private function getRedirectUrl($user)
-    {
-        switch ($user['tipo_permissao']) {
-            case DatabaseService::NIVEL_ADMIN:
-                return route('admin.dashboard');
-            case DatabaseService::NIVEL_ORGANIZADOR:
-                return route('organizador.dashboard');
-            case DatabaseService::NIVEL_BASICO:
-                return route('basico.dashboard');
-            default:
-                return route('home');
         }
     }
 }
