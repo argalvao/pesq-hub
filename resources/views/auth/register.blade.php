@@ -20,23 +20,23 @@
             </div>
         @endif
 
-        {{-- ADICIONADO: 'id="registerForm"' para o script LGPD funcionar sem conflitos--}}
         <form method="POST" action="{{ route('register') }}" id="registerForm">
             @csrf
             <div class="space-y-4">
+
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700">Nome Completo</label>
                     <input type="text" id="name" name="name" value="{{ old('name') }}" 
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
-                           required autofocus>
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        required autofocus>
                 </div>
 
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700">E-mail</label>
                     <div class="relative">
                         <input type="email" id="email" name="email" value="{{ old('email') }}" 
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
-                               required>
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            required>
                         <div id="email-spinner" class="absolute right-3 top-1/2 transform -translate-y-1/2 hidden">
                             <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
                         </div>
@@ -47,26 +47,50 @@
                 <div>
                     <label for="nivel_permissao" class="block text-sm font-medium text-gray-700">Tipo de Usuário</label>
                     <select id="nivel_permissao" name="nivel_permissao" 
-                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
-                            required>
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        required>
                         <option value="">Selecione o tipo</option>
                         <option value="2" {{ old('nivel_permissao') == '2' ? 'selected' : '' }}>Organizador</option>
                         <option value="3" {{ old('nivel_permissao') == '3' ? 'selected' : '' }}>Estudante</option>
                     </select>
                 </div>
 
+                {{-- ✅ SELECT DE CURSOS --}}
+                <div id="curso-container" class="hidden">
+                    <label for="id_curso" class="block text-sm font-medium text-gray-700">Curso</label>
+
+                    <select id="id_curso" name="id_curso"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500">
+
+                        <option value="">Selecione um curso</option>
+
+                        @foreach ($cursos as $curso)
+                            <option value="{{ $curso['id'] }}"
+                                {{ old('id_curso') == $curso['id'] ? 'selected' : '' }}>
+                                {{ $curso['nome'] }}
+                            </option>
+                        @endforeach
+
+                    </select>
+
+                    @error('id_curso')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+                {{-- ✅ FIM SELECT DE CURSOS --}}
+
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
-                    <input type="password" id="password" name="password" 
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
-                           required>
+                    <input type="password" id="password" name="password"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        required>
                 </div>
 
                 <div>
                     <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirmar Senha</label>
-                    <input type="password" id="password_confirmation" name="password_confirmation" 
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
-                           required>
+                    <input type="password" id="password_confirmation" name="password_confirmation"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        required>
                 </div>
             </div>
 
@@ -75,7 +99,7 @@
                 <div>
                     <label for="lgpd_terms" class="block text-sm font-medium text-gray-700">Termos de Uso e Política de Privacidade (LGPD)</label>
                     <textarea id="lgpd_terms" name="lgpd_terms" readonly
-                              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 resize-y" 
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 resize-y"
                               style="height: 200px;">
                         {{-- 
                             VErificar as leis LGPD. Eu criei uma gênerica
@@ -109,26 +133,24 @@
 
                 <div class="flex items-center">
                     <input id="lgpd_accept" name="lgpd_accept" type="checkbox" 
-                           class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
                     <label for="lgpd_accept" class="ml-2 block text-sm text-gray-900">
                         Afirmo que li e aceito os termos da LGPD
                     </label>
                 </div>
 
-                {{-- Mensagem de erro que aparece se o checkbox não for marcado --}}
                 <p id="lgpd_error" class="text-red-600 text-sm !mt-2 hidden">
-                    Você precisa aceitar os termos para prosseguir com o cadastro.
+                    Você precisa aceitar os termos para prosseguir.
                 </p>
             </div>
-            {{-- FIM: Seção Termos LGPD --}}
-
 
             <div class="mt-6">
-                <button type="submit" 
-                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <button type="submit"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
                     Criar Conta
                 </button>
             </div>
+
         </form>
 
         <div class="mt-6 text-center">
@@ -148,7 +170,26 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // --- INÍCIO: Script original de verificação de e-mail ---
+
+    const nivelPermissao = document.getElementById('nivel_permissao');
+    const cursoContainer = document.getElementById('curso-container');
+    const cursoSelect = document.getElementById('id_curso');
+
+    function toggleCursoField() {
+        if (nivelPermissao.value === "2") { 
+            cursoContainer.classList.remove('hidden');
+            cursoSelect.required = true;
+        } else {
+            cursoContainer.classList.add('hidden');
+            cursoSelect.required = false;
+            cursoSelect.value = "";
+        }
+    }
+
+    nivelPermissao.addEventListener('change', toggleCursoField);
+    toggleCursoField();
+
+
     const emailInput = document.getElementById('email');
     const emailFeedback = document.getElementById('email-feedback');
     const emailSpinner = document.getElementById('email-spinner');
@@ -166,93 +207,86 @@ document.addEventListener('DOMContentLoaded', function() {
     function hideFeedback() {
         emailFeedback.classList.add('hidden');
     }
-    
-    function showSpinner() {
-        emailSpinner.classList.remove('hidden');
-    }
-    
-    function hideSpinner() {
-        emailSpinner.classList.add('hidden');
-    }
-    
+
+    function showSpinner() { emailSpinner.classList.remove('hidden'); }
+    function hideSpinner() { emailSpinner.classList.add('hidden'); }
+
     function updateEmailFieldStyle(isError = false) {
         if (isError) {
-            emailInput.classList.remove('border-gray-300', 'focus:border-indigo-500', 'border-green-500', 'focus:border-green-500');
-            emailInput.classList.add('border-red-500', 'focus:border-red-500');
+            emailInput.classList.add('border-red-500');
+            emailInput.classList.remove('border-green-500');
         } else if (isEmailValid) {
-            emailInput.classList.remove('border-gray-300', 'focus:border-indigo-500', 'border-red-500', 'focus:border-red-500');
-            emailInput.classList.add('border-green-500', 'focus:border-green-500');
+            emailInput.classList.add('border-green-500');
+            emailInput.classList.remove('border-red-500');
         } else {
-            emailInput.classList.remove('border-red-500', 'focus:border-red-500', 'border-green-500', 'focus:border-green-500');
-            emailInput.classList.add('border-gray-300', 'focus:border-indigo-500');
+            emailInput.classList.remove('border-red-500', 'border-green-500');
         }
     }
     
     function updateSubmitButton() {
-        if (isEmailValid) {
-            submitButton.disabled = false;
-            submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
-        } else {
-            submitButton.disabled = true;
-            submitButton.classList.add('opacity-50', 'cursor-not-allowed');
-        }
+        submitButton.disabled = !isEmailValid;
+        submitButton.classList.toggle('opacity-50', !isEmailValid);
+        submitButton.classList.toggle('cursor-not-allowed', !isEmailValid);
     }
-    
-    async function checkEmail(email) {
-        // Validação básica de e-mail
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        
-        if (!email || !emailRegex.test(email)) {
-            if (email && !emailRegex.test(email)) {
-                showFeedback('⚠️ Formato de e-mail inválido', true);
-                isEmailValid = false;
-                updateEmailFieldStyle(true);
-            } else {
-                hideFeedback();
-                isEmailValid = false;
-                updateEmailFieldStyle();
-            }
+
+    emailInput.addEventListener('input', () => {
+        const email = emailInput.value.trim();
+        clearTimeout(emailCheckTimeout);
+
+        if (!email.length) {
+            hideFeedback(); hideSpinner();
+            isEmailValid = false;
+            updateEmailFieldStyle();
             updateSubmitButton();
             return;
         }
-        
+
+        emailCheckTimeout = setTimeout(() => checkEmail(email), 200);
+    })
+
+    async function checkEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(email)) {
+            showFeedback('⚠️ Formato inválido', true);
+            isEmailValid = false;
+            updateEmailFieldStyle(true);
+            updateSubmitButton();
+            return;
+        }
+
         showSpinner();
-        hideFeedback();
-        
         try {
             const response = await fetch('{{ route("check.email") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'X-CSRF-TOKEN': document.querySelector("meta[name='csrf-token']").content
                 },
-                body: JSON.stringify({ email: email })
+                body: JSON.stringify({ email })
             });
-            
+
             const data = await response.json();
-            
             hideSpinner();
-            
+
             if (data.exists) {
-                showFeedback('❌ Este e-mail já está cadastrado no sistema. Tente fazer login ou use outro e-mail.', true);
+                showFeedback('❌ E-mail já cadastrado.', true);
                 isEmailValid = false;
                 updateEmailFieldStyle(true);
             } else {
-                showFeedback('✅ E-mail disponível para cadastro', false);
+                showFeedback('✅ E-mail disponível.', false);
                 isEmailValid = true;
                 updateEmailFieldStyle(false);
             }
-            
-        } catch (error) {
+        } catch {
             hideSpinner();
-            showFeedback('⚠️ Erro ao verificar e-mail. Tente novamente.', true);
+            showFeedback('Erro ao verificar. Tente novamente.', true);
             isEmailValid = false;
-            updateEmailFieldStyle(true);
         }
-        
+
         updateSubmitButton();
     }
-    
+
     emailInput.addEventListener('input', function() {
         const email = this.value.trim();
         
@@ -300,13 +334,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (registerForm) {
         registerForm.addEventListener('submit', function(event) {
             // Verifica se o checkbox NÃO está marcado
-            if (!lgpdCheckbox.checked) {
+        if (!lgpdCheckbox.checked) {
                 event.preventDefault(); // Impede o envio do formulário
                 lgpdError.classList.remove('hidden'); // Mostra a mensagem de erro
             } else {
                 lgpdError.classList.add('hidden'); // Oculta a mensagem de erro se estiver marcada
-            }
-        });
+        }
+    });
     }
 
     // Opcional: Oculta a mensagem de erro assim que o usuário marcar a caixa
@@ -315,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (lgpdCheckbox.checked) {
                 lgpdError.classList.add('hidden');
             }
-        });
+    });
     }
     // --- FIM: Script ADICIONADO para validação do checkbox da LGPD ---
 });

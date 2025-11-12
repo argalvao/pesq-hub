@@ -84,7 +84,7 @@ class TokenConfirmacaoService
             if (!$dadosToken) {
                 return [
                     'success' => false,
-                    'message' => '❌ Token expirado ou inválido',
+                    'message' => ' Token expirado ou inválido',
                     'codigo' => 'TOKEN_EXPIRADO'
                 ];
             }
@@ -97,7 +97,7 @@ class TokenConfirmacaoService
                 Cache::forget($chaveCache);
                 return [
                     'success' => false,
-                    'message' => '❌ Muitas tentativas incorretas. Solicite um novo token.',
+                    'message' => ' Muitas tentativas incorretas. Solicite um novo token.',
                     'codigo' => 'LIMITE_TENTATIVAS'
                 ];
             }
@@ -110,7 +110,7 @@ class TokenConfirmacaoService
                 $tentativasRestantes = 3 - $dadosToken['tentativas'];
                 return [
                     'success' => false,
-                    'message' => "❌ Token incorreto. Tentativas restantes: {$tentativasRestantes}",
+                    'message' => "Token incorreto. Tentativas restantes: {$tentativasRestantes}",
                     'codigo' => 'TOKEN_INCORRETO',
                     'tentativas_restantes' => $tentativasRestantes
                 ];
@@ -121,7 +121,7 @@ class TokenConfirmacaoService
             
             return [
                 'success' => true,
-                'message' => '✅ Token confirmado com sucesso!',
+                'message' => 'Token confirmado com sucesso!',
                 'email' => $dadosToken['email'],
                 'nome' => $dadosToken['nome'],
                 'tipo' => $dadosToken['tipo'],
@@ -131,7 +131,7 @@ class TokenConfirmacaoService
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => '❌ Erro ao verificar token: ' . $e->getMessage(),
+                'message' => ' Erro ao verificar token: ' . $e->getMessage(),
                 'codigo' => 'ERRO_INTERNO'
             ];
         }
@@ -215,14 +215,11 @@ class TokenConfirmacaoService
 
     /**
      * Limpar todos os tokens expirados (método utilitário)
-     *
-     * @return int Número de tokens removidos
+     * 
+     * @return int Número de tokens removidos (sempre 0 pois a limpeza é automática)
      */
     public function limparTokensExpirados(): int
     {
-        // Como estamos usando Cache::put com TTL, os tokens expirados
-        // são automaticamente removidos pelo Laravel
-        // Este método é mantido para compatibilidade futura
         return 0;
     }
 }

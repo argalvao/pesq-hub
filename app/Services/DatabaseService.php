@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 
 class DatabaseService
 {
@@ -105,10 +106,10 @@ class DatabaseService
             $professor = Professor::create([
                 'nome' => $data['nome'],
                 'email' => $data['email'],
-                'telefone' => $data['telefone'] ?? null,
+                'telefone' => $data['telefone'] ? preg_replace('/\D/', '', $data['telefone']): null,
                 'id_curso' => $data['id_curso'],
                 'departamento' => $data['departamento'] ?? null,
-                'criado_por' => $data['criado_por'] ?? auth()->id()
+                'criado_por' => $data['criado_por'] ?? Session::get('user')['id']
             ]);
 
             // Associar linhas de pesquisa
@@ -143,7 +144,7 @@ class DatabaseService
             $professor->update([
                 'nome' => $data['nome'],
                 'email' => $data['email'],
-                'telefone' => $data['telefone'] ?? null,
+                'telefone' => $data['telefone'] ? preg_replace('/\D/', '', $data['telefone']) : null,
                 'id_curso' => $data['id_curso'],
                 'departamento' => $data['departamento'] ?? null
             ]);
@@ -260,7 +261,7 @@ class DatabaseService
                 'nome' => $data['nome'],
                 'descricao' => $data['descricao'] ?? null,
                 'id_area_pesquisa' => $data['id_area_pesquisa'],
-                'criado_por' => $data['criado_por'] ?? auth()->id()
+                'criado_por' => $data['criado_por'] ?? Session::get('user')['id']
             ]);
 
             Cache::forget('linhas_pesquisa_db');
@@ -382,7 +383,7 @@ class DatabaseService
             $area = AreaPesquisa::create([
                 'nome' => $data['nome'],
                 'descricao' => $data['descricao'] ?? null,
-                'criado_por' => $data['criado_por'] ?? auth()->id()
+                'criado_por' => $data['criado_por'] ?? Session::get('user')['id']
             ]);
 
             Cache::forget('areas_pesquisa_db');
@@ -567,7 +568,7 @@ class DatabaseService
 
     public function getUsers()
     {
-        return Cache::remember('usuarios_db', 300, function () {
+        $allUsers = Cache::remember('usuarios_db', 300, function () {
             try {
                 // Foi usado whereNot para já filtrar os admins da consulta
                 return Usuario::with('curso')
@@ -615,6 +616,12 @@ class DatabaseService
                 throw $e;
             }
         });
+
+        $usuarioLogado = Session::get('user')['id'];
+        // 3. Filtra o array para remover o usuário logado e reindexa as chaves
+        return array_values(array_filter($allUsers, function($user) use ($usuarioLogado) {
+            return $user['id'] != $usuarioLogado;
+        }));
     }
 
     public function getUserById($id)
@@ -675,6 +682,34 @@ class DatabaseService
             ];
         } catch (\Exception $e) {
             Log::error('Erro ao buscar usuário por email: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function getProfessorByPhone($phone, $excludeProfessorId = null)
+    {
+        try {
+            $query = Professor::where('telefone', $phone);
+
+            // Exclui o professor atual da busca (útil para edição)
+            if ($excludeProfessorId) {
+                $query->where('id', '!=', $excludeProfessorId);
+            }
+
+            $professor = $query->first();
+
+            if (!$professor) {
+                return null;
+            }
+
+            return [
+                'id' => $professor->id,
+                'nome' => $professor->nome,
+                'email' => $professor->email,
+                'telefone' => $professor->telefone
+            ];
+        } catch (\Exception $e) {
+            Log::error('Erro ao buscar professor por telefone: ' . $e->getMessage());
             throw $e;
         }
     }
@@ -748,8 +783,10 @@ class DatabaseService
             return $this->getUserById($user->id);
 
         } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Erro ao atualizar usuário: ' . $e->getMessage());
+            Log::error('Erro ao atualizar usuário', [
+                'id' => $id,
+                'error' => $e->getMessage()
+            ]);
             throw $e;
         }
     }

@@ -55,17 +55,22 @@
     <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-40">
         <nav class="container mx-auto px-4 lg:px-6 py-4 flex justify-between items-center">
-            <a href="{{ route('home') }}" class="flex items-center space-x-2">
-                <span class="bg-indigo-700 text-white font-bold text-xl rounded-md p-2">P</span>
-                <span class="text-2xl font-bold text-indigo-800">PesqHub</span>
-            </a>
+            <div class="flex items-center space-x-8">
+                <a href="{{ route('home') }}" class="flex items-center space-x-2">
+                    <span class="bg-indigo-700 text-white font-bold text-xl rounded-md p-2">P</span>
+                    <span class="text-2xl font-bold text-indigo-800">PesqHub</span>
+                </a>
+                <a href="{{ route('sobre') }}" class="text-gray-700 hover:text-indigo-600 font-medium transition-colors">
+                    Sobre
+                </a>
+            </div>
             <div id="user-actions">
                 @if(Session::has('user'))
                     @php $user = Session::get('user'); @endphp
                     <div class="flex items-center space-x-4">
                         <span class="font-semibold">{{ $user['nome'] }}</span>
                         <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">
-                                {{ app(App\Services\UserService::class)->getNivelPermissaoTexto($user['tipo_permissao']) }}
+                                {{ app(App\Services\UsuarioService::class)->getNivelPermissaoTexto($user['tipo_permissao']) }}
                             </span>
                         @if($user['tipo_permissao'] == DatabaseService::NIVEL_ADMIN)
                             <a href="{{ route('admin.dashboard') }}"
