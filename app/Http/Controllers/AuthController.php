@@ -179,7 +179,7 @@ class AuthController extends Controller
                     ? DatabaseService::NIVEL_ORGANIZADOR
                     : DatabaseService::NIVEL_BASICO
                 ),
-                'ativo' => true, // Após confirmar email, usuário fica ativo
+                'ativo' => true, // Após a confirmação do e-mail, o usuário é marcado como ativo
                 'id_curso' => $request->id_curso ?? null
             ]);
 
