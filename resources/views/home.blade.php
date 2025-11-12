@@ -310,23 +310,128 @@ document.addEventListener('DOMContentLoaded', () => {
             const content = `
                 <button onclick="App.hideGenericModal()" class="absolute top-2 right-2 text-2xl text-gray-500 hover:text-gray-800 transition-colors" aria-label="Fechar modal">&times;</button>
                 <div class="p-8">
-                    <h2 class="text-2xl font-bold text-center mb-2">Login de Administrador</h2>
+                    <h2 class="text-2xl font-bold text-center mb-2">Login</h2>
                     <p class="text-center text-sm text-gray-500 mb-6">Digite suas credenciais para acessar o painel.</p>
-                    <form action="{{ route('login') }}" method="POST" class="space-y-4">
-                        @csrf
-                        <input type="email" name="email" placeholder="E-mail" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-400" required>
-                        <input type="password" name="password" placeholder="Senha" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-400" required>
+                    
+                    <!-- Alert container -->
+                    <div id="login-alert" class="hidden mb-4 p-4 rounded-lg"></div>
+                    
+                    <form id="login-form" class="space-y-4">
+                        <input type="email" id="login-email" name="email" placeholder="E-mail" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-400" required>
+                        <input type="password" id="login-password" name="password" placeholder="Senha" class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-400" required>
                         <div class="text-right mb-4">
                             <button type="button" onclick="App.showForgotPasswordModal()" class="text-sm text-indigo-600 hover:underline">
                                 Esqueci minha senha
                             </button>
                         </div>
-                        <button type="submit" class="w-full mt-4 bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700 transition-all">
-                            Entrar
+                        <button type="submit" id="login-submit-btn" class="w-full mt-4 bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700 transition-all">
+                            <span id="login-btn-text">Entrar</span>
+                            <span id="login-btn-loading" class="hidden">
+                                <svg class="inline w-4 h-4 mr-2 animate-spin" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Entrando...
+                            </span>
                         </button>
                     </form>
                 </div>`;
             this.showGenericModal(content);
+            
+            // Setup login form handler
+            setTimeout(() => {
+                this.setupLoginForm();
+            }, 100);
+        },
+
+        setupLoginForm() {
+            const form = document.getElementById('login-form');
+            const alertContainer = document.getElementById('login-alert');
+            const submitBtn = document.getElementById('login-submit-btn');
+            const btnText = document.getElementById('login-btn-text');
+            const btnLoading = document.getElementById('login-btn-loading');
+            
+            if (!form) return;
+            
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                
+                // Hide previous alert
+                this.hideLoginAlert();
+                
+                // Show loading state
+                this.setLoginLoading(true);
+                
+                try {
+                    const response = await fetch('{{ route('login') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.showLoginAlert('✅ Login realizado com sucesso! Redirecionando...', 'success');
+                        setTimeout(() => {
+                            window.location.href = data.redirect;
+                        }, 1000);
+                    } else {
+                        this.showLoginAlert('❌ ' + data.message, 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('Erro no login:', error);
+                    this.showLoginAlert('❌ Erro de conexão. Tente novamente.', 'error');
+                } finally {
+                    this.setLoginLoading(false);
+                }
+            });
+        },
+
+        showLoginAlert(message, type) {
+            const alertContainer = document.getElementById('login-alert');
+            if (!alertContainer) return;
+            
+            alertContainer.className = `mb-4 p-4 rounded-lg ${
+                type === 'success' 
+                    ? 'bg-green-100 border border-green-400 text-green-700' 
+                    : 'bg-red-100 border border-red-400 text-red-700'
+            }`;
+            alertContainer.textContent = message;
+            alertContainer.classList.remove('hidden');
+        },
+
+        hideLoginAlert() {
+            const alertContainer = document.getElementById('login-alert');
+            if (alertContainer) {
+                alertContainer.classList.add('hidden');
+            }
+        },
+
+        setLoginLoading(loading) {
+            const submitBtn = document.getElementById('login-submit-btn');
+            const btnText = document.getElementById('login-btn-text');
+            const btnLoading = document.getElementById('login-btn-loading');
+            
+            if (!submitBtn || !btnText || !btnLoading) return;
+            
+            if (loading) {
+                submitBtn.disabled = true;
+                btnText.classList.add('hidden');
+                btnLoading.classList.remove('hidden');
+            } else {
+                submitBtn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoading.classList.add('hidden');
+            }
         },
 
         showForgotPasswordModal() {
@@ -348,21 +453,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>`;
             this.showGenericModal(content);
-            
+
             // Adicionar evento de submit ao formulário
             document.getElementById('forgot-password-form').addEventListener('submit', (e) => this.handleForgotPassword(e));
         },
 
         async handleForgotPassword(event) {
             event.preventDefault();
-            
+
             const email = document.getElementById('forgot-email').value;
             const submitBtn = event.target.querySelector('button[type="submit"]');
-            
+
             // Desabilitar botão e mostrar loading
             submitBtn.disabled = true;
             submitBtn.textContent = 'Enviando...';
-            
+
             try {
                 const response = await fetch('/api/password/send-token', {
                     method: 'POST',
@@ -372,9 +477,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     body: JSON.stringify({ email: email })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (response.ok) {
                     alert('Código de verificação enviado! Verifique seu e-mail.');
                     this.showPasswordResetModal(email);
@@ -421,10 +526,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>`;
             this.showGenericModal(content);
-            
+
             // Adicionar evento de submit ao formulário
             document.getElementById('reset-password-form').addEventListener('submit', (e) => this.handlePasswordReset(e));
-            
+
             // Formatação automática do token
             document.getElementById('reset-token').addEventListener('input', function(e) {
                 e.target.value = e.target.value.replace(/\D/g, '');
@@ -433,42 +538,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async handlePasswordReset(event) {
             event.preventDefault();
-            
+
             console.log('handlePasswordReset iniciado');
-            
+
             const email = document.getElementById('reset-email').value;
             const token = document.getElementById('reset-token').value;
             const password = document.getElementById('reset-password').value;
             const passwordConfirmation = document.getElementById('reset-password-confirmation').value;
             const submitBtn = event.target.querySelector('button[type="submit"]');
-            
+
             console.log('Dados coletados:', { email, token, password: '***', passwordConfirmation: '***' });
-            
+
             // Validações frontend
             if (token.length !== 6) {
                 console.log('Token inválido - comprimento:', token.length);
                 alert('O código deve ter 6 dígitos.');
                 return;
             }
-            
+
             if (password !== passwordConfirmation) {
                 console.log('Senhas não conferem');
                 alert('As senhas não conferem.');
                 return;
             }
-            
+
             if (password.length < 6) {
                 console.log('Senha muito curta:', password.length);
                 alert('A senha deve ter pelo menos 6 caracteres.');
                 return;
             }
-            
+
             console.log('Validações OK, enviando requisição...');
-            
+
             // Desabilitar botão e mostrar loading
             submitBtn.disabled = true;
             submitBtn.textContent = 'Redefinindo...';
-            
+
             try {
                 const requestData = {
                     email: email,
@@ -476,10 +581,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     password: password,
                     password_confirmation: passwordConfirmation
                 };
-                
+
                 console.log('Enviando para:', '/api/password/update');
                 console.log('Request data:', { ...requestData, password: '***', password_confirmation: '***' });
-                
+
                 const response = await fetch('/api/password/update', {
                     method: 'POST',
                     headers: {
@@ -488,14 +593,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     body: JSON.stringify(requestData)
                 });
-                
+
                 console.log('Response status:', response.status);
                 console.log('Response headers:', [...response.headers.entries()]);
-                
+
                 // Verificar se é JSON antes de fazer parse
                 const contentType = response.headers.get('content-type');
                 console.log('Content-Type:', contentType);
-                
+
                 let result;
                 if (contentType && contentType.includes('application/json')) {
                     result = await response.json();
@@ -505,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('Response TEXT (não é JSON):', text);
                     throw new Error('Resposta não é JSON válida. Server retornou: ' + text.substring(0, 200));
                 }
-                
+
                 if (response.ok) {
                     alert('Senha redefinida com sucesso! Você pode fazer login com a nova senha.');
                     this.hideGenericModal();
@@ -598,7 +703,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Verificar se é contato com organizador específico
+            // Verificar se é contato com professor específico
             const professorEmail = form.dataset.professorEmail;
             const professorName = form.dataset.professorName;
 
@@ -606,7 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let response;
 
                 if (professorEmail && professorName) {
-                    // Contato específico com organizador
+                    // Contato específico com professor
                     response = await fetch('/contact-professor', {
                         method: 'POST',
                         headers: {
