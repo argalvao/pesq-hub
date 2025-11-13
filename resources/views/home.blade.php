@@ -85,6 +85,7 @@
 
 @push('scripts')
 <script>
+window.isLoggedIn = {{ Session::has('user') ? 'true' : 'false' }};
 document.addEventListener('DOMContentLoaded', () => {
     const App = {
         data: {
@@ -252,7 +253,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             <p class="text-lg text-gray-600 mt-1">${p.curso}</p>
                             <p class="text-gray-500 mt-2"><strong>E-mail:</strong> protegido</p>
                             <p class="text-gray-500"><strong>Telefone:</strong> ${p.telefone || 'Não informado'}</p>
-                            <button onclick="App.showContactModal('${p.nome}')" class="mt-6 bg-indigo-600 text-white font-semibold px-5 py-2 rounded-lg hover:bg-indigo-700 transition">Entrar em Contato</button>
+                            ${window.isLoggedIn 
+                                ? `<button onclick="App.showContactModal('${p.nome}')" class="mt-6 bg-indigo-600 text-white font-semibold px-5 py-2 rounded-lg hover:bg-indigo-700 transition">Entrar em Contato</button>` 
+                                : `<a href='{{ route('login') }}' class="mt-6 inline-block bg-gray-500 text-white font-semibold px-5 py-2 rounded-lg hover:bg-gray-600 transition">Fazer Login para Contatar</a>`}
                         </div>
                     </div>
                     <div class="mt-10 border-t pt-6">
