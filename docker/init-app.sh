@@ -10,6 +10,10 @@ done
 
 echo "✅ Banco de dados conectado!"
 
+# Executar descoberta de pacotes (script que foi pulado no build)
+echo "📦 Descobrindo pacotes Laravel..."
+php artisan package:discover --ansi || true
+
 # Executar migrações
 echo "📋 Executando migrações..."
 php artisan migrate --force
