@@ -52,7 +52,24 @@ class EstudanteController extends Controller
             
             return view('estudante.profile', compact('userCompleto', 'cursos', 'areas'));
         } catch (\Exception $e) {
-            return view('estudante.profile', compact('user'))->with('error', 'Erro ao carregar dados do perfil: ' . $e->getMessage());
+            // Garantir que a view tenha os dados mínimos esperados
+            $userFallback = is_array($user) ? $user : [];
+            $userCompleto = array_merge([
+                'nome' => '',
+                'email' => '',
+                'id_curso' => '',
+                'periodo' => '',
+                'telefone' => '',
+                'lattes' => '',
+                'biografia' => '',
+                'areas_interesse_ids' => []
+            ], $userFallback);
+
+            return view('estudante.profile', [
+                'userCompleto' => $userCompleto,
+                'cursos' => [],
+                'areas' => []
+            ])->with('error', 'Erro ao carregar dados do perfil: ' . $e->getMessage());
         }
     }
 
