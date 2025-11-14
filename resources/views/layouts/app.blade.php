@@ -74,17 +74,17 @@
                             </span>
                         @if($user['tipo_permissao'] == DatabaseService::NIVEL_ADMIN)
                             <a href="{{ route('admin.dashboard') }}"
-                               class="font-semibold text-indigo-600 hover:underline">Dashboard</a>
+                               class="font-semibold text-indigo-600 hover:underline">Minha Área</a>
                         @elseif($user['tipo_permissao'] == DatabaseService::NIVEL_ORGANIZADOR)
                             <a href="{{ route('organizador.dashboard') }}"
-                               class="font-semibold text-indigo-600 hover:underline">Painel Organizador</a>
+                               class="font-semibold text-indigo-600 hover:underline">Minha Área</a>
                         @elseif($user['tipo_permissao'] == DatabaseService::NIVEL_BASICO)
                             <a href="{{ route('basico.dashboard') }}"
                                class="font-semibold text-indigo-600 hover:underline">Minha Área</a>
                         @endif
-                        <form method="POST" action="{{ route('logout') }}" class="inline">
+                        <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="text-sm text-red-600 hover:underline">Sair</button>
+                            <button type="submit" class="text-sm text-red-600 hover:underline font-semibold">Sair</button>
                         </form>
                     </div>
                 @else
