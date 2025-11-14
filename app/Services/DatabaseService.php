@@ -781,9 +781,17 @@ class DatabaseService
             DB::commit();
             Cache::forget('usuarios_db');
 
-            return $this->getUserById($user->id);
+            // Retornar dados básicos do usuário sem eager loading
+            return [
+                'id' => $user->id,
+                'nome' => $user->nome,
+                'email' => $user->email,
+                'tipo_permissao' => $user->tipo_permissao,
+                'ativo' => $user->ativo
+            ];
 
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Erro ao atualizar usuário', [
                 'id' => $id,
                 'error' => $e->getMessage()
