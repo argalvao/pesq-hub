@@ -28,11 +28,17 @@ COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.con
 # Definir diretório de trabalho
 WORKDIR /var/www/html
 
-# Copiar arquivos da aplicação
-COPY . .
+# Copiar apenas arquivos de dependências primeiro (para cache de camada)
+COPY composer.json composer.lock ./
+
+# Copiar .env.example para .env (necessário para scripts do composer)
+COPY .env.example .env
 
 # Instalar dependências do PHP
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Copiar resto dos arquivos da aplicação
+COPY . .
 
 # Criar estrutura completa de diretórios
 RUN mkdir -p /var/www/html/storage/framework/cache/data \
