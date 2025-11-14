@@ -3,24 +3,6 @@
 @section('title', 'Meu Perfil - PesqHub')
 
 @section('content')
-@php
-    // Garantir que as variáveis existam para evitar "Undefined variable"
-    if (!isset($userCompleto)) {
-        $sessionUser = Session::get('user', []);
-        $userCompleto = array_merge([
-            'nome' => '',
-            'email' => '',
-            'id_curso' => '',
-            'periodo' => '',
-            'telefone' => '',
-            'lattes' => '',
-            'biografia' => '',
-            'areas_interesse_ids' => []
-        ], is_array($sessionUser) ? $sessionUser : []);
-    }
-    $cursos = $cursos ?? [];
-    $areas = $areas ?? [];
-@endphp
 <div class="container mx-auto px-4 lg:px-6 py-8">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold">Meu Perfil</h1>
