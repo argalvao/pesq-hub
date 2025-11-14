@@ -749,16 +749,17 @@ class DatabaseService
 
             $user = Usuario::findOrFail($id);
 
-            $updateData = [
-                'nome' => $data['nome'] ?? $user->nome,
-                'email' => $data['email'] ?? $user->email,
-                'id_curso' => $data['id_curso'] ?? $user->id_curso,
-                'tipo_permissao' => $data['tipo_permissao'] ?? $user->tipo_permissao,
-                'telefone' => $data['telefone'] ?? $user->telefone,
-                'periodo' => $data['periodo'] ?? $user->periodo,
-                'biografia' => $data['biografia'] ?? $user->biografia,
-                'lattes' => $data['lattes'] ?? $user->lattes
-            ];
+            // Preparar dados para atualização - apenas campos fornecidos
+            $updateData = [];
+            
+            // Campos básicos opcionais
+            $optionalFields = ['nome', 'email', 'id_curso', 'tipo_permissao', 'telefone', 'periodo', 'biografia', 'lattes'];
+            
+            foreach ($optionalFields as $field) {
+                if (array_key_exists($field, $data)) {
+                    $updateData[$field] = $data[$field];
+                }
+            }
 
             // Atualizar senha apenas se fornecida
             if (isset($data['senha'])) {

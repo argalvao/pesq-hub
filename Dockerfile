@@ -34,8 +34,8 @@ COPY composer.json composer.lock ./
 # Copiar .env.example para .env (necessário para scripts do composer)
 COPY .env.example .env
 
-# Instalar dependências do PHP
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Instalar dependências do PHP (sem executar scripts que precisam do Laravel configurado)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # Copiar resto dos arquivos da aplicação
 COPY . .
