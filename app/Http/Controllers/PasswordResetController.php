@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Services\DatabaseService;
 use App\Services\EmailService;
+use App\Mail\PasswordResetMail;
 
 class PasswordResetController extends Controller
 {
@@ -205,43 +206,8 @@ class PasswordResetController extends Controller
     private function sendResetEmail($email, $nome, $token)
     {
         try {
-            $subject = 'PesqHub - Recuperação de Senha';
-            
-            $message = "
-                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
-                    <h2 style='color: #4F46E5;'>Recuperação de Senha - PesqHub</h2>
-                    
-                    <p>Olá <strong>{$nome}</strong>,</p>
-                    
-                    <p>Você solicitou a recuperação de sua senha. Use o token abaixo para redefinir sua senha:</p>
-                    
-                    <div style='background-color: #F3F4F6; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;'>
-                        <h1 style='color: #1F2937; font-size: 36px; letter-spacing: 8px; margin: 0;'>{$token}</h1>
-                        <p style='color: #6B7280; margin: 10px 0 0 0;'>Token de 6 dígitos</p>
-                    </div>
-                    
-                    <p>Acesse o sistema PesqHub e use este token na tela de recuperação de senha.</p>
-                    
-                    <div style='background-color: #FEF2F2; border: 1px solid #FECACA; border-radius: 6px; padding: 15px; margin: 20px 0;'>
-                        <p style='color: #DC2626; margin: 0; font-size: 14px;'>
-                            <strong>⚠️ Importante:</strong><br>
-                            • Este token expira em 15 minutos<br>
-                            • Você tem 3 tentativas para usar o token<br>
-                            • Se você não solicitou esta recuperação, ignore este e-mail<br>
-                            • Use este token no sistema PesqHub para redefinir sua senha
-                        </p>
-                    </div>
-                    
-                    <hr style='border: none; border-top: 1px solid #E5E7EB; margin: 30px 0;'>
-                    
-                    <p style='color: #6B7280; font-size: 12px; text-align: center;'>
-                        Este e-mail foi enviado pelo sistema PesqHub.<br>
-                        Acesse <a href=\"http://localhost:8001\" style=\"color: #4F46E5;\">http://localhost:8001</a> e clique em \"Login\" para usar o token de recuperação.
-                    </p>
-                </div>
-            ";
-
-            return $this->emailService->sendEmail($email, $subject, $message);
+            Mail::to($email)->send(new PasswordResetMail($nome, $token));
+            return true;
 
         } catch (\Exception $e) {
             Log::error('Erro ao enviar email de reset de senha', [

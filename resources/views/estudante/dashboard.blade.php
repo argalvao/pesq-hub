@@ -4,8 +4,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 lg:px-6 py-8">
-    <div class="flex justify-b                    <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">ween items-center mb-6">
+    <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold">Área do Estudante</h1>
         <div class="flex items-center space-x-4">
             <a href="{{ route('basico.profile') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">

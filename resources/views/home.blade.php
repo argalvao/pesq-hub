@@ -252,10 +252,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             <h1 class="text-4xl font-bold">${p.nome}</h1>
                             <p class="text-lg text-gray-600 mt-1">${p.curso}</p>
                             <p class="text-gray-500 mt-2"><strong>E-mail:</strong> protegido</p>
-                            <p class="text-gray-500"><strong>Telefone:</strong> ${p.telefone || 'Não informado'}</p>
+                            <p class="text-gray-500"><strong>Telefone:</strong> protegido</p>
                             ${window.isLoggedIn 
                                 ? `<button onclick="App.showContactModal('${p.nome}')" class="mt-6 bg-indigo-600 text-white font-semibold px-5 py-2 rounded-lg hover:bg-indigo-700 transition">Entrar em Contato</button>` 
-                                : `<a href='{{ route('login') }}' class="mt-6 inline-block bg-gray-500 text-white font-semibold px-5 py-2 rounded-lg hover:bg-gray-600 transition">Fazer Login para Contatar</a>`}
+                                : `<button onclick="App.showLoginModal()" class="mt-6 bg-gray-500 text-white font-semibold px-5 py-2 rounded-lg hover:bg-gray-600 transition cursor-pointer">Fazer Login para Contatar</button>`}
                         </div>
                     </div>
                     <div class="mt-10 border-t pt-6">
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const professor = this.data.professores.find(p => p.nome === professorName);
 
             if (!professor || !professor.email) {
-                alert('Erro: Dados do organizador não encontrados ou e-mail não disponível.');
+                this.showAlert('Dados do professor não encontrados ou e-mail não disponível.', 'error', 'Erro');
                 return;
             }
 
@@ -484,14 +484,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert('Código de verificação enviado! Verifique seu e-mail.');
-                    this.showPasswordResetModal(email);
+                    this.showAlert('Código de verificação enviado! Verifique seu e-mail.', 'success', 'Código Enviado');
+                    setTimeout(() => {
+                        this.showPasswordResetModal(email);
+                    }, 2000);
                 } else {
-                    alert(result.message || 'Erro ao enviar código. Tente novamente.');
+                    this.showAlert(result.message || 'Erro ao enviar código. Tente novamente.', 'error', 'Erro');
                 }
             } catch (error) {
                 console.error('Erro:', error);
-                alert('Erro de conexão. Tente novamente.');
+                this.showAlert('Erro de conexão. Tente novamente.', 'error', 'Erro de Conexão');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Enviar Código';
@@ -555,19 +557,19 @@ document.addEventListener('DOMContentLoaded', () => {
             // Validações frontend
             if (token.length !== 6) {
                 console.log('Token inválido - comprimento:', token.length);
-                alert('O código deve ter 6 dígitos.');
+                this.showAlert('O código deve ter 6 dígitos.', 'warning', 'Validação');
                 return;
             }
 
             if (password !== passwordConfirmation) {
                 console.log('Senhas não conferem');
-                alert('As senhas não conferem.');
+                this.showAlert('As senhas não conferem.', 'warning', 'Validação');
                 return;
             }
 
             if (password.length < 6) {
                 console.log('Senha muito curta:', password.length);
-                alert('A senha deve ter pelo menos 6 caracteres.');
+                this.showAlert('A senha deve ter pelo menos 6 caracteres.', 'warning', 'Validação');
                 return;
             }
 
@@ -615,18 +617,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (response.ok) {
-                    alert('Senha redefinida com sucesso! Você pode fazer login com a nova senha.');
-                    this.hideGenericModal();
-                    this.showLoginModal();
+                    this.showAlert('Senha redefinida com sucesso! Você pode fazer login com a nova senha.', 'success', 'Sucesso');
+                    setTimeout(() => {
+                        this.hideGenericModal();
+                        this.showLoginModal();
+                    }, 2000);
                 } else {
-                    alert(result.message || 'Erro ao redefinir senha. Verifique os dados e tente novamente.');
+                    this.showAlert(result.message || 'Erro ao redefinir senha. Verifique os dados e tente novamente.', 'error', 'Erro');
                 }
             } catch (error) {
                 console.error('Erro detalhado:', error);
                 console.error('Stack trace:', error.stack);
                 console.error('Response status:', error.response?.status);
                 console.error('Response text:', error.response?.text);
-                alert('Erro de conexão. Tente novamente. Verifique o console para detalhes.');
+                this.showAlert('Erro de conexão. Tente novamente.', 'error', 'Erro de Conexão');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Redefinir Senha';

@@ -14,11 +14,8 @@
 
         <div class="flex flex-col md:flex-row gap-8">
             <aside class="w-full md:w-1/4 lg:w-1/5">
-                <nav class="bg-white p-4 rounded-lg shadow-sm space-y-2 sticky top-24                                <button oncli                                <button onclick="${onConfirm}(); hideConfirmationModal();" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-2xl hover:from-indigo-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-lg btn-elegant">
-                                    Confirmar
-                                </button>"hideConfirmationModal()" class="px-6 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-2xl hover:from-indigo-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-lg btn-elegant">
-                                    OK
-                                </button>                    <a href="#" class="sidebar-link block px-3 py-2 rounded-md organizador-panel-trigger active" data-panel="linhas">
+                <nav class="bg-white p-4 rounded-lg shadow-sm space-y-2 sticky top-24">
+                    <a href="#" class="sidebar-link block px-3 py-2 rounded-md organizador-panel-trigger active" data-panel="linhas">
                         Gerenciar Linhas de Pesquisa
                     </a>
                     <a href="#" class="sidebar-link block px-3 py-2 rounded-md organizador-panel-trigger" data-panel="professores">
@@ -799,4 +796,3 @@
     </div>
 </div>
 
-@endsection
