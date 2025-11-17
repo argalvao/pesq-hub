@@ -56,32 +56,36 @@ class OrganizadorController extends Controller
     /**
      * Exibe o formulário de edição de perfil do organizador
      */
+    /**
+     * Exibe o formulário de edição de perfil do organizador
+     */
     public function profile()
     {
         $user = Session::get('user');
         
         try {
-            // Buscar dados do usuário organizador com relacionamentos
-            $organizador = \App\Models\Usuario::with(['curso', 'areasInteresse'])->findOrFail($user['id']);
+            // Buscar dados do usuário organizador
+            $organizador = \App\Models\Usuario::find($user['id']);
             
-            // Preparar dados do perfil do organizador
+            // Buscar curso se existir
+            $cursoNome = null;
+            if ($organizador->id_curso) {
+                $curso = \App\Models\Curso::find($organizador->id_curso);
+                $cursoNome = $curso ? $curso->nome : null;
+            }
+            
+            // Preparar dados do perfil do organizador (apenas campos que existem)
             $organizadorData = [
                 'id' => $organizador->id,
-                'nome' => $organizador->nome,
-                'email' => $organizador->email,
-                'telefone' => $organizador->telefone,
-                'id_curso' => $organizador->id_curso,
-                'curso' => $organizador->curso ? $organizador->curso->nome : null,
-                'periodo' => $organizador->periodo,
-                'biografia' => $organizador->biografia,
-                'lattes' => $organizador->lattes,
-                'areas_interesse_ids' => $organizador->areasInteresse->pluck('id')->toArray()
+                'nome' => $organizador->nome ?? '',
+                'email' => $organizador->email ?? '',
+                'id_curso' => $organizador->id_curso ?? '',
+                'curso' => $cursoNome
             ];
             
             $cursos = $this->databaseService->getCursos();
-            $areas = $this->databaseService->getAreasPesquisa();
             
-            return view('organizador.profile', compact('organizadorData', 'cursos', 'areas'));
+            return view('organizador.profile', compact('organizadorData', 'cursos'));
         } catch (\Exception $e) {
             return back()->with('error', 'Erro ao carregar perfil: ' . $e->getMessage());
         }
@@ -97,13 +101,7 @@ class OrganizadorController extends Controller
         $validationRules = [
             'nome' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('usuario')->ignore($user['id'])],
-            'telefone' => 'nullable|string|max:20',
-            'id_curso' => 'required|string|exists:curso,id',
-            'periodo' => 'nullable|string|max:50',
-            'biografia' => 'nullable|string',
-            'lattes' => 'nullable|string|max:255',
-            'areas_interesse_ids' => 'nullable|array',
-            'areas_interesse_ids.*' => 'string|exists:area_pesquisa,id'
+            'id_curso' => 'required|string|exists:curso,id'
         ];
 
         // Adiciona validação de senha se informada
@@ -122,32 +120,23 @@ class OrganizadorController extends Controller
                 if (!password_verify($request->senha_atual, $organizador->senha)) {
                     return back()->withInput()->withErrors(['senha_atual' => 'Senha atual incorreta.']);
                 }
-
+                
                 // Atualiza a senha
                 if ($request->filled('senha_nova')) {
                     $organizador->senha = $request->senha_nova;
                 }
             }
-
-            // Atualiza dados do organizador
+            
+            // Atualiza dados básicos do organizador (APENAS campos que existem no banco)
             $organizador->nome = $request->nome;
             $organizador->email = $request->email;
-            $organizador->telefone = $request->telefone;
             $organizador->id_curso = $request->id_curso;
-            $organizador->periodo = $request->periodo;
-            $organizador->biografia = $request->biografia;
-            $organizador->lattes = $request->lattes;
             $organizador->save();
-            
-            // Atualiza áreas de interesse
-            if ($request->has('areas_interesse_ids')) {
-                $organizador->areasInteresse()->sync($request->areas_interesse_ids);
-            }
             
             // Atualizar sessão
             Session::put('user', array_merge($user, [
-                'nome' => $request->nome,
-                'email' => $request->email
+                'nome' => $organizador->nome,
+                'email' => $organizador->email
             ]));
             
             return redirect()->route('organizador.profile')->with('success', 'Perfil atualizado com sucesso!');
