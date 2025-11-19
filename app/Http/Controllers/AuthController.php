@@ -179,7 +179,7 @@ class AuthController extends Controller
                     ? DatabaseService::NIVEL_ORGANIZADOR
                     : DatabaseService::NIVEL_BASICO
                 ),
-                'ativo' => true, // Após confirmar email, usuário fica ativo
+                'ativo' => true, // Após a confirmação do e-mail, o usuário é marcado como ativo
                 'id_curso' => $request->id_curso ?? null
             ]);
 
@@ -274,20 +274,6 @@ class AuthController extends Controller
                 return redirect()->route('basico.dashboard');
             default:
                 return redirect()->route('home');
-        }
-    }
-
-    private function getRedirectUrl($user)
-    {
-        switch ($user['tipo_permissao']) {
-            case DatabaseService::NIVEL_ADMIN:
-                return route('admin.dashboard');
-            case DatabaseService::NIVEL_ORGANIZADOR:
-                return route('organizador.dashboard');
-            case DatabaseService::NIVEL_BASICO:
-                return route('basico.dashboard');
-            default:
-                return route('home');
         }
     }
 }

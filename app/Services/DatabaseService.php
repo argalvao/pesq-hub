@@ -83,6 +83,7 @@ class DatabaseService
                         'descricao' => $linha->descricao
                     ];
                 })->toArray(),
+                'linhas_pesquisa_ids' => $professor->linhasPesquisa->pluck('id')->toArray(),
                 'areas_interesse' => $professor->areasInteresse->map(function ($area) {
                     return [
                         'id' => $area->id,
@@ -90,6 +91,7 @@ class DatabaseService
                         'descricao' => $area->descricao
                     ];
                 })->toArray(),
+                'areas_interesse_ids' => $professor->areasInteresse->pluck('id')->toArray(),
                 'criado_por' => $professor->criado_por
             ];
         } catch (\Exception $e) {
